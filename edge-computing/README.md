@@ -104,7 +104,7 @@ funções nativas do core do Arduino (`tone`, `radians`, etc.). Veja
 |---|---|
 | Thiago Souza de Lima | 568732 |
 
-> _Acrescente aqui os demais integrantes da equipe (até 5), se houver._
+Equipe individual conforme informado pelo autor do projeto.
 
 ---
 

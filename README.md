@@ -94,7 +94,7 @@ para pagar a passagem.
 |---|---|
 | Thiago Souza de Lima | 568732 |
 
-> _Acrescente os demais integrantes (até 5)._
+Equipe individual conforme informado pelo autor do projeto.
 
 ---
 

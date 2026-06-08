@@ -20,10 +20,24 @@ IMPORTANTE (honestidade técnica):
 """
 
 import math
-import matplotlib
-matplotlib.use("Agg")  # permite salvar gráfico sem tela; troque por padrão se for rodar local
-import matplotlib.pyplot as plt
-import numpy as np
+import sys
+from pathlib import Path
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except AttributeError:
+    pass
+
+try:
+    import matplotlib
+    matplotlib.use("Agg")  # permite salvar gráfico sem tela; troque por padrão se for rodar local
+    import matplotlib.pyplot as plt
+    import numpy as np
+    TEM_MATPLOTLIB = True
+except ModuleNotFoundError:
+    plt = None
+    np = None
+    TEM_MATPLOTLIB = False
 
 R_TERRA_KM = 6371.0          # raio médio da Terra
 C_LUZ = 299_792_458.0        # velocidade da luz (m/s)
@@ -35,6 +49,81 @@ ESTACOES = {
     "Paulista":  (-23.5546, -46.6620),
     "Tatuapé":   (-23.5410, -46.5775),
 }
+
+
+def linspace(inicio, fim, qtd):
+    """Versão mínima de np.linspace para ambientes sem NumPy."""
+    if np is not None:
+        return np.linspace(inicio, fim, qtd)
+    if qtd <= 1:
+        return [inicio]
+    passo = (fim - inicio) / (qtd - 1)
+    return [inicio + passo * i for i in range(qtd)]
+
+
+def salvar_svg_linha(nome, titulo, xs, ys, cor="#00b3c4", vline=None):
+    """Gera um gráfico de linha SVG simples quando matplotlib não está instalado."""
+    largura, altura = 760, 430
+    margem = 52
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    if min_y == max_y:
+        max_y = min_y + 1
+
+    def sx(x):
+        return margem + (x - min_x) / (max_x - min_x) * (largura - 2 * margem)
+
+    def sy(y):
+        return altura - margem - (y - min_y) / (max_y - min_y) * (altura - 2 * margem)
+
+    pontos = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in zip(xs, ys))
+    extra = ""
+    if vline is not None and min_x <= vline <= max_x:
+        x = sx(vline)
+        extra = f'<line x1="{x:.1f}" y1="{margem}" x2="{x:.1f}" y2="{altura-margem}" stroke="#777" stroke-dasharray="6 5"/>'
+
+    Path(nome).write_text(f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {largura} {altura}">
+  <rect width="{largura}" height="{altura}" fill="#ffffff"/>
+  <text x="{largura/2}" y="28" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700">{titulo}</text>
+  <line x1="{margem}" y1="{altura-margem}" x2="{largura-margem}" y2="{altura-margem}" stroke="#333"/>
+  <line x1="{margem}" y1="{margem}" x2="{margem}" y2="{altura-margem}" stroke="#333"/>
+  {extra}
+  <polyline points="{pontos}" fill="none" stroke="{cor}" stroke-width="3"/>
+  <text x="{margem}" y="{altura-16}" font-family="Arial" font-size="12">x: {min_x:.2f} a {max_x:.2f}</text>
+  <text x="{largura-margem}" y="{altura-16}" text-anchor="end" font-family="Arial" font-size="12">y: {min_y:.2f} a {max_y:.2f}</text>
+</svg>
+""", encoding="utf-8")
+
+
+def salvar_svg_trilateracao(nome, sats, raios, ponto):
+    largura, altura = 620, 620
+    margem = 56
+    xs = [p[0] for p in sats] + [ponto[0]]
+    ys = [p[1] for p in sats] + [ponto[1]]
+    max_raio = max(raios)
+    min_x, max_x = min(xs) - max_raio, max(xs) + max_raio
+    min_y, max_y = min(ys) - max_raio, max(ys) + max_raio
+    escala = min((largura - 2 * margem) / (max_x - min_x), (altura - 2 * margem) / (max_y - min_y))
+
+    def sx(x):
+        return margem + (x - min_x) * escala
+
+    def sy(y):
+        return altura - margem - (y - min_y) * escala
+
+    cores = ["#00b3c4", "#ff8a3d", "#8a5cf6"]
+    circulos = []
+    for (sat, raio, cor) in zip(sats, raios, cores):
+        circulos.append(f'<circle cx="{sx(sat[0]):.1f}" cy="{sy(sat[1]):.1f}" r="{raio*escala:.1f}" fill="none" stroke="{cor}" stroke-width="2"/>')
+        circulos.append(f'<circle cx="{sx(sat[0]):.1f}" cy="{sy(sat[1]):.1f}" r="5" fill="{cor}"/>')
+
+    Path(nome).write_text(f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {largura} {altura}">
+  <rect width="{largura}" height="{altura}" fill="#ffffff"/>
+  <text x="{largura/2}" y="30" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700">Trilateração: interseção de 3 círculos</text>
+  {''.join(circulos)}
+  <text x="{sx(ponto[0]):.1f}" y="{sy(ponto[1])-12:.1f}" text-anchor="middle" font-family="Arial" font-size="22" fill="#000">★</text>
+</svg>
+""", encoding="utf-8")
 
 
 # ----------------------------------------------------------------------
@@ -75,17 +164,26 @@ def analisar_haversine():
     print()
 
     # Gráfico: distância da Sé conforme andamos para o norte (variando latitude)
-    lats = np.linspace(-23.65, -23.45, 200)
+    lats = linspace(-23.65, -23.45, 200)
     dists = [haversine_km(-23.5505, -46.6333, la, -46.6333) for la in lats]
-    plt.figure(figsize=(7, 4))
-    plt.plot(lats, dists, color="#00b3c4")
-    plt.title("Haversine: distância à estação Sé variando a latitude")
-    plt.xlabel("Latitude (graus)")
-    plt.ylabel("Distância (km)")
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    plt.savefig("grafico_1_haversine.png", dpi=110)
-    plt.close()
+    if TEM_MATPLOTLIB:
+        plt.figure(figsize=(7, 4))
+        plt.plot(lats, dists, color="#00b3c4")
+        plt.title("Haversine: distância à estação Sé variando a latitude")
+        plt.xlabel("Latitude (graus)")
+        plt.ylabel("Distância (km)")
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+        plt.savefig("grafico_1_haversine.png", dpi=110)
+        plt.close()
+    else:
+        salvar_svg_linha(
+            "grafico_1_haversine.svg",
+            "Haversine: distância à estação Sé variando a latitude",
+            lats,
+            dists,
+            "#00b3c4"
+        )
 
 
 # ----------------------------------------------------------------------
@@ -129,18 +227,21 @@ def analisar_trilateracao():
     print()
 
     # Gráfico dos três círculos e o ponto encontrado
-    fig, ax = plt.subplots(figsize=(6, 6))
-    cores = ["#00b3c4", "#ff8a3d", "#8a5cf6"]
-    th = np.linspace(0, 2 * np.pi, 300)
-    for (sx, sy), r, cor in zip(sats, raios, cores):
-        ax.plot(sx + r * np.cos(th), sy + r * np.sin(th), color=cor, alpha=0.7)
-        ax.plot(sx, sy, "o", color=cor)
-    ax.plot(*verdadeiro, "k*", markersize=14, label="Posição encontrada")
-    ax.set_title("Trilateração: interseção de 3 círculos (satélites)")
-    ax.set_aspect("equal"); ax.grid(alpha=0.3); ax.legend()
-    plt.tight_layout()
-    plt.savefig("grafico_2_trilateracao.png", dpi=110)
-    plt.close()
+    if TEM_MATPLOTLIB:
+        fig, ax = plt.subplots(figsize=(6, 6))
+        cores = ["#00b3c4", "#ff8a3d", "#8a5cf6"]
+        th = np.linspace(0, 2 * np.pi, 300)
+        for (sx, sy), r, cor in zip(sats, raios, cores):
+            ax.plot(sx + r * np.cos(th), sy + r * np.sin(th), color=cor, alpha=0.7)
+            ax.plot(sx, sy, "o", color=cor)
+        ax.plot(*verdadeiro, "k*", markersize=14, label="Posição encontrada")
+        ax.set_title("Trilateração: interseção de 3 círculos (satélites)")
+        ax.set_aspect("equal"); ax.grid(alpha=0.3); ax.legend()
+        plt.tight_layout()
+        plt.savefig("grafico_2_trilateracao.png", dpi=110)
+        plt.close()
+    else:
+        salvar_svg_trilateracao("grafico_2_trilateracao.svg", sats, raios, verdadeiro)
 
 
 # ----------------------------------------------------------------------
@@ -168,16 +269,26 @@ def analisar_fspl():
         print(f"  d = {d:6d} km  ->  perda ≈ {fspl_db(d):6.2f} dB")
     print()
 
-    ds = np.linspace(500, 25000, 300)
+    ds = linspace(500, 25000, 300)
     perdas = [fspl_db(d) for d in ds]
-    plt.figure(figsize=(7, 4))
-    plt.plot(ds, perdas, color="#8a5cf6")
-    plt.axvline(20200, ls="--", color="gray", alpha=0.7, label="Altitude ~GPS")
-    plt.title("FSPL: perda do sinal x distância (escala logarítmica)")
-    plt.xlabel("Distância (km)"); plt.ylabel("Perda (dB)")
-    plt.grid(alpha=0.3); plt.legend(); plt.tight_layout()
-    plt.savefig("grafico_3_fspl.png", dpi=110)
-    plt.close()
+    if TEM_MATPLOTLIB:
+        plt.figure(figsize=(7, 4))
+        plt.plot(ds, perdas, color="#8a5cf6")
+        plt.axvline(20200, ls="--", color="gray", alpha=0.7, label="Altitude ~GPS")
+        plt.title("FSPL: perda do sinal x distância (escala logarítmica)")
+        plt.xlabel("Distância (km)"); plt.ylabel("Perda (dB)")
+        plt.grid(alpha=0.3); plt.legend(); plt.tight_layout()
+        plt.savefig("grafico_3_fspl.png", dpi=110)
+        plt.close()
+    else:
+        salvar_svg_linha(
+            "grafico_3_fspl.svg",
+            "FSPL: perda do sinal x distância",
+            ds,
+            perdas,
+            "#8a5cf6",
+            vline=20200
+        )
 
 
 # ----------------------------------------------------------------------
@@ -205,19 +316,31 @@ def analisar_exponencial():
     for n, e in zip(ns, erros):
         print(f"  {n:2d} satélites -> erro estimado ≈ {e:5.2f} m")
     print()
-    plt.figure(figsize=(7, 4))
-    plt.plot(ns, erros, "o-", color="#ff8a3d")
-    plt.title("Modelo didático: erro de posição x nº de satélites")
-    plt.xlabel("Satélites visíveis"); plt.ylabel("Erro estimado (m)")
-    plt.grid(alpha=0.3); plt.tight_layout()
-    plt.savefig("grafico_4_exponencial.png", dpi=110)
-    plt.close()
+    if TEM_MATPLOTLIB:
+        plt.figure(figsize=(7, 4))
+        plt.plot(ns, erros, "o-", color="#ff8a3d")
+        plt.title("Modelo didático: erro de posição x nº de satélites")
+        plt.xlabel("Satélites visíveis"); plt.ylabel("Erro estimado (m)")
+        plt.grid(alpha=0.3); plt.tight_layout()
+        plt.savefig("grafico_4_exponencial.png", dpi=110)
+        plt.close()
+    else:
+        salvar_svg_linha(
+            "grafico_4_exponencial.svg",
+            "Modelo didático: erro de posição x nº de satélites",
+            ns,
+            erros,
+            "#ff8a3d"
+        )
 
 
 if __name__ == "__main__":
     print("\nHOLOPASS — MODELAGEM MATEMÁTICA DO GNSS\n")
+    if not TEM_MATPLOTLIB:
+        print("Aviso: matplotlib/numpy não encontrados; gerando gráficos SVG com fallback interno.\n")
     analisar_haversine()
     analisar_trilateracao()
     analisar_fspl()
     analisar_exponencial()
-    print("Gráficos salvos: grafico_1_haversine.png ... grafico_4_exponencial.png")
+    extensao = "png" if TEM_MATPLOTLIB else "svg"
+    print(f"Gráficos salvos: grafico_1_haversine.{extensao} ... grafico_4_exponencial.{extensao}")

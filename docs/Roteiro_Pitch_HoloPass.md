@@ -62,10 +62,10 @@
 
 ## Parte 6 — A equipe · (4:00–4:30)
 
-**TELA:** Slide com foto e nome + RM de cada integrante.
+**TELA:** Slide com foto, nome e RM do apresentador.
 
 **FALA:**
-"Somos a equipe por trás do HoloPass. [Cada integrante se apresenta rapidamente: nome e uma frase do que fez no projeto — ex.: front-end, modelagem matemática, circuito embarcado, design.]"
+"Eu sou Thiago Souza de Lima, RM 568732, e desenvolvi o HoloPass integrando front-end, modelagem matemática, circuito embarcado, design e narrativa do produto."
 
 *(Aqui aparecem rosto e voz dos apresentadores — requisito obrigatório.)*
 
@@ -87,7 +87,7 @@
 - [ ] App demonstrado funcionando (detecção GNSS na tela real)
 - [ ] Arduino/Wokwi demonstrado (mesmo vídeo serve para Edge Computing)
 - [ ] Slides nas 7 partes
-- [ ] Nome + RM de todos no slide da equipe e na descrição do vídeo
+- [ ] Nome + RM do apresentador no slide da equipe e na descrição do vídeo
 - [ ] Subir no YouTube (público ou não listado) e postar o link no Teams
 
 > Observação honesta: na fala, diga "posicionamento GNSS do dispositivo", e não

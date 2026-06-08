@@ -14,16 +14,18 @@ HoloPass, com quatro funções implementadas e analisadas em Python:
 
 ## Como executar
 
-Requisitos: Python 3 com `matplotlib` e `numpy`.
+Requisitos: Python 3. Se `matplotlib` e `numpy` estiverem instalados, o script
+gera gráficos `.png`; sem essas bibliotecas, usa um fallback interno e gera
+os mesmos quatro gráficos em `.svg`.
 
 ```bash
-pip install matplotlib numpy
+pip install matplotlib numpy   # opcional, para saída PNG
 python modelo_gnss.py
 ```
 
 O script imprime, para cada função: a fórmula, domínio, imagem, comportamento
 (crescimento/decrescimento) e interpretação física — e gera quatro gráficos
-`.png` (`grafico_1_haversine.png` … `grafico_4_exponencial.png`).
+`.png` ou `.svg` (`grafico_1_haversine.*` … `grafico_4_exponencial.*`).
 
 ## Relatório técnico
 

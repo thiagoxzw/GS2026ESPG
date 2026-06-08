@@ -1,5 +1,6 @@
 # Artefatos gerados pelo modelo matemático (Python)
 grafico_*.png
+grafico_*.svg
 __pycache__/
 *.pyc
 

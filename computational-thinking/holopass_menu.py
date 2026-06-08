@@ -15,6 +15,12 @@ cada opção. Demonstra os conceitos do 1º semestre:
 """
 
 import math
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except AttributeError:
+    pass
 
 # ============================================================
 # DADOS DO SISTEMA
