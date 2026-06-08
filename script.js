@@ -166,7 +166,7 @@ const TRANSFERENCIAS_CORREDOR = [
 // 3. CONSTANTES DO SISTEMA
 // ============================================================
 
-const TARIFA         = 4.40;
+const TARIFA         = 5.40;
 const KM_POR_ESTACAO = 1.2;
 const PENALIDADE_TRANSFERENCIA_GRAFO = 12;
 const KM_OPERACIONAL_LINHA = {
@@ -339,6 +339,7 @@ let rotaCalculada = null;
 let linhaAtiva    = null;
 let usuarioAtual  = null;
 let metodoRecarga = 'pix';
+let validacoesNfcDiagnostico = [];
 
 // ============================================================
 // 5. INICIALIZAÇÃO
@@ -354,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
   verificarSessao();         // Fase 3: restaura sessão salva
   inicializarPWA();          // registra SW, detecta APIs e conexão
   inicializarCentralOperacional();
+  atualizarPainelOperacional();
 });
 
 // ============================================================
@@ -386,6 +388,7 @@ function iniciarRelogio() {
     if (el) el.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
     if (linhaAtiva) atualizarContadorTrem();
+    atualizarPainelOperacional();
 
     if (d.getSeconds() === 0) {
       gerarAlertas();
@@ -430,6 +433,12 @@ function popularSelects() {
     document.getElementById('currentStation'),
     document.getElementById('destination')
   ];
+  const ocorrencias = {};
+  for (const dados of Object.values(redesMetro)) {
+    dados.estacoes.forEach(est => {
+      ocorrencias[est] = (ocorrencias[est] || 0) + 1;
+    });
+  }
 
   for (const [nomeLinha, dados] of Object.entries(redesMetro)) {
     const prefixo = dados.tipo === 'cptm' ? '[CPTM] ' : '[Metrô] ';
@@ -439,7 +448,7 @@ function popularSelects() {
       dados.estacoes.forEach(est => {
         const op       = document.createElement('option');
         op.value       = `${nomeLinha}|${est}`;
-        op.textContent = est;
+        op.textContent = ocorrencias[est] > 1 ? `${est} · ${nomeLinha}` : est;
         g.appendChild(op);
       });
       sel.appendChild(g);
@@ -468,6 +477,8 @@ function renderizarSaldo() {
       ? 'linear-gradient(90deg, #ffaa00, #ffcc44)'
       : 'linear-gradient(90deg, var(--neon-blue), var(--neon-cyan))';
   }
+
+  atualizarPainelOperacional();
 }
 
 // ============================================================
@@ -1558,6 +1569,134 @@ async function acaoNFC() {
   pagarPassagem();
 }
 
+// ============================================================
+// DIAGNOSTICO OPERACIONAL GNSS + CATRACA NFC
+// ============================================================
+
+function formatarBRL(valor) {
+  return `R$ ${Number(valor || 0).toFixed(2).replace('.', ',')}`;
+}
+
+function atualizarPainelOperacional() {
+  const saldoEl = document.getElementById('opsNfcBalance');
+  const fareEls = [document.getElementById('opsNfcFare'), document.getElementById('opsFare')];
+  const clock = document.getElementById('opsClock');
+  const status = document.getElementById('opsLineStatus');
+  const time = document.getElementById('opsTripTime');
+  const stops = document.getElementById('opsStops');
+  const transfer = document.getElementById('opsTransfer');
+
+  if (saldoEl) saldoEl.textContent = usuarioAtual ? formatarBRL(saldoAtual) : '--';
+  fareEls.forEach(el => { if (el) el.textContent = formatarBRL(TARIFA); });
+
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  if (clock) clock.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())} · ${estaFuncionando() ? 'em operação' : 'fora de operação'}`;
+  if (status) status.textContent = linhaAtiva || '--';
+  if (time) time.textContent = rotaCalculada ? `~${rotaCalculada.tempo} min` : '--';
+  if (stops) stops.textContent = rotaCalculada ? `${rotaCalculada.paradas}` : '--';
+  if (transfer) {
+    transfer.textContent = rotaCalculada?.transferencias?.length
+      ? rotaCalculada.transferencias.join(', ')
+      : (rotaCalculada ? 'nenhuma' : '--');
+  }
+}
+
+function atualizarDiagnosticoGNSS(pos, estacao, distanciaKm) {
+  const lat = document.getElementById('diagLat');
+  const lng = document.getElementById('diagLng');
+  const acc = document.getElementById('diagAcc');
+  const station = document.getElementById('diagStation');
+  const distance = document.getElementById('diagDistance');
+  if (lat) lat.textContent = pos.coords.latitude.toFixed(6);
+  if (lng) lng.textContent = pos.coords.longitude.toFixed(6);
+  if (acc) acc.textContent = `±${Math.round(pos.coords.accuracy)} m`;
+  if (station) station.textContent = estacao;
+  if (distance) distance.textContent = `${distanciaKm.toFixed(2).replace('.', ',')} km`;
+}
+
+function lerPosicaoDiagnostico() {
+  const status = document.getElementById('diagStation');
+  if (!('geolocation' in navigator)) {
+    if (status) status.textContent = 'GNSS não suportado';
+    exibirAviso('GNSS não suportado neste navegador.');
+    return;
+  }
+
+  if (status) status.textContent = 'lendo GNSS...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      let estacao = '--';
+      let menor = Infinity;
+      for (const [nome, coord] of Object.entries(ESTACOES_GPS)) {
+        const d = haversineKm(latitude, longitude, coord.lat, coord.lng);
+        if (d < menor) {
+          menor = d;
+          estacao = nome;
+        }
+      }
+      atualizarDiagnosticoGNSS(pos, estacao, menor);
+      analisarCoberturaPorCoordenada({
+        nome: `Sua posição GNSS (precisão ±${Math.round(accuracy)} m)`,
+        lat: latitude,
+        lng: longitude,
+        precisaoM: accuracy
+      });
+      exibirAviso(`GNSS: estação mais próxima ${estacao}`);
+    },
+    erro => {
+      if (status) status.textContent = 'permissão negada';
+      exibirAviso(`GNSS indisponível: ${erro.message}`);
+    },
+    { enableHighAccuracy: true, timeout: 12000 }
+  );
+}
+
+function registrarValidacaoDiagnostico(ok, texto) {
+  const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  validacoesNfcDiagnostico.unshift({ ok, texto, hora: agora });
+  validacoesNfcDiagnostico = validacoesNfcDiagnostico.slice(0, 4);
+
+  const status = document.getElementById('opsNfcStatus');
+  const history = document.getElementById('opsNfcHistory');
+  if (status) {
+    status.textContent = texto;
+    status.className = `nfc-reader-status ${ok ? 'ok' : 'fail'}`;
+  }
+  if (history) {
+    history.innerHTML = validacoesNfcDiagnostico
+      .map(item => `<div class="${item.ok ? 'ok' : 'fail'}"><span>${item.hora}</span>${item.texto}</div>`)
+      .join('');
+  }
+}
+
+function simularCatracaDiagnostico() {
+  atualizarPainelOperacional();
+  if (!usuarioAtual) {
+    registrarValidacaoDiagnostico(false, 'Faça login antes de validar.');
+    exibirAviso('Faça login para validar a catraca NFC.');
+    return;
+  }
+  if (!rotaCalculada) {
+    registrarValidacaoDiagnostico(false, 'Calcule uma rota antes de aproximar.');
+    exibirAviso('Calcule uma rota antes de validar NFC.');
+    return;
+  }
+  if (saldoAtual < TARIFA) {
+    registrarValidacaoDiagnostico(false, `Saldo insuficiente: ${formatarBRL(saldoAtual)}`);
+    pagarPassagem();
+    atualizarPainelOperacional();
+    return;
+  }
+
+  const origem = rotaCalculada.origem || 'origem';
+  const destino = rotaCalculada.destino || 'destino';
+  pagarPassagem();
+  registrarValidacaoDiagnostico(true, `Validado: ${origem} → ${destino}`);
+  atualizarPainelOperacional();
+}
+
 // 🔔 Notificar — pede permissão e envia notificação de teste
 async function acaoNotificar() {
   vibrar(VIBRACOES.notificacao);
@@ -1918,14 +2057,14 @@ function criarHistoricoDemo(email) {
   const hoje = new Date();
 
   const VIAGENS_DEMO = [
-    { hora: '08:32', origem: 'Vila Madalena',  destino: 'Paraíso',       linhas: ['Linha 2 - Verde'],    distancia: '3.6', tempo: 11, valor: 4.40 },
-    { hora: '18:48', origem: 'Paraíso',         destino: 'Consolação',    linhas: ['Linha 2 - Verde'],    distancia: '2.4', tempo: 8,  valor: 4.40 },
-    { hora: '07:55', origem: 'Sé',              destino: 'Tatuapé',       linhas: ['Linha 3 - Vermelha'], distancia: '6.0', tempo: 18, valor: 4.40 },
-    { hora: '19:20', origem: 'Tatuapé',         destino: 'República',     linhas: ['Linha 3 - Vermelha'], distancia: '4.8', tempo: 15, valor: 4.40 },
-    { hora: '09:10', origem: 'Luz',             destino: 'Paulista',      linhas: ['Linha 4 - Amarela'],  distancia: '3.6', tempo: 11, valor: 4.40 },
-    { hora: '20:05', origem: 'Pinheiros',       destino: 'Santo Amaro',   linhas: ['Linha 9 - Esmeralda'],distancia: '8.4', tempo: 25, valor: 4.40 },
-    { hora: '08:12', origem: 'Santana',         destino: 'Ana Rosa',      linhas: ['Linha 1 - Azul'],     distancia: '13.2',tempo: 40, valor: 4.40 },
-    { hora: '17:55', origem: 'Ana Rosa',        destino: 'Santana',       linhas: ['Linha 1 - Azul'],     distancia: '13.2',tempo: 40, valor: 4.40 }
+    { hora: '08:32', origem: 'Vila Madalena',  destino: 'Paraíso',       linhas: ['Linha 2 - Verde'],    distancia: '3.6', tempo: 11, valor: 5.40 },
+    { hora: '18:48', origem: 'Paraíso',         destino: 'Consolação',    linhas: ['Linha 2 - Verde'],    distancia: '2.4', tempo: 8,  valor: 5.40 },
+    { hora: '07:55', origem: 'Sé',              destino: 'Tatuapé',       linhas: ['Linha 3 - Vermelha'], distancia: '6.0', tempo: 18, valor: 5.40 },
+    { hora: '19:20', origem: 'Tatuapé',         destino: 'República',     linhas: ['Linha 3 - Vermelha'], distancia: '4.8', tempo: 15, valor: 5.40 },
+    { hora: '09:10', origem: 'Luz',             destino: 'Paulista',      linhas: ['Linha 4 - Amarela'],  distancia: '3.6', tempo: 11, valor: 5.40 },
+    { hora: '20:05', origem: 'Pinheiros',       destino: 'Santo Amaro',   linhas: ['Linha 9 - Esmeralda'],distancia: '8.4', tempo: 25, valor: 5.40 },
+    { hora: '08:12', origem: 'Santana',         destino: 'Ana Rosa',      linhas: ['Linha 1 - Azul'],     distancia: '13.2',tempo: 40, valor: 5.40 },
+    { hora: '17:55', origem: 'Ana Rosa',        destino: 'Santana',       linhas: ['Linha 1 - Azul'],     distancia: '13.2',tempo: 40, valor: 5.40 }
   ];
 
   VIAGENS_DEMO.forEach((v, i) => {
@@ -2397,6 +2536,7 @@ function exibirRota(rota) {
   }
 
   renderizarRotaVisual(rota);
+  atualizarPainelOperacional();
   painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

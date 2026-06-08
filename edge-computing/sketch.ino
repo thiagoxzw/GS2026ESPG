@@ -45,7 +45,7 @@ const float RAIO_TERRA_KM = 6371.0;
 const float RAIO_CHEGADA_KM = 0.25;
 const unsigned long INTERVALO_LEITURA_MS = 1100;
 
-const int TARIFA_CENTAVOS = 440;
+const int TARIFA_CENTAVOS = 540;
 int saldoCentavos = 920;
 
 struct Estacao {

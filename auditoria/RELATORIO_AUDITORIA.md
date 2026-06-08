@@ -10,7 +10,7 @@
 | Categoria geral | Status | Evidencia | Observacao |
 |---|---:|---|---|
 | Problema real identificado | PASS | `software-total-experience/Software_TXD_HoloPass.docx` | Mobilidade, seguranca, dependencia de celular e acesso desigual |
-| Solucao tecnologica coerente | PASS | `index.html`, `script.js`, `edge-computing/sketch.ino` | Pulseira NFC/GNSS + PWA + Edge + Python |
+| Solucao tecnologica coerente | PASS | `index.html`, `script.js`, `edge-computing/sketch.ino` | Pulseira NFC/GNSS + painel operacional + PWA + Edge + Python |
 | Conexao com Industria Espacial | PASS | `modelo_gnss.py`, camada GNSS do app | GNSS, Haversine, FSPL e contexto de Observacao da Terra |
 | Integracao entre disciplinas | PASS | `software-total-experience/HoloPass_Software_TX.pdf` | Todas as entregas defendem o mesmo produto |
 | Viabilidade tecnica | PASS | `edge-computing/README.md`, `diagram.json` | Simulacoes rotuladas; circuito educacional mais completo |
@@ -39,7 +39,7 @@
 | Computational Thinking | Dependencias | PASS | somente bibliotecas nativas | 0 |
 | Web Development | JS puro, sem frameworks | PASS | `script.js`, `webdev.js` | 0 |
 | Web Development | Slideshow, quiz, temas, forms | PASS | `webdev.js`, sintaxe OK | 0 |
-| Web Development | Rotas, NFC, GNSS e PWA | PASS | rota critica, API real e SW v7.6 | 0 |
+| Web Development | Rotas, NFC, GNSS e PWA | PASS | rota critica, API real e SW v7.7 | 0 |
 | Web Development | GitHub/commits/Org | PARCIAL externo | remoto existe; Org depende da turma | variavel |
 | DPS | Funcoes, graficos e relatorio | PASS | `modelo_gnss.py`, PDF e 4 graficos SVG | 0 |
 
@@ -48,15 +48,17 @@
 | Componente | Cenario | Resultado | Evidencia |
 |---|---|---:|---|
 | JS app | Sintaxe | OK | `node --check script.js`, `webdev.js`, `sw.js` sem erro |
-| App web | HTTP local | OK | `/`, CSS, JS, landing, design e PNG retornaram HTTP 200 |
+| App web | HTTP local | OK | `/`, CSS, JS, landing e assets retornaram HTTP 200 |
+| App web | Painel operacional | OK | Edge headless: sem erros; painel GNSS/NFC presente; painel anterior ausente |
 | App web | Assets locais | OK | imagens com `alt`, ancoras e recursos locais existentes |
 | Rota critica | Osasco -> Trianon-MASP | OK | Linha 9 -> Linha 4 -> Linha 2; `21.1 km`; 2 transferencias |
+| Tarifa | Trem/metro | OK | app, CT e Edge usam `R$ 5,40` |
 | Proximo trem | ViaMobilidade real | OK | `L9/OSA` retornou HTTP 200 e `proximo_em` real |
 | Status linha | ARTESP/CCM | OK | API publica retornou HTTP 200 e timestamp `2026-06-08` |
 | Cobertura urbana | Overpass | PARCIAL | instancia principal limitou/504 em teste; app tenta alternativa e fallback |
 | Cobertura urbana | GTFS SPTrans | OK | asset gerado com 22.086 paradas; Trianon encontrou 31 paradas em 800 m |
 | Edge | Compilacao Arduino UNO | OK | `Sketch uses 9242 bytes (28%)`; RAM `399 bytes (19%)` |
-| CT Python | Invalidos, recarga, viagem e historico | OK | execucao automatizada concluiu com exit 0 |
+| CT Python | Rede de estacoes | OK | 154 entradas de estacao/linha no menu; rota Se -> Paulista = 13 min |
 | DPS Python | Execucao e graficos | OK | fallback interno gerou `grafico_1` a `grafico_4` SVG |
 | Word/TXD | Geracao DOCX/PDF | OK | `gerar_word_txd.py` e `gerar_pdfs.py` executaram |
 | Word/TXD | Render visual DOCX | BLOQUEADO | renderizador falhou por conversor externo ausente |
@@ -65,7 +67,7 @@
 
 | Antes | Depois | Motivo |
 |---|---|---|
-| Design descartavel/ausente | Design da pulseira restaurado do `design.zip` | Produto fisico mais forte |
+| Vitrine visual anterior da pulseira | Painel operacional GNSS + catraca NFC + metricas de viagem | Mais funcional, verificavel e leve |
 | Mapa conceitual sem dado externo | GNSS + Overpass/OSM + GTFS SPTrans + Haversine | Priorizar areas com dados consultaveis |
 | Proximo trem estimado | API publica ViaMobilidade quando coberta | Informacao mais segura |
 | Parser de status simples | Parser do formato real ARTESP `empresas[].linhas[]` | Compatibilidade com API oficial |

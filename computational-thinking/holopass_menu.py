@@ -1,114 +1,280 @@
 # -*- coding: utf-8 -*-
 """
-HoloPass — Sistema em Python (menu de terminal)
-Disciplina: Computational Thinking with Python — Global Solution 2026
-Indústria Espacial · Engenharia de Software · 1º Ano · FIAP
+HoloPass - Sistema em Python (menu de terminal)
+Disciplina: Computational Thinking with Python - Global Solution 2026
+Industria Espacial - Engenharia de Software - 1o Ano - FIAP
 
-Programa interativo, em arquivo único, com menu que volta ao início após
-cada opção. Demonstra os conceitos do 1º semestre:
-  - Estruturas de decisão: if / elif / else e match-case
-  - Estruturas de repetição: while e for
-  - Sequências: listas (list) e strings (str)
-  - Subalgoritmos: funções com passagem de parâmetros e retorno
-  - Usabilidade: formatação de dados, formato de entrada/saída claro e
-    validação das entradas do usuário.
+Programa interativo, em arquivo unico, com menu que volta ao inicio apos
+cada opcao. Demonstra os conceitos do 1o semestre:
+  - Estruturas de decisao: if / elif / else e match-case
+  - Estruturas de repeticao: while e for
+  - Sequencias: listas (list) e strings (str)
+  - Subalgoritmos: funcoes com passagem de parametros e retorno
+  - Usabilidade: formatacao de dados e validacao das entradas.
 """
 
 import math
 import sys
+
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except AttributeError:
     pass
 
+
 # ============================================================
 # DADOS DO SISTEMA
 # ============================================================
 
-# Coordenadas reais (lat, lon) de estações de SP — as mesmas do app HoloPass.
-ESTACOES = [
-    {"nome": "Luz",       "linha": "Linha 1 - Azul",      "lat": -23.5345, "lon": -46.6356},
-    {"nome": "Sé",        "linha": "Linha 1 - Azul",      "lat": -23.5505, "lon": -46.6333},
-    {"nome": "Liberdade", "linha": "Linha 1 - Azul",      "lat": -23.5588, "lon": -46.6336},
-    {"nome": "Paraíso",   "linha": "Linha 2 - Verde",     "lat": -23.5736, "lon": -46.6403},
-    {"nome": "República", "linha": "Linha 3 - Vermelha",  "lat": -23.5436, "lon": -46.6428},
-    {"nome": "Brás",      "linha": "Linha 3 - Vermelha",  "lat": -23.5446, "lon": -46.6175},
-    {"nome": "Tatuapé",   "linha": "Linha 3 - Vermelha",  "lat": -23.5410, "lon": -46.5775},
-    {"nome": "Paulista",  "linha": "Linha 4 - Amarela",   "lat": -23.5546, "lon": -46.6620},
+REDE = {
+    "Linha 1 - Azul": [
+        "Tucuruvi", "Parada Inglesa", "Jardim São Paulo",
+        "Portuguesa-Tietê", "Carandiru", "Santana",
+        "Luz", "República", "São Bento", "Sé",
+        "Liberdade", "São Judas", "Saúde",
+        "Praça da Árvore", "Santa Cruz", "Vila Mariana",
+        "Ana Rosa", "Paraíso", "Vergueiro", "Jabaquara",
+    ],
+    "Linha 2 - Verde": [
+        "Vila Madalena", "Sumaré", "Clínicas",
+        "Consolação", "Trianon-MASP", "Brigadeiro",
+        "Paraíso", "Ana Rosa", "Chácara Klabin",
+        "Santos-Imigrantes", "Alto do Ipiranga",
+        "Sacomã", "Tamanduateí", "Vila Prudente",
+    ],
+    "Linha 3 - Vermelha": [
+        "Barra Funda", "Marechal Deodoro", "Santa Cecília",
+        "República", "Anhangabaú", "Sé",
+        "Pedro II", "Brás", "Bresser-Mooca",
+        "Belém", "Tatuapé", "Carrão",
+        "Penha", "Vila Matilde", "Guilhermina-Esperança",
+        "Patriarca", "Artur Alvim", "Corinthians-Itaquera",
+    ],
+    "Linha 4 - Amarela": [
+        "Luz", "Higienópolis-Mackenzie", "República",
+        "Paulista", "Oscar Freire", "Fradique Coutinho",
+        "Pinheiros", "Butantã", "São Paulo-Morumbi", "Vila Sônia",
+    ],
+    "Linha 5 - Lilás": [
+        "Capão Redondo", "Campo Limpo", "Vila das Belezas",
+        "Giovanni Gronchi", "Santo Amaro", "Largo Treze",
+        "Adolfo Pinheiro", "Alto da Boa Vista", "Borba Gato",
+        "Brooklin", "Hospital São Paulo", "Santa Cruz",
+        "Chácara Klabin",
+    ],
+    "Linha 7 - Rubi": [
+        "Luz", "Barra Funda", "Lapa", "Pirituba",
+        "Jaraguá", "Perus", "Caieiras",
+        "Franco da Rocha", "Baltazar Fidélis",
+        "Francisco Morato", "Campo Limpo Paulista",
+        "Várzea Paulista", "Jundiaí",
+    ],
+    "Linha 8 - Diamante": [
+        "Júlio Prestes", "Barra Funda", "Lapa",
+        "Presidente Altino", "Osasco", "Quitaúna",
+        "General Miguel Costa", "Carapicuíba",
+        "Barueri", "Jardim Silveira", "Jandira",
+        "Engenheiro Cardoso", "Itapevi", "Amador Bueno",
+    ],
+    "Linha 9 - Esmeralda": [
+        "Osasco", "Presidente Altino", "Ceasa",
+        "Villa-Lobos-Jaguaré", "Cidade Universitária",
+        "Pinheiros", "Hebraica-Rebouças", "Cidade Jardim",
+        "Vila Olímpia", "Berrini", "Morumbi",
+        "Granja Julieta", "Santo Amaro", "Jurubatuba",
+        "Autódromo", "Primavera-Interlagos", "Grajaú",
+    ],
+    "Linha 10 - Turquesa": [
+        "Brás", "Tamanduateí", "Alto da Mooca",
+        "Utinga", "Prefeito Celso Daniel-Santo André",
+        "Capuava", "Mauá", "Ribeirão Pires",
+        "Rio Grande da Serra",
+    ],
+    "Linha 11 - Coral": [
+        "Luz", "Brás", "Tatuapé",
+        "Penha", "Guilhermina-Esperança", "Patriarca",
+        "Artur Alvim", "Corinthians-Itaquera", "Guaianases",
+        "Ferraz de Vasconcelos", "Poá", "Suzano",
+        "Mogi das Cruzes",
+    ],
+    "Linha 12 - Safira": [
+        "Brás", "São Caetano do Sul", "Prefeito Saladino",
+        "Santo André", "Pirelli", "Mauá",
+        "Guapituba", "Ribeirão Pires",
+        "Ferraz de Vasconcelos", "Calmon Viana",
+    ],
+    "Linha 13 - Jade": [
+        "Engenheiro Goulart", "Guarulhos-Cecap", "Aeroporto Guarulhos",
+    ],
+}
+
+BALDEACOES = {
+    "Sé": ["Linha 1 - Azul", "Linha 3 - Vermelha"],
+    "Paraíso": ["Linha 1 - Azul", "Linha 2 - Verde"],
+    "Ana Rosa": ["Linha 1 - Azul", "Linha 2 - Verde"],
+    "Santa Cruz": ["Linha 1 - Azul", "Linha 5 - Lilás"],
+    "Chácara Klabin": ["Linha 2 - Verde", "Linha 5 - Lilás"],
+    "República": ["Linha 1 - Azul", "Linha 3 - Vermelha", "Linha 4 - Amarela"],
+    "Luz": ["Linha 1 - Azul", "Linha 4 - Amarela", "Linha 7 - Rubi", "Linha 11 - Coral"],
+    "Barra Funda": ["Linha 3 - Vermelha", "Linha 7 - Rubi", "Linha 8 - Diamante"],
+    "Tamanduateí": ["Linha 2 - Verde", "Linha 10 - Turquesa"],
+    "Brás": ["Linha 3 - Vermelha", "Linha 10 - Turquesa", "Linha 11 - Coral", "Linha 12 - Safira"],
+    "Tatuapé": ["Linha 3 - Vermelha", "Linha 11 - Coral"],
+    "Santo Amaro": ["Linha 5 - Lilás", "Linha 9 - Esmeralda"],
+    "Osasco": ["Linha 8 - Diamante", "Linha 9 - Esmeralda"],
+    "Lapa": ["Linha 7 - Rubi", "Linha 8 - Diamante"],
+}
+
+TRANSFERENCIAS_CORREDOR = [
+    {
+        "nome": "Pinheiros",
+        "a": ("Linha 4 - Amarela", "Pinheiros"),
+        "b": ("Linha 9 - Esmeralda", "Pinheiros"),
+        "tempo": 4,
+        "distancia": 0.35,
+    },
+    {
+        "nome": "Paulista/Consolação",
+        "a": ("Linha 4 - Amarela", "Paulista"),
+        "b": ("Linha 2 - Verde", "Consolação"),
+        "tempo": 6,
+        "distancia": 0.55,
+    },
 ]
 
-TARIFA = 4.40            # valor da passagem (R$)
-KM_POR_ESTACAO = 1.2     # distância média entre estações
-VELOCIDADE = 35.0        # km/h média do trem
-RAIO_TERRA_KM = 6371.0   # raio médio da Terra
+KM_OPERACIONAL_LINHA = {
+    "Linha 1 - Azul": 1.12,
+    "Linha 2 - Verde": 1.05,
+    "Linha 3 - Vermelha": 1.18,
+    "Linha 4 - Amarela": 1.40,
+    "Linha 5 - Lilás": 1.30,
+    "Linha 7 - Rubi": 2.45,
+    "Linha 8 - Diamante": 2.25,
+    "Linha 9 - Esmeralda": 3.00,
+    "Linha 10 - Turquesa": 2.35,
+    "Linha 11 - Coral": 2.55,
+    "Linha 12 - Safira": 2.25,
+    "Linha 13 - Jade": 3.20,
+}
 
-# Estado em memória: saldo da pulseira e histórico de viagens (lista de dicts).
+# Coordenadas usadas no prototipo GNSS. A selecao de rota usa a rede completa.
+COORDENADAS_GNSS = {
+    "Tucuruvi": (-23.4810, -46.6024),
+    "Santana": (-23.5048, -46.6275),
+    "Luz": (-23.5345, -46.6356),
+    "Sé": (-23.5505, -46.6333),
+    "Liberdade": (-23.5588, -46.6336),
+    "Paraíso": (-23.5736, -46.6403),
+    "Ana Rosa": (-23.5797, -46.6377),
+    "Jabaquara": (-23.6463, -46.6411),
+    "Vila Madalena": (-23.5469, -46.6912),
+    "Consolação": (-23.5563, -46.6597),
+    "Trianon-MASP": (-23.5614, -46.6557),
+    "Brigadeiro": (-23.5683, -46.6464),
+    "Vila Prudente": (-23.5832, -46.5818),
+    "Barra Funda": (-23.5269, -46.6657),
+    "República": (-23.5436, -46.6428),
+    "Brás": (-23.5446, -46.6175),
+    "Tatuapé": (-23.5410, -46.5775),
+    "Corinthians-Itaquera": (-23.5402, -46.4731),
+    "Paulista": (-23.5546, -46.6620),
+    "Butantã": (-23.5715, -46.7079),
+    "Capão Redondo": (-23.6720, -46.7766),
+    "Santo Amaro": (-23.6541, -46.7081),
+    "Chácara Klabin": (-23.6047, -46.6309),
+    "Pinheiros": (-23.5670, -46.7016),
+    "Cidade Universitária": (-23.5576, -46.7134),
+    "Villa-Lobos-Jaguaré": (-23.5463, -46.7313),
+    "Ceasa": (-23.5375, -46.7429),
+    "Presidente Altino": (-23.5316, -46.7749),
+    "Berrini": (-23.5969, -46.6900),
+    "Osasco": (-23.5329, -46.7918),
+    "Aeroporto Guarulhos": (-23.4356, -46.4731),
+}
+
+TARIFA = 5.40
+VELOCIDADE = 35.0
+PAUSA_ESTACAO = 0.5
+RAIO_TERRA_KM = 6371.0
+
 saldo = 45.50
-historico = []  # cada item: {"origem": str, "destino": str, "tarifa": float, "tempo": int}
+historico = []
 
 
 # ============================================================
-# FUNÇÕES UTILITÁRIAS (validação e usabilidade)
+# FUNCOES UTILITARIAS
 # ============================================================
 
-def linha(caractere="=", tamanho=56):
-    """Imprime uma linha separadora."""
+def linha(caractere="=", tamanho=64):
     print(caractere * tamanho)
 
 
 def brl(valor):
-    """Formata um número como moeda brasileira (ex.: 4.4 -> 'R$ 4,40')."""
     return f"R$ {valor:.2f}".replace(".", ",")
 
 
 def ler_inteiro(mensagem, minimo=None, maximo=None):
-    """Lê um inteiro do usuário, validando faixa. Repete até ser válido."""
     while True:
         entrada = input(mensagem).strip()
         if not entrada.lstrip("-").isdigit():
-            print("  ⚠ Digite um número inteiro válido (ex.: 3).")
+            print("  ! Digite um numero inteiro valido (ex.: 3).")
             continue
         valor = int(entrada)
         if minimo is not None and valor < minimo:
-            print(f"  ⚠ O valor mínimo é {minimo}.")
+            print(f"  ! O valor minimo e {minimo}.")
             continue
         if maximo is not None and valor > maximo:
-            print(f"  ⚠ O valor máximo é {maximo}.")
+            print(f"  ! O valor maximo e {maximo}.")
             continue
         return valor
 
 
 def ler_float(mensagem, minimo=None):
-    """Lê um número real (aceita vírgula ou ponto), validando o mínimo."""
     while True:
         entrada = input(mensagem).strip().replace(",", ".")
         try:
             valor = float(entrada)
         except ValueError:
-            print("  ⚠ Digite um número válido (ex.: 20 ou 20,50).")
+            print("  ! Digite um numero valido (ex.: 20 ou 20,50).")
             continue
         if minimo is not None and valor < minimo:
-            print(f"  ⚠ O valor mínimo é {minimo}.")
+            print(f"  ! O valor minimo e {minimo}.")
             continue
         return valor
 
 
+def todas_estacoes_para_menu():
+    opcoes = []
+    for nome_linha, estacoes in REDE.items():
+        for estacao in estacoes:
+            opcoes.append({"linha": nome_linha, "nome": estacao})
+    return opcoes
+
+
 def escolher_estacao(titulo):
-    """Mostra a lista de estações e retorna o dicionário escolhido."""
+    opcoes = todas_estacoes_para_menu()
     print(f"\n{titulo}")
-    for i, est in enumerate(ESTACOES, start=1):
-        print(f"  {i:2d}) {est['nome']:10s} · {est['linha']}")
-    indice = ler_inteiro("  Escolha o número da estação: ", 1, len(ESTACOES))
-    return ESTACOES[indice - 1]
+    linha("-")
+    linha_atual = ""
+    for i, est in enumerate(opcoes, start=1):
+        if est["linha"] != linha_atual:
+            linha_atual = est["linha"]
+            print(f"\n  {linha_atual}")
+        print(f"  {i:3d}) {est['nome']}")
+    indice = ler_inteiro("\n  Escolha o numero da estacao: ", 1, len(opcoes))
+    return opcoes[indice - 1]
 
 
 # ============================================================
-# FUNÇÕES DO MODELO (lógica do HoloPass)
+# FUNCOES DO MODELO
 # ============================================================
+
+def chave(linha_nome, estacao):
+    return f"{linha_nome}|{estacao}"
+
 
 def haversine_km(lat1, lon1, lat2, lon2):
-    """Distância real (km) entre dois pontos da esfera terrestre (GNSS)."""
     d_lat = math.radians(lat2 - lat1)
     d_lon = math.radians(lon2 - lon1)
     a = (math.sin(d_lat / 2) ** 2
@@ -118,73 +284,198 @@ def haversine_km(lat1, lon1, lat2, lon2):
 
 
 def estacao_mais_proxima(lat, lon):
-    """Retorna (estação, distância_km) mais próxima de uma coordenada."""
-    melhor, menor = None, float("inf")
-    for est in ESTACOES:
-        d = haversine_km(lat, lon, est["lat"], est["lon"])
+    melhor_nome, menor = None, float("inf")
+    for nome, coords in COORDENADAS_GNSS.items():
+        d = haversine_km(lat, lon, coords[0], coords[1])
         if d < menor:
-            menor, melhor = d, est
-    return melhor, menor
+            menor = d
+            melhor_nome = nome
+    return melhor_nome, menor
 
 
-def calcular_viagem(origem, destino):
-    """Calcula paradas, distância (km) e tempo (min) entre duas estações."""
-    distancia = haversine_km(origem["lat"], origem["lon"],
-                             destino["lat"], destino["lon"])
-    paradas = max(1, round(distancia / KM_POR_ESTACAO))
-    tempo = round((distancia / VELOCIDADE) * 60 + paradas * 0.5)
-    return paradas, distancia, tempo
+def adicionar_aresta(grafo, origem, destino, dados):
+    if origem not in grafo:
+        grafo[origem] = []
+    grafo[origem].append({"para": destino, **dados})
+
+
+def construir_grafo():
+    grafo = {}
+
+    for nome_linha, estacoes in REDE.items():
+        km = KM_OPERACIONAL_LINHA.get(nome_linha, 1.2)
+        tempo = max(2, round((km / VELOCIDADE) * 60 + PAUSA_ESTACAO))
+        for i in range(len(estacoes) - 1):
+            a = chave(nome_linha, estacoes[i])
+            b = chave(nome_linha, estacoes[i + 1])
+            dados_ab = {"tipo": "trecho", "linha": nome_linha, "km": km, "tempo": tempo, "transferencia": ""}
+            dados_ba = {"tipo": "trecho", "linha": nome_linha, "km": km, "tempo": tempo, "transferencia": ""}
+            adicionar_aresta(grafo, a, b, dados_ab)
+            adicionar_aresta(grafo, b, a, dados_ba)
+
+    for estacao, linhas in BALDEACOES.items():
+        for linha_a in linhas:
+            for linha_b in linhas:
+                if linha_a == linha_b:
+                    continue
+                if estacao in REDE[linha_a] and estacao in REDE[linha_b]:
+                    adicionar_aresta(grafo, chave(linha_a, estacao), chave(linha_b, estacao), {
+                        "tipo": "transferencia",
+                        "linha": linha_b,
+                        "km": 0.15,
+                        "tempo": 4,
+                        "transferencia": estacao,
+                    })
+
+    for corredor in TRANSFERENCIAS_CORREDOR:
+        linha_a, est_a = corredor["a"]
+        linha_b, est_b = corredor["b"]
+        adicionar_aresta(grafo, chave(linha_a, est_a), chave(linha_b, est_b), {
+            "tipo": "transferencia",
+            "linha": linha_b,
+            "km": corredor["distancia"],
+            "tempo": corredor["tempo"],
+            "transferencia": corredor["nome"],
+        })
+        adicionar_aresta(grafo, chave(linha_b, est_b), chave(linha_a, est_a), {
+            "tipo": "transferencia",
+            "linha": linha_a,
+            "km": corredor["distancia"],
+            "tempo": corredor["tempo"],
+            "transferencia": corredor["nome"],
+        })
+
+    return grafo
+
+
+def calcular_rota(origem, destino):
+    origem_no = chave(origem["linha"], origem["nome"])
+    destino_no = chave(destino["linha"], destino["nome"])
+    grafo = construir_grafo()
+    dist = {origem_no: 0}
+    anterior = {}
+    fila = [{"no": origem_no, "custo": 0}]
+
+    while fila:
+        fila.sort(key=lambda item: item["custo"])
+        atual = fila.pop(0)
+        if atual["custo"] != dist.get(atual["no"]):
+            continue
+        if atual["no"] == destino_no:
+            break
+
+        for aresta in grafo.get(atual["no"], []):
+            penalidade = 8 if aresta["tipo"] == "transferencia" else 0
+            novo_custo = atual["custo"] + aresta["tempo"] + penalidade
+            if novo_custo < dist.get(aresta["para"], float("inf")):
+                dist[aresta["para"]] = novo_custo
+                anterior[aresta["para"]] = {"de": atual["no"], "aresta": aresta}
+                fila.append({"no": aresta["para"], "custo": novo_custo})
+
+    if destino_no not in dist:
+        return None
+
+    passos = []
+    cursor = destino_no
+    while cursor != origem_no:
+        item = anterior.get(cursor)
+        if item is None:
+            return None
+        passos.insert(0, {"de": item["de"], "para": cursor, "aresta": item["aresta"]})
+        cursor = item["de"]
+
+    estacoes = [origem["nome"]]
+    linhas = [origem["linha"]]
+    transferencias = []
+    distancia = 0.0
+    tempo = 0
+    paradas = 0
+
+    for passo in passos:
+        _, estacao_destino = passo["para"].split("|", 1)
+        aresta = passo["aresta"]
+        distancia += aresta["km"]
+        tempo += aresta["tempo"]
+        if aresta["tipo"] == "transferencia":
+            if aresta["transferencia"] and aresta["transferencia"] not in transferencias:
+                transferencias.append(aresta["transferencia"])
+            if aresta["linha"] not in linhas:
+                linhas.append(aresta["linha"])
+        else:
+            paradas += 1
+        if estacoes[-1] != estacao_destino:
+            estacoes.append(estacao_destino)
+
+    return {
+        "linhas": linhas,
+        "estacoes": estacoes,
+        "transferencias": transferencias,
+        "paradas": paradas,
+        "distancia": distancia,
+        "tempo": tempo,
+        "tarifa": TARIFA,
+    }
 
 
 # ============================================================
-# OPÇÕES DO MENU
+# OPCOES DO MENU
 # ============================================================
 
 def opcao_descricao():
-    """Opção 1 — descrição textual da solução (até 5 linhas)."""
     linha()
     print("SOBRE O HOLOPASS")
     linha()
-    print("Pulseira inteligente de transporte público que substitui o")
-    print("bilhete/cartão por pagamento NFC e usa posicionamento por")
-    print("satélite (GNSS) para detectar a estação do usuário, calcular a")
-    print("rota e avisar a chegada — tudo sem depender do celular.")
-    print("Tema: Indústria Espacial · ODS 9, 10 e 11.")
+    print("Pulseira inteligente que paga transporte por NFC, usa GNSS")
+    print("para localizar estacoes e calcula rotas com baldeacoes reais.")
+    print("A solucao integra app web, Python, Arduino e modelo matematico.")
+    print("Tema: Industria Espacial; ODS 9, 10 e 11.")
 
 
 def opcao_detectar_estacao():
-    """Opção 2 — detecta a estação mais próxima a partir de uma coordenada."""
     linha()
-    print("DETECÇÃO DE ESTAÇÃO POR GNSS (Haversine)")
+    print("DETECCAO DE ESTACAO POR GNSS (Haversine)")
     linha()
-    print("Informe sua posição (graus decimais). Ex.: -23.5505 / -46.6333")
+    print("Informe sua posicao. Exemplo: -23.5505 / -46.6333")
     lat = ler_float("  Latitude:  ")
     lon = ler_float("  Longitude: ")
-    est, dist = estacao_mais_proxima(lat, lon)
-    print(f"\n  🛰️  Estação mais próxima: {est['nome']} ({est['linha']})")
-    print(f"      Distância estimada: {dist:.2f} km")
+    nome, dist = estacao_mais_proxima(lat, lon)
+    print(f"\n  Estacao mais proxima: {nome}")
+    print(f"  Distancia por Haversine: {dist:.2f} km")
+    print("  Observacao: a selecao de rota contem a rede completa;")
+    print("  o GNSS usa as coordenadas cadastradas no prototipo.")
+
+
+def imprimir_rota(rota, origem, destino):
+    print(f"\n  Rota: {origem['nome']} ({origem['linha']}) -> {destino['nome']} ({destino['linha']})")
+    print(f"  Linhas: {' -> '.join(rota['linhas'])}")
+    if rota["transferencias"]:
+        print(f"  Baldeacoes: {', '.join(rota['transferencias'])}")
+    else:
+        print("  Baldeacoes: nenhuma")
+    print(f"  Paradas: {rota['paradas']}")
+    print(f"  Distancia operacional: {rota['distancia']:.1f} km")
+    print(f"  Tempo estimado: ~{rota['tempo']} min")
+    print(f"  Tarifa atual: {brl(rota['tarifa'])}")
+    print(f"  Trecho: {' -> '.join(rota['estacoes'])}")
 
 
 def opcao_calcular_rota():
-    """Opção 3 — calcula rota, tempo e tarifa entre duas estações."""
     linha()
-    print("CÁLCULO DE ROTA, TEMPO E TARIFA")
+    print("CALCULO DE ROTA, TEMPO E TARIFA")
     linha()
-    origem = escolher_estacao("ESTAÇÃO DE ORIGEM:")
-    destino = escolher_estacao("ESTAÇÃO DE DESTINO:")
-    if origem["nome"] == destino["nome"]:
-        print("\n  ⚠ Origem e destino são iguais. Operação cancelada.")
+    origem = escolher_estacao("ESTACAO DE ORIGEM:")
+    destino = escolher_estacao("ESTACAO DE DESTINO:")
+    if origem["linha"] == destino["linha"] and origem["nome"] == destino["nome"]:
+        print("\n  ! Origem e destino sao iguais. Operacao cancelada.")
         return
-    paradas, distancia, tempo = calcular_viagem(origem, destino)
-    print(f"\n  Rota: {origem['nome']} → {destino['nome']}")
-    print(f"  Paradas estimadas: {paradas}")
-    print(f"  Distância:         {distancia:.2f} km")
-    print(f"  Tempo estimado:    ~{tempo} min")
-    print(f"  Tarifa:            {brl(TARIFA)}")
+    rota = calcular_rota(origem, destino)
+    if rota is None:
+        print("\n  ! Nao foi possivel calcular essa rota.")
+        return
+    imprimir_rota(rota, origem, destino)
 
 
 def opcao_recarregar():
-    """Opção 4 — recarrega o saldo e mostra quantas passagens dá."""
     global saldo
     linha()
     print("RECARGA DA PULSEIRA")
@@ -193,60 +484,63 @@ def opcao_recarregar():
     valor = ler_float("  Valor da recarga (R$): ", minimo=0.01)
     saldo += valor
     passagens = int(saldo // TARIFA)
-    print(f"\n  ✓ Recarga de {brl(valor)} confirmada.")
+    print(f"\n  Recarga de {brl(valor)} confirmada.")
     print(f"  Novo saldo: {brl(saldo)}")
-    print(f"  Dá para ~{passagens} passagens de {brl(TARIFA)}")
+    print(f"  Da para ~{passagens} passagens de {brl(TARIFA)}")
 
 
 def opcao_registrar_viagem():
-    """Opção 5 — paga uma viagem (debita saldo) e registra no histórico."""
     global saldo
     linha()
     print("REGISTRAR VIAGEM (pagamento NFC simulado)")
     linha()
     if saldo < TARIFA:
-        print(f"  ⚠ Saldo insuficiente ({brl(saldo)}). Recarregue primeiro.")
+        print(f"  ! Saldo insuficiente ({brl(saldo)}). Recarregue primeiro.")
         return
-    origem = escolher_estacao("ESTAÇÃO DE ORIGEM:")
-    destino = escolher_estacao("ESTAÇÃO DE DESTINO:")
-    if origem["nome"] == destino["nome"]:
-        print("\n  ⚠ Origem e destino são iguais. Operação cancelada.")
+    origem = escolher_estacao("ESTACAO DE ORIGEM:")
+    destino = escolher_estacao("ESTACAO DE DESTINO:")
+    if origem["linha"] == destino["linha"] and origem["nome"] == destino["nome"]:
+        print("\n  ! Origem e destino sao iguais. Operacao cancelada.")
         return
-    _, _, tempo = calcular_viagem(origem, destino)
+    rota = calcular_rota(origem, destino)
+    if rota is None:
+        print("\n  ! Nao foi possivel registrar essa rota.")
+        return
     saldo -= TARIFA
     historico.append({
         "origem": origem["nome"],
         "destino": destino["nome"],
         "tarifa": TARIFA,
-        "tempo": tempo,
+        "tempo": rota["tempo"],
+        "distancia": rota["distancia"],
     })
-    print(f"\n  ✓ Pagamento aprovado. Débito de {brl(TARIFA)}")
+    print(f"\n  Pagamento aprovado. Debito de {brl(TARIFA)}")
     print(f"  Saldo restante: {brl(saldo)}")
     print(f"  Viagem registrada ({len(historico)} no total).")
 
 
 def opcao_relatorio():
-    """Opção 6 — relatório do histórico e estatísticas das viagens."""
     linha()
-    print("HISTÓRICO E ESTATÍSTICAS")
+    print("HISTORICO E ESTATISTICAS")
     linha()
     if not historico:
-        print("  Nenhuma viagem registrada ainda. Use a opção 5.")
+        print("  Nenhuma viagem registrada ainda. Use a opcao 5.")
         return
     total_gasto = 0.0
     tempo_total = 0
-    print(f"  {'#':>2}  {'ORIGEM':12s} {'DESTINO':12s} {'TARIFA':>8s} {'TEMPO':>6s}")
-    print("  " + "-" * 46)
-    for i, v in enumerate(historico, start=1):
-        total_gasto += v["tarifa"]
-        tempo_total += v["tempo"]
-        tarifa_fmt = brl(v["tarifa"])
-        print(f"  {i:>2}  {v['origem']:12s} {v['destino']:12s} {tarifa_fmt:>8s} {v['tempo']:>4d}m")
-    print("  " + "-" * 46)
-    media = total_gasto / len(historico)
-    print(f"  Viagens: {len(historico)} | Gasto total: {brl(total_gasto)}"
-          f" | Tempo total: {tempo_total} min")
-    print(f"  Tarifa média por viagem: {brl(media)}")
+    distancia_total = 0.0
+    print(f"  {'#':>2}  {'ORIGEM':14s} {'DESTINO':14s} {'TARIFA':>8s} {'TEMPO':>6s}")
+    print("  " + "-" * 54)
+    for i, viagem in enumerate(historico, start=1):
+        total_gasto += viagem["tarifa"]
+        tempo_total += viagem["tempo"]
+        distancia_total += viagem["distancia"]
+        print(f"  {i:>2}  {viagem['origem'][:14]:14s} {viagem['destino'][:14]:14s}"
+              f" {brl(viagem['tarifa']):>8s} {viagem['tempo']:>4d}m")
+    print("  " + "-" * 54)
+    print(f"  Viagens: {len(historico)} | Gasto total: {brl(total_gasto)}")
+    print(f"  Tempo total: {tempo_total} min | Distancia: {distancia_total:.1f} km")
+    print(f"  Tarifa media por viagem: {brl(total_gasto / len(historico))}")
 
 
 # ============================================================
@@ -254,30 +548,27 @@ def opcao_relatorio():
 # ============================================================
 
 def mostrar_menu():
-    """Imprime o menu principal."""
     print()
-    linha("◈")
-    print("        HOLOPASS — SISTEMA DE TRANSPORTE (Python)")
-    linha("◈")
-    print("  1 - Sobre a solução (descrição)")
-    print("  2 - Detectar estação mais próxima (GNSS)")
+    linha("*")
+    print("        HOLOPASS - SISTEMA DE TRANSPORTE (Python)")
+    linha("*")
+    print("  1 - Sobre a solucao (descricao)")
+    print("  2 - Detectar estacao mais proxima (GNSS)")
     print("  3 - Calcular rota, tempo e tarifa")
     print("  4 - Recarregar saldo da pulseira")
     print("  5 - Registrar viagem (pagamento NFC)")
-    print("  6 - Histórico e estatísticas")
+    print("  6 - Historico e estatisticas")
     print("  0 - Sair")
     print(f"  [ saldo atual: {brl(saldo)} ]")
     linha("-")
 
 
 def main():
-    """Laço principal: mostra o menu e executa a opção até o usuário sair."""
     print("\nBem-vindo ao HoloPass! (Ctrl+C para sair a qualquer momento)")
     while True:
         mostrar_menu()
-        opcao = ler_inteiro("  Escolha uma opção: ", 0, 6)
+        opcao = ler_inteiro("  Escolha uma opcao: ", 0, 6)
 
-        # match-case despacha a opção escolhida
         match opcao:
             case 1:
                 opcao_descricao()
@@ -292,7 +583,7 @@ def main():
             case 6:
                 opcao_relatorio()
             case 0:
-                print("\nObrigado por usar o HoloPass. Boa viagem! 🛰️")
+                print("\nObrigado por usar o HoloPass. Boa viagem!")
                 break
 
         input("\n  (pressione ENTER para voltar ao menu) ")
@@ -302,4 +593,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\nEncerrado pelo usuário. Até logo! 🛰️")
+        print("\n\nEncerrado pelo usuario. Ate logo!")

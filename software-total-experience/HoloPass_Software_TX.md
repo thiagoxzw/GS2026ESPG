@@ -29,22 +29,27 @@ melhora acesso a estudo, trabalho, saude e lazer.
 
 O HoloPass propoe uma pulseira com display, NFC, vibracao e leitura GNSS. O app
 demonstra autenticacao, saldo, recarga, historico, rotas, pagamento, modo
-offline, HoloRoute deterministico e mapa de calor conceitual de areas mal
-atendidas.
+offline, HoloRoute deterministico, proximo trem real quando a API cobre a estacao
+e diagnostico urbano com OpenStreetMap/Overpass e GTFS SPTrans local.
 
-O HoloRoute substitui recursos antigos pouco relevantes por uma decisao explicavel:
+O HoloRoute substitui recursos pouco relevantes por uma decisao explicavel:
 monta a malha metroferroviaria como grafo de estacoes, linhas e corredores de
 transferencia. A rota Osasco -> Trianon-MASP, por exemplo, passa por Linha 9,
 transferencia em Pinheiros para Linha 4, transferencia Paulista/Consolacao para
 Linha 2 e chegada em Trianon-MASP.
 
+No site principal, a antiga vitrine visual foi substituida por um painel
+operacional com diagnostico GNSS real pelo navegador, catraca NFC simulada,
+historico de validacoes e metricas de operacao da viagem.
+
 ## 4. Conexao com a Industria Espacial
 
 A conexao espacial e direta por GNSS: o sistema usa latitude/longitude,
 precisao em metros e Haversine para identificar a estacao mais proxima. A camada
-de Observacao da Terra usa CBERS-4A/Amazonia-1 como referencia conceitual para
-planejamento urbano, sempre rotulada como demonstrativa e sem inventar dado
-satelital real.
+de cobertura urbana usa OpenStreetMap/Overpass para localizar estacoes reais e
+GTFS SPTrans para contar paradas de onibus no raio consultado dentro da cobertura
+municipal de Sao Paulo. CBERS-4A/Amazonia-1 entram como contexto de Observacao
+da Terra, sem inventar imagem satelital real.
 
 ## 5. Arquitetura Integrada
 
@@ -65,10 +70,10 @@ GNSS e NFC no Arduino sao simulados, mas a matematica e as decisoes locais sao
 reais. A pulseira fisica poderia ser prototipada com ESP32/Arduino, modulo
 RFID/NFC, display OLED, motor de vibracao e bateria.
 
-O app web nao depende de frameworks. O PWA pode funcionar offline via service
-worker. O contador de proximo trem e a lotacao sao estimativas locais, nao API
-operacional real. Uma versao de producao precisaria integrar dados oficiais de
-operacao e seguranca de pagamento homologada.
+O app web nao depende de frameworks. O PWA funciona offline via service worker.
+O proximo trem usa API publica da ViaMobilidade em estacoes cobertas; fora disso,
+o sistema mostra fallback documentado. Uma versao de producao precisaria integrar
+dados oficiais, homologacao de pagamento e seguranca embarcada.
 
 ## 7. Impacto e ODS
 

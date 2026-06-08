@@ -293,7 +293,7 @@
           <div class="fare-section">
             <div class="fare-display">
               <span class="fare-label">TARIFA</span>
-              <span class="fare-value" id="fareDisplay">R$ 4,40</span>
+              <span class="fare-value" id="fareDisplay">R$ 5,40</span>
             </div>
             <button class="pay-btn" onclick="pagarPassagem()">
               <span class="nfc-icon">◈</span> APROXIMAR &amp; PAGAR
@@ -467,60 +467,51 @@
     </section>
 
     <!-- ====================================================
-         DESIGN FÍSICO DA PULSEIRA HOLOPASS
+         DIAGNOSTICO OPERACIONAL GNSS + NFC
          ==================================================== -->
-    <section class="prototype-section product-design-section">
-      <div class="proto-panel glass-panel">
-        <div class="proto-header">
-          <div class="panel-title">◈ DESIGN FÍSICO DA PULSEIRA HOLOPASS</div>
-          <div class="proto-subtitle">
-            Pulseira fina, módulo baixo, vidro 2.5D, display próprio, NFC traseiro e vibração para uso real na catraca.
+    <section class="prototype-section ops-diagnostic-section">
+      <div class="ops-diagnostic-grid">
+        <article class="ops-card glass-panel">
+          <div class="ops-title">◈ Diagnóstico GNSS</div>
+          <div class="gnss-diagnostic-layout">
+            <div class="gnss-radar" aria-hidden="true">
+              <span></span>
+            </div>
+            <dl class="ops-kv">
+              <div><dt>Latitude</dt><dd id="diagLat">--</dd></div>
+              <div><dt>Longitude</dt><dd id="diagLng">--</dd></div>
+              <div><dt>Precisão real</dt><dd id="diagAcc">--</dd></div>
+              <div><dt>Estação + próxima</dt><dd id="diagStation">--</dd></div>
+              <div><dt>Distância</dt><dd id="diagDistance">--</dd></div>
+            </dl>
           </div>
-        </div>
+          <button class="ops-action" onclick="lerPosicaoDiagnostico()">LER POSIÇÃO (GNSS REAL)</button>
+          <p class="ops-note">Usa a Geolocation API do navegador. A precisão (±m) é informada pelo aparelho.</p>
+        </article>
 
-        <div class="proto-layout native-design-layout">
-          <div class="native-design-shell">
-            <img
-              class="proto-design-preview"
-              src="design/holopass-band-redesign-preview.png"
-              alt="Design físico da pulseira HoloPass com display integrado, corpo fino e área NFC traseira">
-            <div class="proto-preview-caption">Design local otimizado · referência visual para a pulseira física viável</div>
-            <iframe
-              class="proto-design-frame"
-              src="design/holopass-band-redesign.html"
-              title="Protótipo visual interativo da pulseira HoloPass"
-              loading="lazy"></iframe>
-          </div>
-        </div>
+        <article class="ops-card glass-panel">
+          <div class="ops-title">◈ Catraca NFC (simulada)</div>
+          <dl class="ops-kv compact">
+            <div><dt>Saldo</dt><dd id="opsNfcBalance">--</dd></div>
+            <div><dt>Tarifa</dt><dd id="opsNfcFare">R$ 5,40</dd></div>
+          </dl>
+          <div class="nfc-reader-status" id="opsNfcStatus">Aproxime o pulso para validar.</div>
+          <button class="ops-action" onclick="simularCatracaDiagnostico()">APROXIMAR PULSO</button>
+          <div class="ops-subtitle">Últimas validações</div>
+          <div class="ops-history" id="opsNfcHistory">Nenhuma validação ainda.</div>
+        </article>
 
-        <div class="design-brief design-brief-compact" id="designBrief">
-          <div class="design-notes">
-            <div class="proto-section-title">ARQUITETURA FÍSICA</div>
-            <ul class="design-list">
-              <li><span>Módulo:</span> microcontrolador, display, antena NFC, motor de vibração e bateria em corpo compacto.</li>
-              <li><span>NFC:</span> área traseira voltada para aproximação natural do pulso na catraca.</li>
-              <li><span>GNSS:</span> leitura de posição no dispositivo e diagnóstico de precisão no app.</li>
-            </ul>
+        <article class="ops-card glass-panel">
+          <div class="ops-title">▣ Painel de operação</div>
+          <div class="ops-metrics">
+            <div><span>Horário</span><strong id="opsClock">--</strong></div>
+            <div><span>Status da linha</span><strong id="opsLineStatus">--</strong></div>
+            <div><span>Tempo estimado</span><strong id="opsTripTime">--</strong></div>
+            <div><span>Paradas</span><strong id="opsStops">--</strong></div>
+            <div><span>Baldeação</span><strong id="opsTransfer">--</strong></div>
+            <div><span>Tarifa</span><strong id="opsFare">R$ 5,40</strong></div>
           </div>
-
-          <div class="design-notes">
-            <div class="proto-section-title">POR QUE É VIÁVEL</div>
-            <ul class="design-list">
-              <li><span>Uso real:</span> a pulseira mostra saldo, rota e aviso de chegada sem expor o celular.</li>
-              <li><span>Componentes:</span> display OLED/AMOLED pequeno, módulo NFC/RFID e vibração já existem em protótipos educacionais.</li>
-              <li><span>Entrega:</span> o app demonstra a lógica enquanto o Arduino simula a camada embarcada.</li>
-            </ul>
-          </div>
-
-          <div class="design-notes">
-            <div class="proto-section-title">VALIDAÇÃO</div>
-            <ul class="design-list">
-              <li><span>Acessibilidade:</span> alto contraste, vibração e leitura rápida para passageiros sem smartphone.</li>
-              <li><span>Segurança:</span> menos manuseio do celular em estações lotadas.</li>
-              <li><span>Manutenção:</span> design modular para trocar pulseira, bateria ou módulo eletrônico.</li>
-            </ul>
-          </div>
-        </div>
+        </article>
       </div>
     </section>
 

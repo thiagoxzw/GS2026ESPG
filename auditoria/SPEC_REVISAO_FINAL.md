@@ -19,7 +19,7 @@ estimado.
 
 | Antes | Depois correto | Motivo |
 |---|---|---|
-| Interface futurista sem funcao central | Design fisico viavel da pulseira | Mais aderente a produto real |
+| Vitrine visual sem operacao central | Painel GNSS + NFC + metricas de viagem | Mais funcional, testavel e aderente ao produto |
 | Promessas tecnicas sem evidencia | HoloRoute deterministico | Explicavel, testavel e coerente com JS puro |
 | Rota origem/destino simplificada | Grafo de linhas, estacoes e transferencias | Corrige baldeacoes reais |
 | Distancia reta como viagem | Distancia operacional estimada por trechos | Evita erro de leitura do avaliador |

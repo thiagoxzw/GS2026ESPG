@@ -1,57 +1,57 @@
-﻿# RelatÃ³rio TÃ©cnico - Computational Thinking with Python
+# Relatorio Tecnico - Computational Thinking with Python
 
-**Projeto:** HoloPass - Global Solution 2026 - IndÃºstria Espacial
+**Projeto:** HoloPass - Global Solution 2026 - Industria Espacial
 **Arquivo principal:** `holopass_menu.py`
 **Integrante:** Thiago Souza de Lima - RM 568732
 
 ## 1. Objetivo do programa
 
-O programa apresenta um menu em Python para simular operaÃ§Ãµes essenciais do HoloPass. Ele foi desenvolvido como arquivo Ãºnico, sem bibliotecas externas, para facilitar a correÃ§Ã£o no Portal.
+O programa apresenta um menu em Python para simular operacoes essenciais do HoloPass. Ele foi desenvolvido como arquivo unico, sem bibliotecas externas, para facilitar a correcao no Portal.
 
-A soluÃ§Ã£o conecta transporte pÃºblico e tecnologia espacial ao usar GNSS, Haversine, saldo, recarga e cÃ¡lculo de rota em um fluxo simples de primeiro semestre.
+A solucao conecta transporte publico e tecnologia espacial ao usar GNSS, Haversine, saldo, recarga, NFC e calculo de rota operacional em um fluxo simples de primeiro semestre.
 
 ## 2. Funcionalidades implementadas
 
-O menu possui cinco opÃ§Ãµes principais e retorna ao inÃ­cio apÃ³s cada execuÃ§Ã£o:
+O menu possui seis opcoes funcionais e retorna ao inicio apos cada execucao:
 
-- DescriÃ§Ã£o do projeto em atÃ© cinco linhas.
-- DetecÃ§Ã£o da estaÃ§Ã£o mais prÃ³xima por coordenadas GNSS.
-- SimulaÃ§Ã£o de rota, distÃ¢ncia, tempo e tarifa.
+- Descricao do projeto em ate cinco linhas.
+- Deteccao da estacao mais proxima por coordenadas GNSS.
+- Calculo de rota usando todas as estacoes cadastradas no app web.
+- Calculo de linhas, baldeacoes, distancia operacional, tempo e tarifa.
 - Recarga de saldo.
-- Pagamento NFC simulado com validaÃ§Ã£o de saldo.
+- Pagamento NFC simulado com validacao de saldo.
+- Historico e estatisticas de viagens.
 
-TambÃ©m hÃ¡ opÃ§Ã£o de encerrar o programa com mensagem final.
+## 3. Requisitos obrigatorios atendidos
 
-## 3. Requisitos obrigatÃ³rios atendidos
+- **if/elif/else:** usado para validacao, saldo e origem/destino iguais.
+- **match-case:** usado no controle principal das opcoes.
+- **while:** mantem o menu ativo e repete entradas invalidas.
+- **for:** percorre linhas, estacoes, arestas do grafo e historico.
+- **listas:** armazenam estacoes, transferencias, fila de busca e historico.
+- **strings:** tratam nomes de linhas, estacoes, mensagens e moeda.
+- **funcoes:** recebem parametros e retornam valores calculados.
+- **validacao:** impede letras em campos numericos e opcoes fora de faixa.
 
-- **if/elif/else:** usado para decisÃµes de menu, validaÃ§Ã£o e pagamento.
-- **match-case:** usado no controle principal das opÃ§Ãµes.
-- **while:** mantÃ©m o menu ativo atÃ© o usuÃ¡rio sair.
-- **for:** percorre listas de estaÃ§Ãµes e histÃ³rico.
-- **listas:** armazenam estaÃ§Ãµes, histÃ³rico e valores de recarga.
-- **strings:** tratam nomes, mensagens e formataÃ§Ã£o monetÃ¡ria.
-- **funÃ§Ãµes:** recebem parÃ¢metros e retornam valores calculados.
-- **validaÃ§Ã£o:** impede entradas vazias, letras em campos numÃ©ricos e opÃ§Ãµes fora de faixa.
+O codigo usa apenas `math` e `sys`, ambas bibliotecas nativas do Python.
 
-O cÃ³digo usa apenas recursos nativos do Python. NÃ£o hÃ¡ dependÃªncia instalada por `pip`.
+## 4. Funcoes principais
 
-## 4. FunÃ§Ãµes principais
+- `haversine_km(lat1, lon1, lat2, lon2)`: retorna distancia real em quilometros para GNSS.
+- `construir_grafo()`: cria trechos de linha, baldeacoes e corredores.
+- `calcular_rota(origem, destino)`: retorna linhas, estacoes, baldeacoes, distancia, tempo e tarifa.
+- `escolher_estacao(titulo)`: lista todas as estacoes e valida a escolha.
+- `brl(valor)`: formata valores no padrao brasileiro.
 
-- `haversine_km(lat1, lon1, lat2, lon2)`: retorna distÃ¢ncia real em quilÃ´metros.
-- `estacao_mais_proxima(lat, lon)`: retorna estaÃ§Ã£o e distÃ¢ncia.
-- `calcular_viagem(origem, destino)`: retorna distÃ¢ncia, tempo, tarifa e paradas.
-- `validar_float(mensagem)`: repete a leitura atÃ© receber nÃºmero vÃ¡lido.
-- `formatar_moeda(valor)`: retorna texto monetÃ¡rio em padrÃ£o brasileiro.
-
-Essas funÃ§Ãµes mantÃªm a lÃ³gica clara e adequada ao escopo da disciplina.
-
-## 5. EvidÃªncias esperadas de execuÃ§Ã£o
+## 5. Evidencias esperadas de execucao
 
 Ao rodar o programa, o avaliador deve observar:
 
-- O menu reaparece apÃ³s cada opÃ§Ã£o.
-- Entradas invÃ¡lidas sÃ£o recusadas e pedidas novamente.
-- Coordenadas de teste retornam a estaÃ§Ã£o mais prÃ³xima por Haversine.
+- O menu reaparece apos cada opcao.
+- Entradas invalidas sao recusadas e pedidas novamente.
+- A opcao de rota lista a rede completa de metro/CPTM cadastrada no projeto.
+- A rota Se -> Paulista passa por baldeacao e nao fica em apenas seis minutos.
+- A tarifa exibida e debitada e R$ 5,40.
 - Recarga altera o saldo.
 - Pagamento NFC aprova com saldo suficiente e nega com saldo insuficiente.
 
@@ -61,12 +61,12 @@ Comando:
 python computational-thinking/holopass_menu.py
 ```
 
-## 6. ObservaÃ§Ãµes para correÃ§Ã£o
+## 6. Observacoes para correcao
 
-O programa evita recursos excessivamente avanÃ§ados para permanecer compreensÃ­vel. NÃ£o usa bibliotecas externas, banco de dados, classes obrigatÃ³rias ou instalaÃ§Ã£o adicional.
+O programa evita dependencias externas e bibliotecas instaladas por `pip`. O algoritmo de rota e implementado com listas, dicionarios, lacos e funcoes, mantendo o codigo compreensivel para primeiro semestre.
 
-O foco estÃ¡ nos pilares da avaliaÃ§Ã£o: decisÃ£o, repetiÃ§Ã£o, listas, strings, funÃ§Ãµes, validaÃ§Ã£o e usabilidade.
+O foco esta nos pilares da avaliacao: decisao, repeticao, listas, strings, funcoes, validacao e usabilidade.
 
-## 7. ConclusÃ£o
+## 7. Conclusao
 
-O protÃ³tipo atende ao pedido de Computational Thinking porque transforma a ideia do HoloPass em uma simulaÃ§Ã£o funcional. Ele mostra como GNSS, saldo, rota e NFC podem ser representados com lÃ³gica estruturada em Python.
+O prototipo atende ao pedido de Computational Thinking porque transforma a ideia do HoloPass em uma simulacao funcional. Ele mostra como GNSS, saldo, rota, baldeacao e NFC podem ser representados com logica estruturada em Python.

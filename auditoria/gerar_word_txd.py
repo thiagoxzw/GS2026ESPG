@@ -11,7 +11,6 @@ from docx.shared import Inches, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "software-total-experience" / "Software_TXD_HoloPass.docx"
-IMG = ROOT / "design" / "holopass-band-redesign-preview.png"
 
 
 BLUE = RGBColor(46, 116, 181)
@@ -242,7 +241,7 @@ def build_doc():
     add_callout(
         doc,
         "Decisao de revisao",
-        "A entrega revisada foca em produto viavel: design fisico restaurado, NFC, GNSS, PWA offline, HoloRoute deterministico, proximo trem real quando a API cobre a estacao e cobertura urbana com OpenStreetMap/Overpass e GTFS SPTrans.",
+        "A entrega revisada foca em produto viavel: diagnostico GNSS real pelo navegador, catraca NFC simulada, PWA offline, HoloRoute deterministico, proximo trem real quando a API cobre a estacao e cobertura urbana com OpenStreetMap/Overpass e GTFS SPTrans.",
     )
 
     add_heading(doc, "1. Sumario Executivo")
@@ -274,14 +273,10 @@ def build_doc():
         doc,
         "O HoloRoute monta a malha como grafo de estacoes, linhas e corredores de transferencia. No caso Osasco -> Trianon-MASP, a rota correta usa Linha 9, transferencia em Pinheiros para Linha 4, transferencia Paulista/Consolacao para Linha 2 e chegada em Trianon-MASP.",
     )
-    if IMG.exists():
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture(str(IMG), width=Inches(5.7))
-        caption = doc.add_paragraph()
-        caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run = caption.add_run("Referencia visual local do design fisico da pulseira HoloPass.")
-        set_run_font(run, size=9, color=MUTED, italic=True)
+    add_body(
+        doc,
+        "No site principal, a antiga vitrine visual foi substituida por um painel operacional com diagnostico GNSS, validacao NFC simulada e metricas de viagem. Isso reforca funcionamento verificavel em vez de uma imagem estatica do produto.",
+    )
 
     add_heading(doc, "4. Conexao com a Industria Espacial")
     add_body(
