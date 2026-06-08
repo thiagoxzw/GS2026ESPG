@@ -813,7 +813,7 @@ body {
 .native-design-shell {
   position: relative;
   width: 100%;
-  min-height: 660px;
+  min-height: 360px;
   border: 1px solid rgba(0,245,255,0.18);
   border-radius: 12px;
   overflow: hidden;
@@ -823,83 +823,13 @@ body {
     0 0 24px rgba(0,245,255,0.08);
 }
 
-.proto-design-iframe {
+.proto-design-preview {
   width: 100%;
-  height: 660px;
   display: block;
-  border: 0;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
   background: #050a18;
-}
-
-/* Canvas 3D */
-.proto-canvas-wrapper {
-  position: relative;
-  min-height: 540px;
-  background:
-    radial-gradient(circle at center, rgba(0,40,90,0.4), rgba(2,11,24,0.95)),
-    repeating-linear-gradient(0deg, transparent 0px, transparent 40px, rgba(0,245,255,0.03) 40px, rgba(0,245,255,0.03) 41px),
-    repeating-linear-gradient(90deg, transparent 0px, transparent 40px, rgba(0,245,255,0.03) 40px, rgba(0,245,255,0.03) 41px);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: grab;
-}
-
-.proto-canvas-wrapper:active {
-  cursor: grabbing;
-}
-
-#proto3dCanvas {
-  width: 100% !important;
-  height: 100% !important;
-  display: block;
-  position: absolute;
-  inset: 0;
-}
-
-.proto-overlay-top,
-.proto-overlay-bottom {
-  position: absolute;
-  background: rgba(2, 11, 24, 0.7);
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.6rem;
-  color: var(--neon-cyan);
-  letter-spacing: 2px;
-  border: 1px solid rgba(0, 245, 255, 0.2);
-  pointer-events: none;
-  backdrop-filter: blur(8px);
-  z-index: 2;
-}
-
-.proto-overlay-top {
-  top: 12px;
-  left: 12px;
-}
-
-.proto-overlay-bottom {
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.55rem;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* Controles e specs */
-.proto-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.proto-section {
-  background: rgba(0,245,255,0.04);
-  border: 1px solid rgba(0,245,255,0.12);
-  border-radius: 10px;
-  padding: 14px;
 }
 
 .proto-section-title {
@@ -910,44 +840,19 @@ body {
   text-shadow: 0 0 8px rgba(0, 245, 255, 0.4);
 }
 
-/* Color picker swatches */
-.color-row {
-  display: flex;
-  gap: 10px;
-  justify-content: space-around;
-}
-
-.color-swatch {
-  width: 44px;
-  height: 44px;
-  border: 2px solid var(--glass-border);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s;
-  padding: 0;
-  position: relative;
-}
-
-.color-swatch:hover {
-  transform: scale(1.1);
-  border-color: rgba(0, 245, 255, 0.6);
-}
-
-.color-swatch.active {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 14px rgba(0,245,255,0.5);
-  transform: scale(1.1);
-}
-
-.color-swatch.active::after {
-  content: '✓';
+.proto-preview-caption {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 1rem;
-  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0,245,255,0.22);
+  border-radius: 6px;
+  background: rgba(2,11,24,0.72);
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  backdrop-filter: blur(10px);
 }
 
 /* Botões do protótipo */
@@ -972,25 +877,6 @@ body {
   background: rgba(0,245,255,0.16);
   border-color: var(--neon-cyan);
   box-shadow: 0 0 10px rgba(0, 245, 255, 0.25);
-}
-
-/* Especificações */
-.spec-row {
-  font-size: 0.68rem;
-  color: var(--text-dim);
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(0,245,255,0.06);
-  letter-spacing: 0.5px;
-}
-
-.spec-row:last-child {
-  border-bottom: none;
-}
-
-.spec-row span {
-  color: var(--neon-cyan);
-  font-weight: bold;
-  margin-right: 6px;
 }
 
 .design-brief {
@@ -1390,17 +1276,8 @@ body {
   .proto-layout {
     grid-template-columns: 1fr;
   }
-  .proto-canvas-wrapper {
-    min-height: 380px;
-  }
   .native-design-shell {
-    min-height: 520px;
-  }
-  .proto-design-iframe {
-    height: 520px;
-  }
-  .proto-overlay-bottom {
-    font-size: 0.5rem;
+    min-height: 240px;
   }
   .design-brief {
     grid-template-columns: 1fr;
