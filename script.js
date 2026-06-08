@@ -837,6 +837,8 @@ function ativarHolograma3D() {
 
 async function iniciarRA() {
   preencherOverlayRA();
+  const overlay = document.getElementById('arOverlay');
+  const statusWebXR = document.getElementById('statusWebXR');
 
   if ('xr' in navigator) {
     try {
@@ -846,14 +848,19 @@ async function iniciarRA() {
           optionalFeatures: ['dom-overlay'],
           domOverlay: { root: document.body }
         });
-        document.getElementById('statusWebXR').textContent = 'Sessão AR ativa';
+        if (statusWebXR) statusWebXR.textContent = 'Sessão AR ativa';
       }
     } catch (erro) {
-      document.getElementById('statusWebXR').textContent = 'RA simulada';
+      if (statusWebXR) statusWebXR.textContent = 'RA simulada';
     }
+  } else if (statusWebXR) {
+    statusWebXR.textContent = 'RA simulada';
   }
 
-  document.getElementById('arOverlay').style.display = 'block';
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+  }
   vibrar(VIBRACOES.notificacao);
 }
 
@@ -876,7 +883,10 @@ function preencherOverlayRA() {
 
 function fecharRA() {
   const overlay = document.getElementById('arOverlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+  }
 
   if (arSessionAtual) {
     arSessionAtual.end().catch(() => {});
