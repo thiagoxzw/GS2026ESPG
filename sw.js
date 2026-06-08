@@ -3,7 +3,7 @@
 // Permite que o app funcione 100% offline e receba notificações
 // ============================================================
 
-const CACHE_NAME = 'holopass-v7.5';
+const CACHE_NAME = 'holopass-v7.6';
 
 // Arquivos que serão guardados em cache para uso offline
 const ARQUIVOS_CACHE = [
@@ -18,6 +18,8 @@ const ARQUIVOS_CACHE = [
   './assets/slide2-nfc.svg',
   './assets/slide3-edge.svg',
   './design/holopass-band-redesign-preview.png',
+  './design/holopass-band-redesign.html',
+  './design/HoloPass Band.html',
   './design/README.md'
 ];
 
@@ -25,7 +27,7 @@ const ARQUIVOS_CACHE = [
 // INSTALAÇÃO — guarda todos os arquivos no cache
 // ============================================================
 self.addEventListener('install', evento => {
-  console.log('[SW] Instalando HoloPass v7.5...');
+  console.log('[SW] Instalando HoloPass v7.6...');
   evento.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {

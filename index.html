@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoloPass — Mobilidade Inteligente por GNSS e NFC</title>
-  <link rel="stylesheet" href="style.css?v=7.5">
+  <link rel="stylesheet" href="style.css?v=7.6">
 
   <!-- ====== PWA META TAGS ====== -->
   <link rel="manifest" href="manifest.json">
@@ -277,8 +277,9 @@
             </div>
             <div class="journey-item">
               <div class="journey-icon">🚆</div>
-              <div class="journey-label">TREM ESTIMADO</div>
+              <div class="journey-label">PRÓXIMO TREM</div>
               <div class="journey-value countdown" id="nextTrainDisplay">-</div>
+              <div class="journey-source" id="nextTrainSource">Fonte: aguardando rota</div>
             </div>
             <div class="journey-item">
               <div class="journey-icon">🚃</div>
@@ -358,7 +359,7 @@
               <span class="dev-icon">🌎</span>
               <div class="dev-info">
                 <div class="dev-name">OBSERVAÇÃO DA TERRA</div>
-                <div class="dev-status" id="statEo">CBERS-4A · INPE · dados públicos</div>
+                <div class="dev-status" id="statEo">GNSS · OSM/Overpass · Haversine</div>
               </div>
             </div>
           </div>
@@ -367,22 +368,35 @@
           </button>
         </div>
 
-        <!-- Demo conceitual da camada de Observação da Terra -->
+        <!-- Cobertura urbana com GNSS + OpenStreetMap/Overpass -->
         <div class="earth-panel glass-panel">
-          <div class="panel-title">🌎 MAPA DE CALOR CONCEITUAL · CBERS-4A / AMAZONIA-1</div>
+          <div class="panel-title">🌎 COBERTURA GNSS REAL · PRIORIDADE DE ESTAÇÕES</div>
           <div class="eo-layout">
-            <div class="eo-map" id="eoHeatmap" role="img" aria-label="Mapa de calor conceitual de áreas mal atendidas por transporte"></div>
+            <div class="eo-map" id="eoHeatmap" role="img" aria-label="Mapa de prioridade de áreas mal atendidas por estações"></div>
             <div class="eo-copy">
-              <div class="eo-badge">DEMO CONCEITUAL · NÃO É DADO SATELITAL REAL</div>
+              <div class="eo-badge">GNSS + OPENSTREETMAP/OVERPASS + HAVERSINE</div>
               <p>
-                O HoloPass cruza a estação detectada por <strong>GNSS</strong> com uma leitura urbana
-                conceitual inspirada em imagens públicas do <strong>INPE</strong>.
+                O HoloPass usa a posição <strong>GNSS real</strong>, busca estações próximas no
+                <strong>OpenStreetMap</strong> e calcula a distância por Haversine.
               </p>
               <p>
-                As manchas indicam prioridade simulada para planejamento: distância até estações,
-                densidade urbana e ausência de integração.
+                O resultado vira uma fila técnica de prioridade para novas conexões, com fonte e
+                horário da consulta visíveis.
               </p>
               <div class="eo-detail" id="eoDetail">Selecione uma região no mapa para ver o diagnóstico.</div>
+              <div class="coverage-grid" aria-live="polite">
+                <div><span>Status</span><strong id="coverageStatus">Aguardando análise</strong></div>
+                <div><span>Mais próxima</span><strong id="coverageNearest">-</strong></div>
+                <div><span>SPTrans GTFS</span><strong id="coverageBus">-</strong></div>
+                <div><span>Prioridade</span><strong id="coveragePriority">-</strong></div>
+              </div>
+              <div class="coverage-actions">
+                <button class="proto-btn" onclick="analisarCoberturaAtual()">ANALISAR MEU GNSS</button>
+                <button class="proto-btn" onclick="analisarCoberturaDemo()">TESTAR AMOSTRA REAL</button>
+              </div>
+              <div class="coverage-source" id="coverageSource">
+                Fonte: OpenStreetMap contributors via Overpass API + GTFS SPTrans local para São Paulo. Dados orbitais/INPE ficam como contexto técnico.
+              </div>
             </div>
           </div>
         </div>
@@ -471,6 +485,11 @@
               src="design/holopass-band-redesign-preview.png"
               alt="Design físico da pulseira HoloPass com display integrado, corpo fino e área NFC traseira">
             <div class="proto-preview-caption">Design local otimizado · referência visual para a pulseira física viável</div>
+            <iframe
+              class="proto-design-frame"
+              src="design/holopass-band-redesign.html"
+              title="Protótipo visual interativo da pulseira HoloPass"
+              loading="lazy"></iframe>
           </div>
         </div>
 
@@ -554,7 +573,7 @@
             <ul class="future-list">
               <li><span>Entrada:</span> posição GNSS do passageiro e distância até estações existentes.</li>
               <li><span>Critério:</span> regiões com maior distância média, baixa cobertura e maior dependência de integração.</li>
-              <li><span>Saída:</span> mapa de calor conceitual para priorizar estudos de construção e conexão.</li>
+              <li><span>Saída:</span> prioridade de cobertura calculada por GNSS, OpenStreetMap/Overpass e Haversine.</li>
               <li><span>Honestidade:</span> a camada é demonstrativa; dados reais exigiriam base pública/operacional validada.</li>
             </ul>
           </article>
@@ -567,7 +586,7 @@
             <div class="step-pill"><span>2</span> Calcula a rota com menor custo operacional, não apenas linha reta.</div>
             <div class="step-pill"><span>3</span> Separa distância GNSS aproximada de distância operacional estimada.</div>
             <div class="step-pill"><span>4</span> Mostra baldeações reais, como Linha 9 → Linha 4 → Linha 2.</div>
-            <div class="step-pill"><span>5</span> Explica risco, lotação e próximo trem como estimativas locais, sem prometer API real.</div>
+            <div class="step-pill"><span>5</span> Explica risco, lotação e próximo trem real quando a API cobre a estação.</div>
             <div class="step-pill"><span>6</span> Mantém histórico no dispositivo para privacidade e funcionamento offline.</div>
           </div>
         </div>
@@ -601,7 +620,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=7.5"></script>
+  <script src="script.js?v=7.6"></script>
   <script src="webdev.js?v=1"></script>
 </body>
 </html>

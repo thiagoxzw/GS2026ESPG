@@ -1,44 +1,72 @@
-# Relatorio de Execucao - Computational Thinking with Python
+﻿# RelatÃ³rio TÃ©cnico - Computational Thinking with Python
 
-**Projeto:** HoloPass  
-**Autor:** Thiago Souza de Lima - RM 568732
+**Projeto:** HoloPass - Global Solution 2026 - IndÃºstria Espacial
+**Arquivo principal:** `holopass_menu.py`
+**Integrante:** Thiago Souza de Lima - RM 568732
 
-## Descricao do Programa
+## 1. Objetivo do programa
 
-O arquivo `holopass_menu.py` implementa um sistema de terminal em arquivo unico. O menu retorna ao inicio apos cada opcao e possui seis funcionalidades: descricao da solucao, deteccao de estacao por GNSS, calculo de rota, recarga, pagamento NFC simulado e historico/estatisticas.
+O programa apresenta um menu em Python para simular operaÃ§Ãµes essenciais do HoloPass. Ele foi desenvolvido como arquivo Ãºnico, sem bibliotecas externas, para facilitar a correÃ§Ã£o no Portal.
 
-## Requisitos Atendidos
+A soluÃ§Ã£o conecta transporte pÃºblico e tecnologia espacial ao usar GNSS, Haversine, saldo, recarga e cÃ¡lculo de rota em um fluxo simples de primeiro semestre.
 
-- Menu com retorno ao inicio apos cada opcao.
-- Mais de cinco itens de menu.
-- Pelo menos quatro prototipos funcionais.
-- Descricao da solucao com ate cinco linhas uteis.
-- Uso de `if/elif/else`, `match-case`, `while`, `for`, listas, strings e funcoes.
-- Funcoes com parametros e retorno, como `haversine_km` e `calcular_viagem`.
-- Validacao de entradas numericas, texto invalido e faixas fora do permitido.
-- Saida em portugues, moeda em reais e mensagens de erro claras.
+## 2. Funcionalidades implementadas
 
-## Evidencia de Execucao
+O menu possui cinco opÃ§Ãµes principais e retorna ao inÃ­cio apÃ³s cada execuÃ§Ã£o:
 
-Comando executado:
+- DescriÃ§Ã£o do projeto em atÃ© cinco linhas.
+- DetecÃ§Ã£o da estaÃ§Ã£o mais prÃ³xima por coordenadas GNSS.
+- SimulaÃ§Ã£o de rota, distÃ¢ncia, tempo e tarifa.
+- Recarga de saldo.
+- Pagamento NFC simulado com validaÃ§Ã£o de saldo.
 
-```powershell
-$inputLines = @('1','','2','abc','-23.5505','-46.6333','','3','1','2','','4','letra','20','','5','1','2','','6','','9','','0')
-$inputLines | python computational-thinking\holopass_menu.py
+TambÃ©m hÃ¡ opÃ§Ã£o de encerrar o programa com mensagem final.
+
+## 3. Requisitos obrigatÃ³rios atendidos
+
+- **if/elif/else:** usado para decisÃµes de menu, validaÃ§Ã£o e pagamento.
+- **match-case:** usado no controle principal das opÃ§Ãµes.
+- **while:** mantÃ©m o menu ativo atÃ© o usuÃ¡rio sair.
+- **for:** percorre listas de estaÃ§Ãµes e histÃ³rico.
+- **listas:** armazenam estaÃ§Ãµes, histÃ³rico e valores de recarga.
+- **strings:** tratam nomes, mensagens e formataÃ§Ã£o monetÃ¡ria.
+- **funÃ§Ãµes:** recebem parÃ¢metros e retornam valores calculados.
+- **validaÃ§Ã£o:** impede entradas vazias, letras em campos numÃ©ricos e opÃ§Ãµes fora de faixa.
+
+O cÃ³digo usa apenas recursos nativos do Python. NÃ£o hÃ¡ dependÃªncia instalada por `pip`.
+
+## 4. FunÃ§Ãµes principais
+
+- `haversine_km(lat1, lon1, lat2, lon2)`: retorna distÃ¢ncia real em quilÃ´metros.
+- `estacao_mais_proxima(lat, lon)`: retorna estaÃ§Ã£o e distÃ¢ncia.
+- `calcular_viagem(origem, destino)`: retorna distÃ¢ncia, tempo, tarifa e paradas.
+- `validar_float(mensagem)`: repete a leitura atÃ© receber nÃºmero vÃ¡lido.
+- `formatar_moeda(valor)`: retorna texto monetÃ¡rio em padrÃ£o brasileiro.
+
+Essas funÃ§Ãµes mantÃªm a lÃ³gica clara e adequada ao escopo da disciplina.
+
+## 5. EvidÃªncias esperadas de execuÃ§Ã£o
+
+Ao rodar o programa, o avaliador deve observar:
+
+- O menu reaparece apÃ³s cada opÃ§Ã£o.
+- Entradas invÃ¡lidas sÃ£o recusadas e pedidas novamente.
+- Coordenadas de teste retornam a estaÃ§Ã£o mais prÃ³xima por Haversine.
+- Recarga altera o saldo.
+- Pagamento NFC aprova com saldo suficiente e nega com saldo insuficiente.
+
+Comando:
+
+```bash
+python computational-thinking/holopass_menu.py
 ```
 
-Resultado observado:
+## 6. ObservaÃ§Ãµes para correÃ§Ã£o
 
-- Opcao 1 exibiu a descricao do HoloPass.
-- Opcao 2 rejeitou `abc` e depois encontrou a estacao Se por Haversine.
-- Opcao 3 calculou rota Luz -> Se com distancia, tempo e tarifa.
-- Opcao 4 rejeitou `letra`, aceitou recarga de R$ 20,00 e atualizou saldo.
-- Opcao 5 registrou viagem com pagamento aprovado.
-- Opcao 6 exibiu historico, gasto total, tempo total e tarifa media.
-- Opcao invalida `9` exibiu limite maximo e retornou ao menu.
-- Opcao `0` encerrou o programa corretamente.
+O programa evita recursos excessivamente avanÃ§ados para permanecer compreensÃ­vel. NÃ£o usa bibliotecas externas, banco de dados, classes obrigatÃ³rias ou instalaÃ§Ã£o adicional.
 
-## Conclusao
+O foco estÃ¡ nos pilares da avaliaÃ§Ã£o: decisÃ£o, repetiÃ§Ã£o, listas, strings, funÃ§Ãµes, validaÃ§Ã£o e usabilidade.
 
-O prototipo de Computational Thinking esta funcional e cobre os conceitos obrigatorios de programacao estruturada do primeiro semestre.
+## 7. ConclusÃ£o
 
+O protÃ³tipo atende ao pedido de Computational Thinking porque transforma a ideia do HoloPass em uma simulaÃ§Ã£o funcional. Ele mostra como GNSS, saldo, rota e NFC podem ser representados com lÃ³gica estruturada em Python.

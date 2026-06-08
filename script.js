@@ -200,6 +200,30 @@ const INTERVALOS = {
   baixo:  { min: 420, max: 600 }
 };
 
+const VIA_MOBILIDADE_API = 'https://apim-proximotrem-prd-brazilsouth-001.azure-api.net/api/v1';
+// Chave publica exposta no front-end oficial do Proximo Trem ViaMobilidade.
+// Nao e segredo de servidor; se a operadora alterar, o app cai no fallback honesto.
+const VIA_MOBILIDADE_PUBLIC_KEY = '2548d4be3b2d460ca596a8e50c82bec9';
+const VIA_MOBILIDADE_ESTACOES = {
+  'Linha 8 - Diamante': { 'Osasco': 'OSA' },
+  'Linha 9 - Esmeralda': {
+    'Osasco': 'OSA',
+    'Presidente Altino': 'PAL',
+    'Pinheiros': 'PIN'
+  }
+};
+const STATUS_LINHAS_API = 'https://ccm.artesp.sp.gov.br/metroferroviario/api/status/';
+const OVERPASS_APIS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+];
+const SPTRANS_GTFS_STOPS_URL = './assets/sptrans-stops.min.json';
+let cacheProximoTrem = null;
+let consultaProximoTremPendente = null;
+let cacheStatusLinha = null;
+let cacheParadasSPTrans = null;
+let ultimaConsultaCobertura = null;
+
 const FUNCIONAMENTO = { inicio: 4.67, fim: 24.0 };
 
 // ============================================================
@@ -485,7 +509,7 @@ function calcularLotacao() {
 }
 
 function segundosProximoTrem(nomeLinha) {
-  // Estimativa local para demonstracao. Nao consome API oficial de operacao.
+  // Fallback local quando a API publica nao cobre a linha/estacao consultada.
   const p     = periodoAtual();
   const seed  = nomeLinha.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const int   = INTERVALOS[p];
@@ -502,15 +526,135 @@ function sugerirVagao() {
   return 'Qualquer vagão';
 }
 
-function atualizarContadorTrem() {
+function codigoLinhaViaMobilidade(nomeLinha) {
+  const match = nomeLinha?.match(/Linha\s+(\d+)/i);
+  return match ? `L${match[1]}` : null;
+}
+
+function codigoEstacaoViaMobilidade(nomeLinha, estacao) {
+  return VIA_MOBILIDADE_ESTACOES[nomeLinha]?.[estacao] || null;
+}
+
+function formatarChegadaTrem(segundos) {
+  if (!Number.isFinite(segundos)) return '-';
+  const seg = Math.max(0, Math.round(segundos));
+  const m = Math.floor(seg / 60);
+  const s = seg % 60;
+  return m > 0 ? `${m}m ${String(s).padStart(2, '0')}s` : `${s}s`;
+}
+
+async function buscarProximoTremReal(nomeLinha, estacao) {
+  const codigoLinha = codigoLinhaViaMobilidade(nomeLinha);
+  const codigoEstacao = codigoEstacaoViaMobilidade(nomeLinha, estacao);
+  if (!codigoLinha || !codigoEstacao) return null;
+
+  const chave = `${codigoLinha}:${codigoEstacao}`;
+  if (cacheProximoTrem?.chave === chave && Date.now() - cacheProximoTrem.ts < 25000) {
+    return cacheProximoTrem.valor;
+  }
+  if (consultaProximoTremPendente?.chave === chave) {
+    return consultaProximoTremPendente.promessa;
+  }
+
+  consultaProximoTremPendente = {
+    chave,
+    promessa: fetch(`${VIA_MOBILIDADE_API}/lines/${codigoLinha}/stations/${codigoEstacao}/next-train`, {
+      headers: {
+        'Accept': 'application/json',
+        'Ocp-Apim-Subscription-Key': VIA_MOBILIDADE_PUBLIC_KEY
+      }
+    })
+      .then(async resposta => {
+        if (!resposta.ok) throw new Error(`API ViaMobilidade HTTP ${resposta.status}`);
+        const dados = await resposta.json();
+        const lista = Array.isArray(dados) ? dados : [];
+        const trem = lista
+          .filter(item => Number.isFinite(Number(item.proximo_em)))
+          .sort((a, b) => Number(a.proximo_em) - Number(b.proximo_em))[0];
+
+        const valor = trem ? {
+          segundos: Number(trem.proximo_em),
+          previsto: trem.hora_previsto_chegada || '',
+          atualizadoEm: trem.atualizado_em || '',
+          status: trem.status || '',
+          linha: codigoLinha,
+          estacao: codigoEstacao
+        } : null;
+        cacheProximoTrem = { chave, ts: Date.now(), valor };
+        return valor;
+      })
+      .finally(() => { consultaProximoTremPendente = null; })
+  };
+
+  return consultaProximoTremPendente.promessa;
+}
+
+async function buscarStatusLinhaOficial(nomeLinha) {
+  const codigo = codigoLinhaViaMobilidade(nomeLinha);
+  if (!codigo) return null;
+  const numeroLinha = codigo.replace('L', '');
+  if (cacheStatusLinha?.codigo === codigo && Date.now() - cacheStatusLinha.ts < 60000) {
+    return cacheStatusLinha.valor;
+  }
+  const resposta = await fetch(STATUS_LINHAS_API, { headers: { 'Accept': 'application/json' } });
+  if (!resposta.ok) throw new Error(`Status oficial HTTP ${resposta.status}`);
+  const dados = await resposta.json();
+  const linhas = Array.isArray(dados)
+    ? dados
+    : (dados.empresas || []).flatMap(empresa => empresa.linhas || []);
+  const item = linhas.find(l => {
+    const codigoItem = String(l.codigo || l.linha || '').replace(/\D/g, '');
+    const nomeItem = String(l.nome || l.linha || '').toLowerCase();
+    return codigoItem === numeroLinha || nomeItem.includes(`linha ${numeroLinha}`);
+  });
+  const valor = item?.status?.situacao || item?.status || item?.situacao || item?.descricao || null;
+  cacheStatusLinha = { codigo, ts: Date.now(), valor };
+  return valor;
+}
+
+function atualizarFonteTrem(texto, tipo = 'neutral') {
+  const el = document.getElementById('nextTrainSource');
+  if (!el) return;
+  el.textContent = texto;
+  el.className = `journey-source ${tipo}`;
+}
+
+async function atualizarContadorTrem() {
   const el = document.getElementById('nextTrainDisplay');
   if (!el || !linhaAtiva) return;
+
+  const estacaoOrigem = rotaCalculada?.origem || document.getElementById('currentStation')?.value?.split('|')[1] || '';
+
+  try {
+    const real = await buscarProximoTremReal(linhaAtiva, estacaoOrigem);
+    if (real) {
+      el.textContent = formatarChegadaTrem(real.segundos);
+      el.style.color = real.segundos < 30 ? 'var(--neon-green)' : 'var(--neon-cyan)';
+      el.style.textShadow = real.segundos < 30 ? '0 0 12px var(--neon-green)' : '';
+      atualizarFonteTrem(
+        `Fonte real: ViaMobilidade Proximo Trem (${real.linha}/${real.estacao}) · chegada ${real.previsto || 'sem hora'} · ${real.status || 'operacao'}`,
+        'real'
+      );
+      return;
+    }
+
+    const status = await buscarStatusLinhaOficial(linhaAtiva);
+    if (status) {
+      el.textContent = 'Sem previsao';
+      el.style.color = 'var(--neon-yellow)';
+      el.style.textShadow = '0 0 12px var(--neon-yellow)';
+      atualizarFonteTrem(`Sem previsao por estacao nessa linha; status oficial: ${status}`, 'fallback');
+      return;
+    }
+  } catch (erro) {
+    atualizarFonteTrem(`Dado real indisponivel agora: ${erro.message}`, 'fallback');
+  }
+
   const seg = segundosProximoTrem(linhaAtiva);
-  const m   = Math.floor(seg / 60);
-  const s   = seg % 60;
-  el.textContent      = m > 0 ? `${m}m ${String(s).padStart(2,'0')}s` : `${s}s`;
+  el.textContent      = formatarChegadaTrem(seg);
   el.style.color      = seg < 30 ? 'var(--neon-green)' : 'var(--neon-cyan)';
   el.style.textShadow = seg < 30 ? '0 0 12px var(--neon-green)' : '';
+  atualizarFonteTrem('Fallback local: estimativa operacional, nao dado oficial em tempo real.', 'fallback');
 }
 
 // ============================================================
@@ -558,29 +702,27 @@ function gerarAlertas() {
 }
 
 // ============================================================
-// CAMADA CONCEITUAL DE OBSERVAÇÃO DA TERRA
+// COBERTURA URBANA COM GNSS + OPENSTREETMAP/OVERPASS
 // ============================================================
 
-const EO_REGIOES = [
+const COBERTURA_AMOSTRAS = [
   {
-    nome: 'Extremo Leste',
-    x: 78, y: 38, intensidade: 86, cor: '#ff3366',
-    diagnostico: 'Alta prioridade: grande distância até estações e integração radial sobrecarregada.'
+    nome: 'Osasco / Linha 9',
+    lat: -23.5329,
+    lng: -46.7919,
+    descricao: 'Regiao servida por trem, usada para validar baixa prioridade perto de estacao.'
   },
   {
-    nome: 'Sul periférico',
-    x: 58, y: 74, intensidade: 72, cor: '#ffaa00',
-    diagnostico: 'Prioridade média-alta: corredores longos e baixa redundância entre trem, metrô e ônibus.'
-  },
-  {
-    nome: 'Noroeste',
-    x: 25, y: 33, intensidade: 61, cor: '#ffd700',
-    diagnostico: 'Prioridade média: boa malha ferroviária, mas grandes bolsões dependem de ônibus.'
+    nome: 'Jardim Angela',
+    lat: -23.7038,
+    lng: -46.7670,
+    descricao: 'Area periferica distante da malha metroferroviaria, candidata a maior prioridade.'
   },
   {
     nome: 'Centro expandido',
-    x: 47, y: 46, intensidade: 28, cor: '#00ff88',
-    diagnostico: 'Baixa prioridade: maior concentração de estações e alternativas de baldeação.'
+    lat: -23.5614,
+    lng: -46.6558,
+    descricao: 'Alta oferta de alternativas, referencia para comparar cobertura.'
   }
 ];
 
@@ -597,40 +739,266 @@ function inicializarMapaEO() {
     <div class="eo-station core"></div>
     <div class="eo-station east"></div>
     <div class="eo-station south"></div>
-    <div class="eo-legend"><span></span> prioridade simulada</div>
+    <div class="eo-legend"><span></span> prioridade por distancia real</div>
   `;
 
-  EO_REGIOES.forEach((regiao, index) => {
+  COBERTURA_AMOSTRAS.forEach((amostra, index) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'eo-hotspot';
-    btn.style.setProperty('--x', `${regiao.x}%`);
-    btn.style.setProperty('--y', `${regiao.y}%`);
-    btn.style.setProperty('--size', `${48 + regiao.intensidade * 0.6}px`);
-    btn.style.setProperty('--hot-color', regiao.cor);
-    btn.setAttribute('aria-label', `${regiao.nome}: prioridade ${regiao.intensidade}`);
-    btn.innerHTML = `<span>${regiao.intensidade}</span>`;
-    btn.addEventListener('click', () => selecionarRegiaoEO(index));
+    btn.style.setProperty('--x', `${[33, 62, 47][index]}%`);
+    btn.style.setProperty('--y', `${[44, 75, 46][index]}%`);
+    btn.style.setProperty('--size', `${[74, 108, 58][index]}px`);
+    btn.style.setProperty('--hot-color', ['#00ff88', '#ff3366', '#ffaa00'][index]);
+    btn.setAttribute('aria-label', `Analisar cobertura: ${amostra.nome}`);
+    btn.innerHTML = `<span>${index + 1}</span>`;
+    btn.addEventListener('click', () => analisarCoberturaPorCoordenada(amostra));
     mapa.appendChild(btn);
   });
 
-  selecionarRegiaoEO(0);
+  detail.innerHTML = `
+    <strong>Cobertura real sob demanda</strong>
+    <span>Use GNSS ou selecione uma amostra.</span>
+    <p>O app consulta estacoes no OpenStreetMap via Overpass e calcula a distancia por Haversine.</p>
+  `;
 }
 
-function selecionarRegiaoEO(index) {
-  const regiao = EO_REGIOES[index];
-  const detail = document.getElementById('eoDetail');
-  if (!regiao || !detail) return;
+function escaparHTML(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
 
-  document.querySelectorAll('.eo-hotspot').forEach((btn, i) => {
-    btn.classList.toggle('active', i === index);
-  });
+async function buscarEstacoesOSM(lat, lng, raioM = 3000) {
+  const query = `
+    [out:json][timeout:20];
+    (
+      node(around:${raioM},${lat},${lng})["railway"~"station|halt|tram_stop"];
+      node(around:${raioM},${lat},${lng})["public_transport"="station"];
+      node(around:${raioM},${lat},${lng})["station"~"subway|train|light_rail"];
+    );
+    out body;
+  `;
+
+  let dados = null;
+  let ultimoErro = null;
+  for (const endpoint of OVERPASS_APIS) {
+    try {
+      const resposta = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!resposta.ok) throw new Error(`Overpass HTTP ${resposta.status}`);
+      dados = await resposta.json();
+      break;
+    } catch (erro) {
+      ultimoErro = erro;
+    }
+  }
+  if (!dados) {
+    const fallback = buscarEstacoesLocaisCobertura(lat, lng, raioM);
+    if (fallback.length) return fallback;
+    throw ultimoErro || new Error('Overpass indisponivel');
+  }
+  const vistos = new Set();
+  const lista = (dados.elements || [])
+    .filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lon))
+    .map(item => {
+      const nome = item.tags?.name || item.tags?.['official_name'] || `OSM ${item.id}`;
+      const chave = `${nome}:${item.lat.toFixed(5)}:${item.lon.toFixed(5)}`;
+      if (vistos.has(chave)) return null;
+      vistos.add(chave);
+      return {
+        nome,
+        lat: item.lat,
+        lng: item.lon,
+        rede: item.tags?.operator || item.tags?.network || 'OSM',
+        tags: item.tags || {}
+      };
+    })
+    .filter(Boolean);
+  lista.fonte = 'OpenStreetMap/Overpass';
+  return lista;
+}
+
+function buscarEstacoesLocaisCobertura(lat, lng, raioM = 3000) {
+  const raioKm = raioM / 1000;
+  const lista = Object.entries(ESTACOES_GPS || {})
+    .map(([nome, coord]) => ({
+      nome,
+      lat: coord.lat,
+      lng: coord.lng,
+      rede: 'Base local HoloPass',
+      tags: { source: 'fallback-local' },
+      distanciaKm: haversineKm(lat, lng, coord.lat, coord.lng)
+    }))
+    .filter(item => item.distanciaKm <= raioKm)
+    .sort((a, b) => a.distanciaKm - b.distanciaKm);
+  lista.fonte = 'Fallback local de estacoes reais cadastradas';
+  return lista;
+}
+
+async function carregarParadasSPTrans() {
+  if (cacheParadasSPTrans) return cacheParadasSPTrans;
+  const resposta = await fetch(SPTRANS_GTFS_STOPS_URL, { headers: { 'Accept': 'application/json' } });
+  if (!resposta.ok) throw new Error(`GTFS SPTrans HTTP ${resposta.status}`);
+  const payload = await resposta.json();
+  cacheParadasSPTrans = {
+    fonte: payload.source || 'SPTrans GTFS',
+    total: payload.total || payload.stops?.length || 0,
+    stops: Array.isArray(payload.stops) ? payload.stops : []
+  };
+  return cacheParadasSPTrans;
+}
+
+async function analisarParadasSPTrans(lat, lng, raioM = 800) {
+  const dados = await carregarParadasSPTrans();
+  const raioKm = raioM / 1000;
+  const latDelta = raioKm / 111;
+  const lngDelta = raioKm / (111 * Math.max(0.25, Math.cos(lat * Math.PI / 180)));
+  const proximas = [];
+
+  for (const parada of dados.stops) {
+    const [nome, pLat, pLng] = parada;
+    if (Math.abs(pLat - lat) > latDelta || Math.abs(pLng - lng) > lngDelta) continue;
+    const distanciaKm = haversineKm(lat, lng, pLat, pLng);
+    if (distanciaKm <= raioKm) proximas.push({ nome, lat: pLat, lng: pLng, distanciaKm });
+  }
+
+  proximas.sort((a, b) => a.distanciaKm - b.distanciaKm);
+  return {
+    fonte: dados.fonte,
+    totalBase: dados.total,
+    quantidade: proximas.length,
+    maisProxima: proximas[0] || null
+  };
+}
+
+function classificarPrioridadeCobertura(distanciaKm, quantidade, precisaoM = 0, paradasOnibus = 0) {
+  if (!Number.isFinite(distanciaKm)) {
+    const potencial = paradasOnibus >= 8 ? '; ha corredor de onibus para alimentar nova conexao' : '';
+    return { nivel: 'CRITICA', cor: '#ff3366', score: 96, mensagem: `nenhuma estacao encontrada no raio de 3 km${potencial}` };
+  }
+
+  const penalidadePrecisao = precisaoM > 80 ? 8 : precisaoM > 35 ? 4 : 0;
+  const integracao = paradasOnibus >= 8 ? 6 : 0;
+  const score = Math.min(100, Math.round(distanciaKm * 34 + Math.max(0, 8 - quantidade) * 4 + penalidadePrecisao + integracao));
+  if (distanciaKm > 2.0) return { nivel: 'CRITICA', cor: '#ff3366', score: Math.max(score, 88), mensagem: 'muito distante da malha existente; boa candidata a estudo de integração' };
+  if (distanciaKm > 1.2) return { nivel: 'ALTA', cor: '#ff6688', score: Math.max(score, 72), mensagem: 'demanda candidata a estudo de nova conexao' };
+  if (distanciaKm > 0.8) return { nivel: 'MEDIA', cor: '#ffaa00', score: Math.max(score, 52), mensagem: 'acesso possivel, mas com caminhada longa' };
+  return { nivel: 'BAIXA', cor: '#00ff88', score: Math.min(score, 38), mensagem: 'boa proximidade com estacao existente' };
+}
+
+function marcarCoberturaNoMapa(resultado) {
+  const mapa = document.getElementById('eoHeatmap');
+  if (!mapa || !resultado) return;
+  mapa.querySelectorAll('.eo-live-marker').forEach(el => el.remove());
+  const marker = document.createElement('div');
+  marker.className = 'eo-live-marker';
+  marker.style.setProperty('--hot-color', resultado.prioridade.cor);
+  marker.innerHTML = `<span>${resultado.prioridade.score}</span>`;
+  mapa.appendChild(marker);
+}
+
+function renderizarResultadoCobertura(resultado) {
+  const detail = document.getElementById('eoDetail');
+  const status = document.getElementById('coverageStatus');
+  const nearest = document.getElementById('coverageNearest');
+  const priority = document.getElementById('coveragePriority');
+  const bus = document.getElementById('coverageBus');
+  const source = document.getElementById('coverageSource');
+  if (!detail) return;
+
+  const dist = Number.isFinite(resultado.distanciaKm)
+    ? `${resultado.distanciaKm.toFixed(2).replace('.', ',')} km`
+    : 'acima de 3 km';
 
   detail.innerHTML = `
-    <strong>${regiao.nome}</strong>
-    <span>Prioridade ${regiao.intensidade}/100</span>
-    <p>${regiao.diagnostico}</p>
+    <strong>${escaparHTML(resultado.nome)}</strong>
+    <span>Prioridade ${resultado.prioridade.nivel} · score ${resultado.prioridade.score}/100</span>
+    <p>Estacao mais proxima: ${escaparHTML(resultado.estacao)} (${dist}). ${escaparHTML(resultado.prioridade.mensagem)}.</p>
   `;
+  if (status) status.textContent = `${resultado.quantidade} estacoes encontradas no raio consultado`;
+  if (nearest) nearest.textContent = `${resultado.estacao} · ${dist}`;
+  if (bus) {
+    const parada = resultado.sptrans?.maisProxima
+      ? `${resultado.sptrans.maisProxima.nome} · ${(resultado.sptrans.maisProxima.distanciaKm * 1000).toFixed(0)} m`
+      : 'Sem parada no raio';
+    bus.textContent = `${resultado.sptrans?.quantidade ?? 0} paradas · ${parada}`;
+  }
+  if (priority) {
+    priority.textContent = `${resultado.prioridade.nivel} (${resultado.prioridade.score}/100)`;
+    priority.style.color = resultado.prioridade.cor;
+  }
+  if (source) source.textContent = `Fonte: ${resultado.fonte || 'GNSS/Overpass OSM'} + ${resultado.sptrans?.fonte || 'SPTrans GTFS'} · Haversine · ${new Date().toLocaleString('pt-BR')}`;
+  marcarCoberturaNoMapa(resultado);
+}
+
+async function analisarCoberturaPorCoordenada(amostra) {
+  const detail = document.getElementById('eoDetail');
+  if (detail) detail.innerHTML = `<strong>Consultando dados reais...</strong><span>${escaparHTML(amostra.nome)}</span><p>Aguarde a resposta do OpenStreetMap/Overpass.</p>`;
+
+  try {
+    const estacoes = await buscarEstacoesOSM(amostra.lat, amostra.lng);
+    const ordenadas = estacoes
+      .map(est => ({ ...est, distanciaKm: haversineKm(amostra.lat, amostra.lng, est.lat, est.lng) }))
+      .sort((a, b) => a.distanciaKm - b.distanciaKm);
+    const maisProxima = ordenadas[0];
+    let sptrans = null;
+    try {
+      sptrans = await analisarParadasSPTrans(amostra.lat, amostra.lng);
+    } catch (erroSPTrans) {
+      sptrans = { quantidade: 0, maisProxima: null, fonte: `SPTrans indisponivel (${erroSPTrans.message})` };
+    }
+
+    const resultado = {
+      nome: amostra.nome,
+      estacao: maisProxima?.nome || 'Nenhuma estacao no raio',
+      distanciaKm: maisProxima?.distanciaKm ?? Infinity,
+      quantidade: ordenadas.length,
+      prioridade: classificarPrioridadeCobertura(maisProxima?.distanciaKm ?? Infinity, ordenadas.length, amostra.precisaoM || 0, sptrans.quantidade),
+      fonte: estacoes.fonte || 'OpenStreetMap/Overpass',
+      sptrans
+    };
+    ultimaConsultaCobertura = resultado;
+    renderizarResultadoCobertura(resultado);
+  } catch (erro) {
+    if (detail) detail.innerHTML = `<strong>Consulta indisponivel</strong><span>${escaparHTML(amostra.nome)}</span><p>${escaparHTML(erro.message)}. Tente novamente com internet.</p>`;
+  }
+}
+
+function analisarCoberturaAtual() {
+  const detail = document.getElementById('eoDetail');
+  if (!('geolocation' in navigator)) {
+    if (detail) detail.innerHTML = '<strong>GNSS nao suportado</strong><span>Use uma amostra do mapa.</span><p>O navegador nao liberou API de localizacao.</p>';
+    return;
+  }
+
+  if (detail) detail.innerHTML = '<strong>Obtendo GNSS...</strong><span>Permita a localizacao no navegador.</span><p>A precisao real do fix sera usada no score.</p>';
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      analisarCoberturaPorCoordenada({
+        nome: `Sua posicao GNSS (precisao ±${Math.round(accuracy)} m)`,
+        lat: latitude,
+        lng: longitude,
+        precisaoM: accuracy
+      });
+    },
+    erro => {
+      if (detail) detail.innerHTML = `<strong>Permissao negada</strong><span>GNSS bloqueado.</span><p>${escaparHTML(erro.message)}. Use uma amostra real do mapa.</p>`;
+    },
+    { enableHighAccuracy: true, timeout: 12000 }
+  );
+}
+
+function analisarCoberturaDemo() {
+  const proxima = COBERTURA_AMOSTRAS[(Date.now() / 1000 | 0) % COBERTURA_AMOSTRAS.length];
+  analisarCoberturaPorCoordenada(proxima);
 }
 
 // ============================================================
@@ -890,8 +1258,12 @@ const ESTACOES_GPS = {
   "Chácara Klabin":   { lat: -23.6047, lng: -46.6309 },
   // CPTM
   "Pinheiros":        { lat: -23.5670, lng: -46.7016 },
+  "Cidade Universitária": { lat: -23.5576, lng: -46.7134 },
+  "Villa-Lobos-Jaguaré":  { lat: -23.5463, lng: -46.7313 },
+  "Ceasa":            { lat: -23.5375, lng: -46.7429 },
+  "Presidente Altino": { lat: -23.5316, lng: -46.7749 },
   "Berrini":          { lat: -23.5969, lng: -46.6900 },
-  "Osasco":           { lat: -23.5320, lng: -46.7716 },
+  "Osasco":           { lat: -23.5329, lng: -46.7918 },
   "Aeroporto Guarulhos": { lat: -23.4356, lng: -46.4731 }
 };
 
@@ -1112,7 +1484,7 @@ function detectarEstacaoMaisProxima() {
           `${estProx} (~${kmAprox} km · ±${precisaoM} m GNSS)`,
           'active'
         );
-        resolve({ estacao: estProx, distancia: kmAprox, precisao: precisaoM });
+        resolve({ estacao: estProx, distancia: kmAprox, precisao: precisaoM, lat, lng });
       },
       erro => {
         atualizarDeviceStatus('Gps', 'Permissão negada', 'unavailable');
@@ -1132,6 +1504,12 @@ async function acaoGPS() {
   try {
     vibrar(VIBRACOES.notificacao);
     const r = await detectarEstacaoMaisProxima();
+    analisarCoberturaPorCoordenada({
+      nome: `Sua posicao GNSS (precisao ±${r.precisao} m)`,
+      lat: r.lat,
+      lng: r.lng,
+      precisaoM: r.precisao
+    });
 
     // Tenta selecionar essa estação no select de origem
     const select = document.getElementById('currentStation');
@@ -1280,6 +1658,7 @@ async function testarTodosRecursos() {
 
   // Detecta GPS (silenciosamente — só atualiza painel)
   try { await detectarEstacaoMaisProxima(); } catch (e) {}
+  try { await analisarCoberturaPorCoordenada(COBERTURA_AMOSTRAS[0]); } catch (e) {}
 
   setTimeout(() => {
     notificar('Teste concluído', 'Veja o painel para ver quais recursos estão ativos no seu dispositivo!');

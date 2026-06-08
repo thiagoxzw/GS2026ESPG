@@ -6,14 +6,15 @@ HoloPass usada no app principal.
 ## Arquivos
 
 - `holopass-band-redesign-preview.png`: imagem local exibida no app web.
+- `holopass-band-redesign.html`: prototipo visual interativo do design novo.
+- `HoloPass Band.html`: versao original enviada como referencia de comparacao.
 
 ## Decisao de produto
 
-O HoloPass foi simplificado para focar no que melhora a nota e a viabilidade:
-uma pulseira realista com display proprio, antena NFC, vibracao, bateria e
-processamento embarcado. A antiga experiencia visual futurista foi removida da entrega
-principal porque nao era requisito obrigatorio e aumentava risco de desempenho,
-links externos e manutencao.
+O HoloPass usa a pulseira redesenhada como referencia principal do produto:
+modulo baixo, display proprio, antena NFC, vibracao, bateria e processamento
+embarcado. A imagem local e a evidencia principal; o HTML interativo fica como
+complemento visual para demonstrar forma, acabamento e proporcao.
 
 ## Diretrizes do design
 

@@ -8,7 +8,8 @@ Global Solution 2026.
 
 O HoloPass deve ser apresentado como uma solucao realista de mobilidade:
 pulseira inteligente com NFC, GNSS, display, vibracao, PWA offline, rota
-operacional e apoio conceitual ao planejamento urbano.
+operacional e apoio pratico ao planejamento urbano por OpenStreetMap/Overpass
+e GTFS SPTrans.
 
 Nao apresentar recursos sem evidencia tecnica ou dependencia externa nao
 validada. Quando algo for demonstrativo, rotular claramente como conceitual ou
@@ -22,8 +23,9 @@ estimado.
 | Promessas tecnicas sem evidencia | HoloRoute deterministico | Explicavel, testavel e coerente com JS puro |
 | Rota origem/destino simplificada | Grafo de linhas, estacoes e transferencias | Corrige baldeacoes reais |
 | Distancia reta como viagem | Distancia operacional estimada por trechos | Evita erro de leitura do avaliador |
-| Contador de trem como se fosse API real | Estimativa local documentada | Honestidade tecnica |
-| Arduino simples | GNSS + NFC + saldo + LED + buzzer + telemetria | Entrega Edge mais forte |
+| Contador de trem como se fosse API real | API publica ViaMobilidade quando coberta, fallback documentado | Honestidade tecnica |
+| Mapa conceitual sem dado externo | GNSS + OpenStreetMap/Overpass + GTFS SPTrans + Haversine | Prioriza areas carentes com dado consultavel |
+| Arduino simples | GNSS + NFC + saldo + botoes + LEDs + buzzer + demanda + telemetria | Entrega Edge mais forte |
 
 ## 3. Caso Critico de Rota
 
@@ -43,9 +45,9 @@ Validar sempre:
 ## 4. Requisitos de Honestidade Tecnica
 
 - GNSS usa precisao real quando navegador permite geolocalizacao.
-- Camada CBERS-4A/Amazonia-1 e conceitual.
-- Mapa de calor indica prioridade demonstrativa, nao dado oficial.
-- Proximo trem e lotacao sao estimativas locais.
+- CBERS-4A/Amazonia-1 aparecem como contexto espacial, sem afirmar imagem orbital processada.
+- Prioridade urbana usa OpenStreetMap/Overpass quando ha internet, GTFS SPTrans local e fallback de estacoes cadastradas.
+- Proximo trem usa API publica ViaMobilidade em estacoes cobertas; lotacao segue estimativa local.
 - Pagamento NFC e Arduino usam simulacao educacional.
 - Python CT nao usa dependencia externa alem de bibliotecas nativas.
 - DPS pode usar `numpy/matplotlib` quando disponiveis e possui fallback SVG.

@@ -1,43 +1,44 @@
 {
   "version": 1,
-  "author": "Equipe HoloPass",
+  "author": "Thiago Souza de Lima - RM 568732",
   "editor": "wokwi",
   "parts": [
-    {
-      "type": "wokwi-arduino-uno",
-      "id": "uno",
-      "top": 0,
-      "left": 0,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led1",
-      "top": -110,
-      "left": 130,
-      "attrs": { "color": "cyan", "label": "Fix GNSS" }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r1",
-      "top": -60,
-      "left": 110,
-      "attrs": { "value": "220" }
-    },
-    {
-      "type": "wokwi-buzzer",
-      "id": "bz1",
-      "top": -120,
-      "left": 230,
-      "attrs": { "volume": "0.1", "label": "Alerta chegada" }
-    }
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-led", "id": "ledFix", "top": -120, "left": 120, "attrs": { "color": "cyan", "label": "Fix GNSS" } },
+    { "type": "wokwi-resistor", "id": "rFix", "top": -70, "left": 105, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "ledOk", "top": -120, "left": 210, "attrs": { "color": "green", "label": "NFC aprovado" } },
+    { "type": "wokwi-resistor", "id": "rOk", "top": -70, "left": 195, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "ledErro", "top": -120, "left": 300, "attrs": { "color": "red", "label": "NFC negado" } },
+    { "type": "wokwi-resistor", "id": "rErro", "top": -70, "left": 285, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "ledPrioridade", "top": -120, "left": 390, "attrs": { "color": "yellow", "label": "Prioridade alta" } },
+    { "type": "wokwi-resistor", "id": "rPrioridade", "top": -70, "left": 375, "attrs": { "value": "220" } },
+    { "type": "wokwi-buzzer", "id": "bz1", "top": 190, "left": 275, "attrs": { "volume": "0.1", "label": "Buzzer chegada/NFC" } },
+    { "type": "wokwi-pushbutton", "id": "btnNfc", "top": 180, "left": -135, "attrs": { "color": "cyan", "label": "NFC" } },
+    { "type": "wokwi-pushbutton", "id": "btnRecarga", "top": 250, "left": -135, "attrs": { "color": "green", "label": "Recarga" } },
+    { "type": "wokwi-potentiometer", "id": "potDemanda", "top": 250, "left": 100, "attrs": { "label": "Demanda urbana" } }
   ],
   "connections": [
-    [ "uno:13", "r1:1", "green", [ "v0" ] ],
-    [ "r1:2", "led1:A", "green", [ "v0" ] ],
-    [ "led1:C", "uno:GND.1", "black", [ "v0" ] ],
-    [ "uno:8", "bz1:1", "green", [ "v0" ] ],
-    [ "bz1:2", "uno:GND.2", "black", [ "v0" ] ]
+    [ "uno:13", "rFix:1", "cyan", [ "v0" ] ],
+    [ "rFix:2", "ledFix:A", "cyan", [ "v0" ] ],
+    [ "ledFix:C", "uno:GND.1", "black", [ "v0" ] ],
+    [ "uno:6", "rOk:1", "green", [ "v0" ] ],
+    [ "rOk:2", "ledOk:A", "green", [ "v0" ] ],
+    [ "ledOk:C", "uno:GND.1", "black", [ "v0" ] ],
+    [ "uno:7", "rErro:1", "red", [ "v0" ] ],
+    [ "rErro:2", "ledErro:A", "red", [ "v0" ] ],
+    [ "ledErro:C", "uno:GND.1", "black", [ "v0" ] ],
+    [ "uno:12", "rPrioridade:1", "yellow", [ "v0" ] ],
+    [ "rPrioridade:2", "ledPrioridade:A", "yellow", [ "v0" ] ],
+    [ "ledPrioridade:C", "uno:GND.1", "black", [ "v0" ] ],
+    [ "uno:8", "bz1:1", "orange", [ "v0" ] ],
+    [ "bz1:2", "uno:GND.2", "black", [ "v0" ] ],
+    [ "uno:2", "btnNfc:1.l", "cyan", [ "v0" ] ],
+    [ "btnNfc:2.l", "uno:GND.2", "black", [ "v0" ] ],
+    [ "uno:3", "btnRecarga:1.l", "green", [ "v0" ] ],
+    [ "btnRecarga:2.l", "uno:GND.2", "black", [ "v0" ] ],
+    [ "potDemanda:SIG", "uno:A0", "purple", [ "v0" ] ],
+    [ "potDemanda:VCC", "uno:5V", "red", [ "v0" ] ],
+    [ "potDemanda:GND", "uno:GND.2", "black", [ "v0" ] ]
   ],
   "dependencies": {}
 }

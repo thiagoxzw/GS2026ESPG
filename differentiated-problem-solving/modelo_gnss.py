@@ -3,12 +3,13 @@
 HoloPass — Modelagem Matemática do Posicionamento por Satélite (GNSS)
 Disciplina: Differentiated Problem Solving — Global Solution 2026 (Indústria Espacial)
 
-Este script constrói, analisa e interpreta TRÊS funções ligadas ao funcionamento
+Este script constrói, analisa e interpreta QUATRO funções ligadas ao funcionamento
 de um sistema de navegação por satélite (GNSS), que é a base do HoloPass:
 
   1) TRIGONOMÉTRICA  -> Haversine: distância real entre dois pontos da Terra (esfera)
   2) POLINOMIAL      -> Trilateração: posição obtida a partir de distâncias a satélites
   3) LOGARÍTMICA     -> Free-Space Path Loss: enfraquecimento do sinal do satélite
+  4) EXPONENCIAL     -> Erro posicional didático conforme aumenta o número de satélites
 
 Cada bloco imprime: a função, domínio, imagem, crescimento/decrescimento e
 interpretação física, além de gerar um gráfico .png.

@@ -242,7 +242,7 @@ def build_doc():
     add_callout(
         doc,
         "Decisao de revisao",
-        "Recursos visuais antigos e promessas tecnicas sem evidencia foram removidos da entrega principal. O projeto agora foca em HoloRoute deterministico, design fisico viavel, GNSS, NFC, PWA offline e mapa de calor conceitual.",
+        "A entrega revisada foca em produto viavel: design fisico restaurado, NFC, GNSS, PWA offline, HoloRoute deterministico, proximo trem real quando a API cobre a estacao e cobertura urbana com OpenStreetMap/Overpass e GTFS SPTrans.",
     )
 
     add_heading(doc, "1. Sumario Executivo")
@@ -268,7 +268,7 @@ def build_doc():
     add_heading(doc, "3. Solucao Tecnologica")
     add_body(
         doc,
-        "O HoloPass propoe uma pulseira com display, NFC, vibracao e leitura GNSS. O app demonstra autenticacao, saldo, recarga, historico, rotas, pagamento, modo offline, HoloRoute deterministico e mapa de calor conceitual de areas mal atendidas.",
+        "O HoloPass propoe uma pulseira com display, NFC, vibracao e leitura GNSS. O app demonstra autenticacao, saldo, recarga, historico, rotas, pagamento, modo offline, HoloRoute deterministico, proximo trem real quando disponivel e analise de areas mal atendidas.",
     )
     add_body(
         doc,
@@ -286,7 +286,7 @@ def build_doc():
     add_heading(doc, "4. Conexao com a Industria Espacial")
     add_body(
         doc,
-        "A conexao espacial e direta por GNSS: o sistema usa latitude/longitude, precisao em metros e Haversine para identificar a estacao mais proxima. A camada de Observacao da Terra usa CBERS-4A/Amazonia-1 como referencia conceitual para planejamento urbano, sempre rotulada como demonstrativa e sem inventar dado satelital real.",
+        "A conexao espacial e direta por GNSS: o sistema usa latitude/longitude, precisao em metros e Haversine para identificar a estacao mais proxima. A camada de cobertura urbana usa OpenStreetMap/Overpass para localizar estacoes reais e GTFS SPTrans para contar paradas de onibus no raio consultado dentro da cobertura municipal de Sao Paulo. CBERS-4A/Amazonia-1 entram como contexto de Observacao da Terra, sem inventar imagem satelital real.",
     )
 
     add_heading(doc, "5. Arquitetura Integrada")
@@ -297,7 +297,7 @@ def build_doc():
             ["Software/TXD", "Este documento", "Define problema, visao, arquitetura, backlog e fluxo"],
             ["Front-End Design", "Landing page", "Comunica problema, tecnologia, objetivos, publico e beneficios"],
             ["Web Development", "PWA principal", "Prototipo funcional de login, recarga, rota, NFC, GNSS, quiz e feedback"],
-            ["Edge Computing", "Arduino", "Simula a pulseira fisica com GNSS, NFC, LED, buzzer e telemetria"],
+            ["Edge Computing", "Arduino", "Simula a pulseira fisica com GNSS, NFC, botoes, LEDs, buzzer, demanda urbana e telemetria"],
             ["Computational Thinking", "Python menu", "Demonstra logica de usuario, saldo, rota, historico e validacao"],
             ["DPS", "Modelo GNSS", "Explica matematica espacial com funcoes e graficos"],
             ["Storytelling", "Pitch", "Apresenta narrativa, proposta de valor, tecnologia e equipe"],
@@ -306,10 +306,11 @@ def build_doc():
     )
 
     add_heading(doc, "6. Viabilidade Tecnica")
-    add_bullet(doc, "A pulseira fisica pode ser prototipada com ESP32/Arduino, RFID/NFC, display OLED, motor de vibracao e bateria.")
+    add_bullet(doc, "A pulseira fisica pode ser prototipada com ESP32/Arduino, RFID/NFC, display OLED, motor de vibracao, LEDs de estado, botoes e bateria.")
     add_bullet(doc, "GNSS e NFC no Arduino sao simulados, mas a matematica de distancia e a decisao local sao reais.")
     add_bullet(doc, "O app web usa HTML, CSS e JavaScript puro, com PWA offline por service worker.")
-    add_bullet(doc, "Proximo trem e lotacao sao estimativas locais, nao API oficial de operacao.")
+    add_bullet(doc, "Proximo trem usa a API publica ViaMobilidade nas estacoes cobertas; fora disso, o app mostra fallback honesto.")
+    add_bullet(doc, "A priorizacao urbana consulta Overpass/OpenStreetMap, usa GTFS SPTrans local e calcula distancia por Haversine.")
     add_bullet(doc, "Uma versao de producao exigiria dados oficiais, homologacao de pagamento e seguranca embarcada.")
 
     add_heading(doc, "7. Impacto e ODS")
@@ -342,8 +343,8 @@ def build_doc():
             ["US04", "Calcular rota com baldeacoes reais.", "Alta", "Exibe linhas, paradas, tempo, tarifa e timeline."],
             ["US05", "Consultar saldo, historico e estatisticas.", "Media", "Painel atualiza apos recarga/pagamento."],
             ["US06", "Usar app offline como PWA.", "Media", "Service worker mantem app aberto sem rede."],
-            ["US07", "Visualizar areas mal atendidas.", "Media", "Hotspots mostram diagnostico e prioridade."],
-            ["US08", "Receber recomendacao HoloRoute explicavel.", "Media", "Painel mostra risco, lotacao e recomendacao sem prometer API real."],
+            ["US07", "Visualizar areas mal atendidas.", "Media", "GNSS/OSM mostram estacao proxima, distancia e prioridade."],
+            ["US08", "Receber recomendacao HoloRoute explicavel.", "Media", "Painel mostra risco, lotacao e recomendacao deterministica."],
             ["US09", "Ver evidencias tecnicas da entrega.", "Alta", "Relatorio lista comando, resultado e pendencias."],
         ],
         [850, 3860, 1300, 3350],

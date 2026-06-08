@@ -9,12 +9,20 @@
    - emite telemetria no Serial Monitor;
    - pisca LED a cada leitura;
    - toca buzzer no pagamento e na chegada ao destino;
-   - calcula prioridade urbana conceitual para areas mal atendidas.
+   - le botao de pagamento NFC e botao de recarga;
+   - le potenciometro como demanda/cobertura urbana;
+   - calcula prioridade urbana para areas mal atendidas.
 
    Hardware no Wokwi:
    - Arduino UNO
-   - LED no pino 13 com resistor 220 ohm
+   - LED cyan no pino 13 com resistor 220 ohm (fix GNSS)
+   - LED verde no pino 6 (pagamento aprovado)
+   - LED vermelho no pino 7 (pagamento negado)
+   - LED amarelo no pino 12 (prioridade urbana alta)
    - Buzzer no pino 8
+   - Botao NFC no pino 2
+   - Botao recarga no pino 3
+   - Potenciometro no A0 para demanda/cobertura
 
    Honestidade tecnica:
    O Arduino UNO nao possui GNSS/NFC embutido. Aqui os fixes e a catraca NFC
@@ -26,6 +34,12 @@
 
 const uint8_t PINO_LED = 13;
 const uint8_t PINO_BUZZER = 8;
+const uint8_t PINO_LED_OK = 6;
+const uint8_t PINO_LED_ERRO = 7;
+const uint8_t PINO_LED_PRIORIDADE = 12;
+const uint8_t PINO_BOTAO_NFC = 2;
+const uint8_t PINO_BOTAO_RECARGA = 3;
+const uint8_t PINO_DEMANDA = A0;
 
 const float RAIO_TERRA_KM = 6371.0;
 const float RAIO_CHEGADA_KM = 0.25;
@@ -61,6 +75,8 @@ uint16_t ciclo = 0;
 uint8_t numeroViagem = 1;
 bool jaAvisouChegada = false;
 bool pagamentoProcessado = false;
+unsigned long ultimoBotaoNFC = 0;
+unsigned long ultimoBotaoRecarga = 0;
 
 float haversineKm(float lat1, float lon1, float lat2, float lon2) {
   float dLat = radians(lat2 - lat1);
@@ -90,10 +106,23 @@ uint8_t precisaoGnssMetros() {
   return 6 + ((ciclo * 7) % 18);
 }
 
-const char* prioridadeUrbana(float distKm, uint8_t idxEstacao) {
+uint8_t demandaUrbana() {
+  // Potenciometro representa demanda/cobertura externa: 0 = baixa, 100 = alta.
+  return map(analogRead(PINO_DEMANDA), 0, 1023, 0, 100);
+}
+
+uint8_t scorePrioridadeUrbana(float distKm, uint8_t idxEstacao, uint8_t demanda, uint8_t precisao) {
   uint8_t cobertura = ESTACOES[idxEstacao].cobertura;
-  if (distKm > 1.2 || cobertura < 60) return "ALTA";
-  if (distKm > 0.7 || cobertura < 78) return "MEDIA";
+  int score = (int)(distKm * 32.0) + (100 - cobertura) / 2 + demanda / 3;
+  if (precisao > 18) score += 8;
+  return constrain(score, 0, 100);
+}
+
+const char* prioridadeUrbana(float distKm, uint8_t idxEstacao, uint8_t demanda, uint8_t precisao) {
+  uint8_t cobertura = ESTACOES[idxEstacao].cobertura;
+  uint8_t score = scorePrioridadeUrbana(distKm, idxEstacao, demanda, precisao);
+  if (distKm > 1.2 || cobertura < 60 || score >= 70) return "ALTA";
+  if (distKm > 0.7 || cobertura < 78 || score >= 45) return "MEDIA";
   return "BAIXA";
 }
 
@@ -103,21 +132,29 @@ void piscarFixGNSS() {
   digitalWrite(PINO_LED, LOW);
 }
 
+void pulsoLed(uint8_t pino, uint16_t ms) {
+  digitalWrite(pino, HIGH);
+  delay(ms);
+  digitalWrite(pino, LOW);
+}
+
 void beepAprovado() {
+  digitalWrite(PINO_LED_OK, HIGH);
   tone(PINO_BUZZER, 1319, 90);
   delay(120);
   tone(PINO_BUZZER, 1760, 110);
   delay(140);
   noTone(PINO_BUZZER);
+  digitalWrite(PINO_LED_OK, LOW);
 }
 
 void beepNegado() {
   for (uint8_t i = 0; i < 2; i++) {
     tone(PINO_BUZZER, 220, 160);
-    digitalWrite(PINO_LED, HIGH);
+    digitalWrite(PINO_LED_ERRO, HIGH);
     delay(190);
     noTone(PINO_BUZZER);
-    digitalWrite(PINO_LED, LOW);
+    digitalWrite(PINO_LED_ERRO, LOW);
     delay(120);
   }
 }
@@ -126,9 +163,11 @@ void alertaChegada() {
   for (uint8_t i = 0; i < 3; i++) {
     tone(PINO_BUZZER, 1976, 130);
     digitalWrite(PINO_LED, HIGH);
+    digitalWrite(PINO_LED_OK, HIGH);
     delay(170);
     noTone(PINO_BUZZER);
     digitalWrite(PINO_LED, LOW);
+    digitalWrite(PINO_LED_OK, LOW);
     delay(100);
   }
 }
@@ -140,6 +179,25 @@ void imprimirValor(int centavos) {
   int resto = centavos % 100;
   if (resto < 10) Serial.print(F("0"));
   Serial.print(resto);
+}
+
+bool botaoPressionado(uint8_t pino, unsigned long &ultimoEvento) {
+  if (digitalRead(pino) != LOW) return false;
+  unsigned long agora = millis();
+  if (agora - ultimoEvento < 380) return false;
+  ultimoEvento = agora;
+  return true;
+}
+
+void recarregarSaldo(int centavos) {
+  saldoCentavos += centavos;
+  if (saldoCentavos >= TARIFA_CENTAVOS) pagamentoProcessado = false;
+  Serial.print(F("RECARGA manual: +"));
+  imprimirValor(centavos);
+  Serial.print(F(" | saldo="));
+  imprimirValor(saldoCentavos);
+  Serial.println();
+  pulsoLed(PINO_LED_OK, 180);
 }
 
 void processarNFC() {
@@ -157,21 +215,21 @@ void processarNFC() {
   } else {
     Serial.print(F("NEGADO | saldo="));
     imprimirValor(saldoCentavos);
-    Serial.println(F(" | recarga PIX simulada +R$ 20,00"));
+    Serial.println(F(" | acione o botao de recarga para continuar"));
     beepNegado();
-    saldoCentavos += 2000;
   }
 
   pagamentoProcessado = true;
 }
 
-void imprimirTelemetria(float lat, float lng, uint8_t idxProx, float distProx, float distDestino) {
+void imprimirTelemetria(float lat, float lng, uint8_t idxProx, float distProx, float distDestino, uint8_t demanda, uint8_t precisao) {
+  uint8_t score = scorePrioridadeUrbana(distProx, idxProx, demanda, precisao);
   Serial.print(F("#"));
   Serial.print(ciclo);
   Serial.print(F(" viagem="));
   Serial.print(numeroViagem);
   Serial.print(F(" fix="));
-  Serial.print(precisaoGnssMetros());
+  Serial.print(precisao);
   Serial.print(F("m lat="));
   Serial.print(lat, 5);
   Serial.print(F(" lng="));
@@ -183,7 +241,14 @@ void imprimirTelemetria(float lat, float lng, uint8_t idxProx, float distProx, f
   Serial.print(F("km destino="));
   Serial.print(distDestino, 2);
   Serial.print(F("km prioridadeEO="));
-  Serial.print(prioridadeUrbana(distProx, idxProx));
+  Serial.print(prioridadeUrbana(distProx, idxProx, demanda, precisao));
+  Serial.print(F(" score="));
+  Serial.print(score);
+  Serial.print(F("/100 demanda="));
+  Serial.print(demanda);
+  Serial.print(F("% cobertura="));
+  Serial.print(ESTACOES[idxProx].cobertura);
+  Serial.print(F("%"));
   Serial.print(F(" saldo="));
   imprimirValor(saldoCentavos);
   Serial.println();
@@ -201,6 +266,11 @@ void reiniciarViagem() {
 void setup() {
   pinMode(PINO_LED, OUTPUT);
   pinMode(PINO_BUZZER, OUTPUT);
+  pinMode(PINO_LED_OK, OUTPUT);
+  pinMode(PINO_LED_ERRO, OUTPUT);
+  pinMode(PINO_LED_PRIORIDADE, OUTPUT);
+  pinMode(PINO_BOTAO_NFC, INPUT_PULLUP);
+  pinMode(PINO_BOTAO_RECARGA, INPUT_PULLUP);
   Serial.begin(9600);
 
   Serial.println(F("============================================"));
@@ -212,6 +282,8 @@ void setup() {
   Serial.print(F("  Saldo inicial: "));
   imprimirValor(saldoCentavos);
   Serial.println();
+  Serial.println(F("  Botao D2 = NFC manual | Botao D3 = recarga +R$ 20,00"));
+  Serial.println(F("  Potenciometro A0 = demanda/cobertura urbana da regiao"));
   Serial.println(F("============================================"));
 }
 
@@ -224,13 +296,23 @@ void loop() {
   float lng = origem.lng + (destino.lng - origem.lng) * progresso;
 
   piscarFixGNSS();
-  processarNFC();
+  if (botaoPressionado(PINO_BOTAO_RECARGA, ultimoBotaoRecarga)) {
+    recarregarSaldo(2000);
+  }
+
+  if (botaoPressionado(PINO_BOTAO_NFC, ultimoBotaoNFC) || (progresso < 0.02 && !pagamentoProcessado)) {
+    processarNFC();
+  }
 
   float distProx;
   uint8_t idxProx = estacaoMaisProxima(lat, lng, distProx);
   float distDestino = haversineKm(lat, lng, destino.lat, destino.lng);
+  uint8_t precisao = precisaoGnssMetros();
+  uint8_t demanda = demandaUrbana();
+  bool prioridadeAlta = strcmp(prioridadeUrbana(distProx, idxProx, demanda, precisao), "ALTA") == 0;
+  digitalWrite(PINO_LED_PRIORIDADE, prioridadeAlta ? HIGH : LOW);
 
-  imprimirTelemetria(lat, lng, idxProx, distProx, distDestino);
+  imprimirTelemetria(lat, lng, idxProx, distProx, distDestino, demanda, precisao);
 
   if (distDestino <= RAIO_CHEGADA_KM && !jaAvisouChegada) {
     Serial.print(F(">>> CHEGADA CONFIRMADA EM "));
