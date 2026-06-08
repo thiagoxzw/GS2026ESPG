@@ -26,7 +26,8 @@
   }
 
   function initTema() {
-    const salvo = localStorage.getItem('hp_tema') || 'ciano';
+    const prefereEscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const salvo = localStorage.getItem('hp_tema') || (prefereEscuro ? 'galaxia' : 'ciano');
     aplicarTema(salvo);
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => aplicarTema(btn.dataset.tema));
@@ -66,7 +67,8 @@
   }
 
   function initSlideshow() {
-    if (!document.querySelector('.slide')) return;
+    const slideshow = document.querySelector('.slideshow');
+    if (!document.querySelector('.slide') || !slideshow) return;
     mostrarSlide(0);
     reiniciarTimerSlide();
 
@@ -78,6 +80,15 @@
     document.querySelectorAll('.slide-dot').forEach((dot, i) => {
       dot.addEventListener('click', () => irParaSlide(i));
     });
+
+    let startX = 0;
+    slideshow.addEventListener('touchstart', evento => {
+      startX = evento.touches[0].clientX;
+    }, { passive: true });
+    slideshow.addEventListener('touchend', evento => {
+      const delta = evento.changedTouches[0].clientX - startX;
+      if (Math.abs(delta) > 40) moverSlide(delta > 0 ? -1 : 1);
+    }, { passive: true });
   }
 
   // ==========================================================
