@@ -83,7 +83,7 @@
   // ==========================================================
   // 3. QUIZ (10 perguntas sobre o tema)
   // ==========================================================
-  const PERGUNTAS = [
+  const PERGUNTAS_BASE = [
     { q: 'O que significa a sigla GNSS?',
       opcoes: ['Sistema Global de Navegação por Satélite', 'Rede Global de Sensores', 'Sinal Nacional de Som', 'Sistema de Gás Natural'],
       correta: 0 },
@@ -116,41 +116,137 @@
       correta: 0 }
   ];
 
+  let perguntasQuiz = [];
+  let quizInicio = 0;
+  let quizTimer = null;
+
+  function embaralhar(lista) {
+    const copia = [...lista];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
+  function prepararQuiz() {
+    perguntasQuiz = embaralhar(PERGUNTAS_BASE).map(pergunta => {
+      const opcoes = embaralhar(pergunta.opcoes.map((texto, index) => ({
+        texto,
+        correta: index === pergunta.correta
+      })));
+      return { q: pergunta.q, opcoes };
+    });
+    quizInicio = Date.now();
+  }
+
+  function melhorPontuacao() {
+    const raw = localStorage.getItem('hp_quiz_best');
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  function salvarMelhorPontuacao(acertos, tempoSeg) {
+    const atual = melhorPontuacao();
+    if (!atual || acertos > atual.acertos || (acertos === atual.acertos && tempoSeg < atual.tempoSeg)) {
+      localStorage.setItem('hp_quiz_best', JSON.stringify({ acertos, tempoSeg }));
+    }
+  }
+
+  function formatarTempo(seg) {
+    const m = Math.floor(seg / 60);
+    const s = String(seg % 60).padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function atualizarProgressoQuiz() {
+    const total = perguntasQuiz.length;
+    const respondidas = document.querySelectorAll('#quizPerguntas input:checked').length;
+    const pct = total ? Math.round((respondidas / total) * 100) : 0;
+    const fill = document.getElementById('quizProgressFill');
+    const label = document.getElementById('quizProgressLabel');
+    const timer = document.getElementById('quizTimer');
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = `${respondidas}/${total}`;
+    if (timer && quizInicio) timer.textContent = formatarTempo(Math.floor((Date.now() - quizInicio) / 1000));
+  }
+
+  function atualizarMelhorQuiz() {
+    const best = melhorPontuacao();
+    const el = document.getElementById('quizBest');
+    if (!el) return;
+    el.textContent = best
+      ? `Melhor: ${best.acertos}/${PERGUNTAS_BASE.length} · ${formatarTempo(best.tempoSeg)}`
+      : 'Melhor: --';
+  }
+
   function renderizarQuiz() {
     const container = document.getElementById('quizPerguntas');
     if (!container) return;
 
-    container.innerHTML = PERGUNTAS.map((p, i) => `
+    prepararQuiz();
+    clearInterval(quizTimer);
+    quizTimer = setInterval(atualizarProgressoQuiz, 1000);
+
+    container.innerHTML = `
+      <div class="quiz-head">
+        <div class="quiz-progress" aria-label="Progresso do quiz">
+          <i id="quizProgressFill"></i>
+        </div>
+        <span id="quizProgressLabel">0/${perguntasQuiz.length}</span>
+        <span id="quizTimer">0:00</span>
+        <span id="quizBest">Melhor: --</span>
+      </div>
+    ` + perguntasQuiz.map((p, i) => `
       <div class="quiz-q" id="quiz-q-${i}">
         <div class="quiz-q-title">${i + 1}. ${p.q}</div>
         <div class="quiz-opcoes">
           ${p.opcoes.map((op, j) => `
             <label class="quiz-opcao">
-              <input type="radio" name="q${i}" value="${j}">
-              <span>${op}</span>
+              <input type="radio" name="q${i}" value="${j}" data-correta="${op.correta ? '1' : '0'}">
+              <span>${op.texto}</span>
             </label>
           `).join('')}
         </div>
+        <div class="quiz-feedback" aria-live="polite"></div>
       </div>
     `).join('');
+
+    container.querySelectorAll('input[type="radio"]').forEach(input => {
+      input.addEventListener('change', evento => {
+        const bloco = evento.target.closest('.quiz-q');
+        if (bloco) {
+          bloco.classList.add('respondida');
+          const feedback = bloco.querySelector('.quiz-feedback');
+          if (feedback) feedback.textContent = 'Resposta registrada.';
+        }
+        atualizarProgressoQuiz();
+      });
+    });
+
+    atualizarMelhorQuiz();
+    atualizarProgressoQuiz();
   }
 
   function corrigirQuiz() {
     let acertos = 0;
     let respondidas = 0;
 
-    PERGUNTAS.forEach((p, i) => {
+    perguntasQuiz.forEach((p, i) => {
       const escolhida = document.querySelector(`input[name="q${i}"]:checked`);
       const bloco = document.getElementById(`quiz-q-${i}`);
+      const feedback = bloco ? bloco.querySelector('.quiz-feedback') : null;
       if (bloco) bloco.classList.remove('certo', 'errado');
 
       if (escolhida) {
         respondidas++;
-        if (Number(escolhida.value) === p.correta) {
+        if (escolhida.dataset.correta === '1') {
           acertos++;
           if (bloco) bloco.classList.add('certo');
+          if (feedback) feedback.textContent = 'Correto.';
         } else if (bloco) {
           bloco.classList.add('errado');
+          const correta = p.opcoes.find(op => op.correta)?.texto;
+          if (feedback) feedback.textContent = `Resposta correta: ${correta}.`;
         }
       }
     });
@@ -158,13 +254,18 @@
     const resultado = document.getElementById('quizResultado');
     if (!resultado) return;
 
-    if (respondidas < PERGUNTAS.length) {
+    if (respondidas < perguntasQuiz.length) {
       resultado.className = 'quiz-resultado aviso show';
-      resultado.textContent = `Responda todas as ${PERGUNTAS.length} perguntas — faltam ${PERGUNTAS.length - respondidas}.`;
+      resultado.textContent = `Responda todas as ${perguntasQuiz.length} perguntas — faltam ${perguntasQuiz.length - respondidas}.`;
       return;
     }
 
-    const pct = Math.round((acertos / PERGUNTAS.length) * 100);
+    clearInterval(quizTimer);
+    const tempoSeg = Math.floor((Date.now() - quizInicio) / 1000);
+    salvarMelhorPontuacao(acertos, tempoSeg);
+    atualizarMelhorQuiz();
+
+    const pct = Math.round((acertos / perguntasQuiz.length) * 100);
     let msg;
     if (pct === 100)      msg = 'Perfeito! Você domina o tema espacial. 🛰️';
     else if (pct >= 70)   msg = 'Muito bom! Conhecimento sólido sobre o HoloPass.';
@@ -172,7 +273,7 @@
     else                  msg = 'Vale revisar o material e tentar de novo!';
 
     resultado.className = 'quiz-resultado show ' + (pct >= 70 ? 'bom' : pct >= 40 ? 'medio' : 'ruim');
-    resultado.innerHTML = `Você acertou <strong>${acertos}/${PERGUNTAS.length}</strong> (${pct}%). ${msg}`;
+    resultado.innerHTML = `Você acertou <strong>${acertos}/${perguntasQuiz.length}</strong> (${pct}%) em ${formatarTempo(tempoSeg)}. ${msg}`;
   }
 
   function reiniciarQuiz() {
