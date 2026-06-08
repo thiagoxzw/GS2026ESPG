@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-label="Cidade com linha de metrô e estações conectadas">
+  <rect width="480" height="300" fill="#020b18"/>
+  <!-- prédios -->
+  <g fill="#0a2236" stroke="#0e3550">
+    <rect x="20" y="120" width="50" height="160"/>
+    <rect x="80" y="80" width="46" height="200"/>
+    <rect x="140" y="150" width="40" height="130"/>
+    <rect x="320" y="100" width="48" height="180"/>
+    <rect x="380" y="60" width="44" height="220"/>
+    <rect x="434" y="140" width="36" height="140"/>
+  </g>
+  <!-- janelas -->
+  <g fill="#00f5ff" opacity="0.5">
+    <rect x="92" y="96" width="6" height="6"/><rect x="106" y="96" width="6" height="6"/>
+    <rect x="92" y="118" width="6" height="6"/><rect x="106" y="118" width="6" height="6"/>
+    <rect x="392" y="80" width="6" height="6"/><rect x="406" y="80" width="6" height="6"/>
+    <rect x="392" y="104" width="6" height="6"/><rect x="406" y="104" width="6" height="6"/>
+  </g>
+  <!-- linha de metrô com estações -->
+  <path d="M30 250 H450" fill="none" stroke="#00ff88" stroke-width="4"/>
+  <g fill="#020b18" stroke="#00ff88" stroke-width="4">
+    <circle cx="70" cy="250" r="9"/><circle cx="180" cy="250" r="9"/>
+    <circle cx="290" cy="250" r="9"/><circle cx="400" cy="250" r="9"/>
+  </g>
+  <!-- pino de localização GNSS -->
+  <g transform="translate(290 250)">
+    <path d="M0 -46 a18 18 0 0 1 18 18 c0 14 -18 30 -18 30 c0 0 -18 -16 -18 -30 a18 18 0 0 1 18 -18 z" fill="#00f5ff"/>
+    <circle cx="0" cy="-28" r="7" fill="#020b18"/>
+  </g>
+</svg>

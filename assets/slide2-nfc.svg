@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Pagamento por NFC com a pulseira">
+  <rect width="640" height="300" fill="#04101e"/>
+  <!-- catraca -->
+  <rect x="430" y="90" width="120" height="150" rx="10" fill="#0a2236" stroke="#00f5ff" stroke-opacity="0.5"/>
+  <circle cx="490" cy="150" r="26" fill="#06243d" stroke="#00ff88" stroke-width="3"/>
+  <text x="490" y="156" text-anchor="middle" font-family="monospace" font-size="20" fill="#00ff88">◈</text>
+  <text x="490" y="220" text-anchor="middle" font-family="monospace" font-size="12" fill="#9fb3c8">CATRACA</text>
+  <!-- pulseira / pulso -->
+  <g transform="translate(150 150)">
+    <ellipse cx="0" cy="0" rx="60" ry="42" fill="none" stroke="#8b6f47" stroke-width="22"/>
+    <rect x="-46" y="-26" width="92" height="52" rx="10" fill="#11161f" stroke="#00f5ff" stroke-opacity="0.6"/>
+    <text x="0" y="-4" text-anchor="middle" font-family="monospace" font-size="11" fill="#00f5ff">◈ NFC</text>
+    <text x="0" y="16" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#00ff88">R$ 45,50</text>
+  </g>
+  <!-- ondas NFC entre pulseira e catraca -->
+  <g fill="none" stroke="#00f5ff" stroke-width="3">
+    <path d="M250 150 q20 -18 40 0" opacity="0.7"/>
+    <path d="M250 150 q30 -28 60 0" opacity="0.45"/>
+    <path d="M250 150 q40 -38 80 0" opacity="0.25"/>
+  </g>
+  <text x="320" y="280" text-anchor="middle" font-family="monospace" font-size="14" fill="#9fb3c8">Aproxime o pulso e pague — sem cartão, sem celular</text>
+</svg>

@@ -1,0 +1,35 @@
+{
+  "name": "HoloPass — Pulseira Inteligente de Transporte",
+  "short_name": "HoloPass",
+  "description": "Sistema holográfico de transporte público com NFC, holograma simulado e IA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020b18",
+  "theme_color": "#00f5ff",
+  "lang": "pt-BR",
+  "categories": ["travel", "utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calcular Rota",
+      "short_name": "Rota",
+      "description": "Abrir calculador de rota direto",
+      "url": "./?action=route"
+    },
+    {
+      "name": "Recarregar Saldo",
+      "short_name": "Recarregar",
+      "description": "Adicionar saldo à pulseira",
+      "url": "./?action=recharge"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Módulo embarcado Arduino com LED e buzzer">
+  <rect width="640" height="300" fill="#04101e"/>
+  <!-- placa arduino -->
+  <rect x="210" y="90" width="220" height="120" rx="10" fill="#0a3d3a" stroke="#00ff88" stroke-opacity="0.5"/>
+  <text x="320" y="120" text-anchor="middle" font-family="Orbitron, monospace" font-size="16" font-weight="700" fill="#00ff88">ARDUINO UNO</text>
+  <!-- chip -->
+  <rect x="280" y="135" width="80" height="50" rx="4" fill="#031b18" stroke="#00ff88" stroke-opacity="0.4"/>
+  <text x="320" y="165" text-anchor="middle" font-family="monospace" font-size="11" fill="#7dd3c0">GNSS · Haversine</text>
+  <!-- LED -->
+  <g transform="translate(120 150)">
+    <circle cx="0" cy="0" r="20" fill="#00f5ff"/>
+    <circle cx="0" cy="0" r="30" fill="#00f5ff" opacity="0.25"/>
+    <text x="0" y="55" text-anchor="middle" font-family="monospace" font-size="12" fill="#9fb3c8">LED · pino 13</text>
+  </g>
+  <line x1="150" y1="150" x2="210" y2="150" stroke="#00f5ff" stroke-width="3"/>
+  <!-- Buzzer -->
+  <g transform="translate(520 150)">
+    <circle cx="0" cy="0" r="22" fill="#1a2a3a" stroke="#ffd700"/>
+    <circle cx="0" cy="0" r="6" fill="#ffd700"/>
+    <text x="0" y="55" text-anchor="middle" font-family="monospace" font-size="12" fill="#9fb3c8">Buzzer · pino 8</text>
+  </g>
+  <line x1="430" y1="150" x2="498" y2="150" stroke="#ffd700" stroke-width="3"/>
+  <text x="320" y="240" text-anchor="middle" font-family="monospace" font-size="14" fill="#9fb3c8">Edge Computing: o cálculo acontece na própria pulseira</text>
+</svg>

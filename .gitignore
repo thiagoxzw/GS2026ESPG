@@ -1,0 +1,18 @@
+# Artefatos gerados pelo modelo matemático (Python)
+grafico_*.png
+__pycache__/
+*.pyc
+
+# Artefatos de build do Arduino / Wokwi
+*.hex
+*.elf
+.pio/
+build/
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+*.swp
+
+# Configuração local de sessão (Claude Code) — não versionar
+.claude/

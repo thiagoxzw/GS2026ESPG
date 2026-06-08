@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoloPass — Fase 7 | RA + IA</title>
+  <link rel="stylesheet" href="style.css?v=7.1">
+
+  <!-- ====== FASE 6: THREE.JS para holograma 3D funcional ====== -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
+  <!-- ====== FASE 4: PWA META TAGS ====== -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00f5ff">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+
+  <!-- iOS PWA support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HoloPass">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Mobile viewport com suporte ao notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+</head>
+<body>
+
+  <!-- Fundo compartilhado entre login e app -->
+  <div class="particles" id="particles"></div>
+  <div class="holo-grid"></div>
+
+  <!-- ======================================================
+       FASE 3 — OVERLAY DE LOGIN / CADASTRO
+       Aparece quando não há sessão salva.
+       ====================================================== -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box glass-panel">
+
+      <div class="login-logo">
+        <span class="login-icon">◈</span>
+        <span class="login-logo-text">HOLOPASS</span>
+        <span class="login-icon">◈</span>
+      </div>
+      <div class="login-subtitle">SISTEMA DE IDENTIFICAÇÃO HOLOGRÁFICA</div>
+
+      <!-- Abas ENTRAR / CADASTRAR -->
+      <div class="login-tabs">
+        <button class="tab-btn active" id="tabBtnLogin"    onclick="mostrarTab('login')">ENTRAR</button>
+        <button class="tab-btn"        id="tabBtnRegister" onclick="mostrarTab('register')">CADASTRAR</button>
+      </div>
+
+      <!-- Formulário de Login -->
+      <div id="formLogin">
+        <input type="email"    class="holo-input" id="loginEmail" placeholder="E-MAIL">
+        <input type="password" class="holo-input" id="loginPass"  placeholder="SENHA"
+               onkeydown="if(event.key==='Enter') fazerLogin()">
+        <div class="login-error" id="loginError"></div>
+        <button class="login-btn"  onclick="fazerLogin()">⚡ ACESSAR SISTEMA</button>
+        <button class="demo-btn"   onclick="loginDemo()">◈ ENTRAR COMO DEMO</button>
+      </div>
+
+      <!-- Formulário de Cadastro -->
+      <div id="formRegister" style="display:none">
+        <input type="text"     class="holo-input" id="regNome"  placeholder="SEU NOME COMPLETO">
+        <input type="email"    class="holo-input" id="regEmail" placeholder="E-MAIL">
+        <input type="password" class="holo-input" id="regPass"  placeholder="SENHA (mín. 4 caracteres)"
+               onkeydown="if(event.key==='Enter') fazerCadastro()">
+        <select class="holo-input" id="regTipo">
+          <option value="trabalhador">👔 Trabalhador</option>
+          <option value="estudante">🎓 Estudante</option>
+          <option value="idoso">🧓 Idoso (60+)</option>
+          <option value="pcd">♿ Pessoa c/ Deficiência</option>
+        </select>
+        <div class="login-error" id="registerError"></div>
+        <button class="login-btn" onclick="fazerCadastro()">◈ CRIAR MINHA CONTA</button>
+      </div>
+
+      <div class="login-info">
+        🔒 Dados salvos localmente no dispositivo · Fase 3.5: Firebase
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       FASE 3 — MODAL DE RECARGA DE SALDO
+       ====================================================== -->
+  <div class="modal-overlay" id="rechargeModal" style="display:none">
+    <div class="modal-box glass-panel">
+      <div class="panel-title">◈ RECARREGAR PULSEIRA</div>
+
+      <div class="recharge-grid">
+        <button class="recharge-btn" onclick="recarregar(20)">
+          <span class="r-value">R$ 20</span>
+          <span class="r-qty">~4 passagens</span>
+        </button>
+        <button class="recharge-btn" onclick="recarregar(50)">
+          <span class="r-value">R$ 50</span>
+          <span class="r-qty">~11 passagens</span>
+        </button>
+        <button class="recharge-btn" onclick="recarregar(100)">
+          <span class="r-value">R$ 100</span>
+          <span class="r-qty">~22 passagens</span>
+        </button>
+      </div>
+
+      <div class="recharge-methods">
+        <div class="method-btn active" onclick="selecionarMetodo(this)">🔷 PIX</div>
+        <div class="method-btn"        onclick="selecionarMetodo(this)">💳 Cartão</div>
+        <div class="method-btn"        onclick="selecionarMetodo(this)">🏦 Débito</div>
+      </div>
+
+      <button class="close-btn" onclick="fecharRecarga()">⊗ CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       APP PRINCIPAL
+       ====================================================== -->
+  <div class="container">
+
+    <!-- ====== CABEÇALHO ====== -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">◈</div>
+        <div class="logo-text">
+          <span class="logo-main">HOLOPASS</span>
+          <span class="logo-sub">SISTEMA HOLOGRÁFICO DE TRANSPORTE INTELIGENTE</span>
+        </div>
+        <div class="logo-icon">◈</div>
+      </div>
+      <div class="status-bar">
+        <span class="status-item"><span class="dot green"></span> NFC ATIVO</span>
+        <span class="status-item"><span class="dot blue"></span> BLUETOOTH</span>
+        <span class="status-item"><span class="dot cyan"></span> CONECTADO</span>
+        <span class="phase-badge">FASE 7 — RA + IA</span>
+        <span class="conn-status" id="connStatus">◉ ONLINE</span>
+        <span class="time" id="currentTime">00:00:00</span>
+        <span class="theme-switch" role="group" aria-label="Trocar tema de cor da página">
+          <button class="theme-btn" data-tema="ciano"   title="Tema Ciano"   aria-label="Tema Ciano"></button>
+          <button class="theme-btn" data-tema="galaxia" title="Tema Galáxia" aria-label="Tema Galáxia"></button>
+          <button class="theme-btn" data-tema="aurora"  title="Tema Aurora"  aria-label="Tema Aurora"></button>
+        </span>
+      </div>
+      <div class="peak-bar" id="peakBar"></div>
+    </header>
+
+    <!-- ====== PAINEL PRINCIPAL — 2 COLUNAS ====== -->
+    <main class="main-panel">
+
+      <!-- ---- COLUNA ESQUERDA ---- -->
+      <section class="bracelet-section">
+
+        <!-- Painel do usuário logado (Fase 3) -->
+        <div class="user-panel glass-panel" id="userPanel" style="display:none">
+          <div class="panel-title">◈ USUÁRIO IDENTIFICADO</div>
+          <div class="user-info-row">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <div class="user-details">
+              <div class="user-name" id="userName">-</div>
+              <div class="user-type" id="userType">-</div>
+            </div>
+            <button class="logout-btn" onclick="fazerLogout()" title="Sair do sistema">⊗</button>
+          </div>
+        </div>
+
+        <!-- Pulseira holográfica -->
+        <div class="bracelet-container">
+          <div class="bracelet-ring">
+            <div class="bracelet-inner">
+              <div class="holo-display">
+                <div class="holo-label">SALDO DISPONÍVEL</div>
+                <div class="balance-amount" id="balanceDisplay">---</div>
+                <div class="balance-bar">
+                  <div class="balance-fill" id="balanceFill"></div>
+                </div>
+                <div class="bracelet-id">ID: HP-2147-BR</div>
+                <!-- Botão de recarga integrado à pulseira -->
+                <button class="recharge-mini-btn" onclick="abrirRecarga()">↑ RECARREGAR</button>
+              </div>
+            </div>
+            <div class="ring-glow" id="ringGlow"></div>
+            <div class="scan-line"></div>
+          </div>
+          <div class="bracelet-label">◈ PULSEIRA HOLOPASS ATIVA ◈</div>
+        </div>
+
+        <!-- Estatísticas do mês (Fase 3 — aparece após login) -->
+        <div class="stats-panel glass-panel" id="statsPanel" style="display:none">
+          <div class="panel-title">◈ ESTE MÊS</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="statViagens">0</div>
+              <div class="stat-label">VIAGENS</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="statGasto">R$ 0</div>
+              <div class="stat-label">GASTO</div>
+            </div>
+            <div class="stat-item stat-linha">
+              <div class="stat-value" id="statLinha">-</div>
+              <div class="stat-label">LINHA FAVORITA</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico de viagens (Fase 3 — dinâmico) -->
+        <div class="history-panel glass-panel">
+          <div class="panel-title">◈ HISTÓRICO DE VIAGENS</div>
+          <div id="historyContent">
+            <div class="hist-empty">Faça login para ver seu histórico</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ---- COLUNA DIREITA ---- -->
+      <section class="control-panel">
+
+        <!-- Seleção de estações -->
+        <div class="stations-panel glass-panel">
+          <div class="panel-title">◈ INTERFACE DE NAVEGAÇÃO</div>
+          <div class="stations-grid">
+            <div class="station-select-group">
+              <label class="select-label"><span>📍</span> ESTAÇÃO ATUAL</label>
+              <div class="select-wrapper">
+                <select id="currentStation" class="station-select">
+                  <option value="">-- SELECIONAR --</option>
+                </select>
+              </div>
+            </div>
+            <div class="station-arrow">→</div>
+            <div class="station-select-group">
+              <label class="select-label"><span>🎯</span> DESTINO</label>
+              <div class="select-wrapper">
+                <select id="destination" class="station-select">
+                  <option value="">-- SELECIONAR --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcularRota()">
+            <span>⚡</span> CALCULAR ROTA
+          </button>
+        </div>
+
+        <!-- Painel de dados da viagem -->
+        <div class="journey-panel glass-panel" id="journeyPanel" style="display:none">
+          <div class="panel-title">◈ DADOS DA VIAGEM</div>
+
+          <div class="journey-grid">
+            <div class="journey-item">
+              <div class="journey-icon">🚇</div>
+              <div class="journey-label">LINHA</div>
+              <div class="journey-value" id="lineInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">📏</div>
+              <div class="journey-label">DISTÂNCIA</div>
+              <div class="journey-value" id="distanceInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">⏱️</div>
+              <div class="journey-label">TEMPO EST.</div>
+              <div class="journey-value" id="timeInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🛑</div>
+              <div class="journey-label">PARADAS</div>
+              <div class="journey-value" id="stopsInfo">-</div>
+            </div>
+          </div>
+
+          <!-- Dados em tempo real (Fase 2) -->
+          <div class="realtime-grid">
+            <div class="journey-item">
+              <div class="journey-icon">👥</div>
+              <div class="journey-label">LOTAÇÃO</div>
+              <div class="journey-value" id="occupancyText">-</div>
+              <div class="occ-bar"><div class="occ-fill" id="occFill"></div></div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🚆</div>
+              <div class="journey-label">PRÓXIMO TREM</div>
+              <div class="journey-value countdown" id="nextTrainDisplay">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🚃</div>
+              <div class="journey-label">VAGÃO IDEAL</div>
+              <div class="journey-value" id="wagonSuggest">-</div>
+            </div>
+          </div>
+
+          <div class="op-warning" id="opWarning" style="display:none"></div>
+
+          <div class="fare-section">
+            <div class="fare-display">
+              <span class="fare-label">TARIFA</span>
+              <span class="fare-value" id="fareDisplay">R$ 4,40</span>
+            </div>
+            <button class="pay-btn" onclick="pagarPassagem()">
+              <span class="nfc-icon">◈</span> APROXIMAR &amp; PAGAR
+            </button>
+          </div>
+
+          <div class="route-display" id="routeDisplay"></div>
+        </div>
+
+        <!-- Alertas dinâmicos -->
+        <div class="alerts-panel glass-panel">
+          <div class="panel-title">◈ ALERTAS DO SISTEMA <span class="alerts-count" id="alertsCount"></span></div>
+          <div id="alertsContent"></div>
+        </div>
+
+        <!-- ====== FASE 4: PAINEL DE DEVICE APIs ====== -->
+        <div class="device-panel glass-panel">
+          <div class="panel-title">◈ RECURSOS DO DISPOSITIVO</div>
+          <div class="device-grid">
+            <div class="device-item" id="dev-pwa">
+              <span class="dev-icon">📱</span>
+              <div class="dev-info">
+                <div class="dev-name">PWA INSTALÁVEL</div>
+                <div class="dev-status" id="statPwa">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-offline">
+              <span class="dev-icon">📡</span>
+              <div class="dev-info">
+                <div class="dev-name">MODO OFFLINE</div>
+                <div class="dev-status" id="statOffline">Aguardando SW...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-nfc">
+              <span class="dev-icon">📶</span>
+              <div class="dev-info">
+                <div class="dev-name">WEB NFC</div>
+                <div class="dev-status" id="statNfc">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-notif">
+              <span class="dev-icon">🔔</span>
+              <div class="dev-info">
+                <div class="dev-name">NOTIFICAÇÕES</div>
+                <div class="dev-status" id="statNotif">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-vibe">
+              <span class="dev-icon">📳</span>
+              <div class="dev-info">
+                <div class="dev-name">VIBRAÇÃO</div>
+                <div class="dev-status" id="statVibe">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-gps">
+              <span class="dev-icon">🛰️</span>
+              <div class="dev-info">
+                <div class="dev-name">GNSS (GPS / Galileo)</div>
+                <div class="dev-status" id="statGps">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-eo">
+              <span class="dev-icon">🌎</span>
+              <div class="dev-info">
+                <div class="dev-name">OBSERVAÇÃO DA TERRA</div>
+                <div class="dev-status" id="statEo">CBERS-4A · INPE · dados públicos</div>
+              </div>
+            </div>
+          </div>
+          <button class="test-btn" onclick="testarTodosRecursos()">
+            ⚡ ATIVAR &amp; TESTAR TODOS OS RECURSOS
+          </button>
+        </div>
+
+        <!-- Faixa informativa sobre a camada de Observação da Terra -->
+        <div class="glass-panel" style="margin-top:14px; padding:14px 18px; border-left:4px solid #00b3c4;">
+          <div class="panel-title" style="margin-bottom:6px;">🌎 CAMADA ESPACIAL BRASILEIRA</div>
+          <p style="margin:6px 0; font-size:13px; line-height:1.5; color:#cbd6e2;">
+            O HoloPass cruza a posição detectada por <strong>GNSS</strong> com imagens públicas dos satélites
+            brasileiros <strong>CBERS-4A</strong> (resolução 2 m, parceria Brasil–China)
+            e <strong>Amazonia-1</strong> (100% brasileiro, INPE/MCTI) para identificar áreas
+            urbanas mal atendidas pelo transporte coletivo — gerando informação de planejamento
+            para operadoras e prefeituras.
+          </p>
+          <p style="margin:6px 0 0; font-size:11px; color:#7d8b9c; font-style:italic;">
+            Imagens disponíveis gratuitamente em data.inpe.br · Camada conceitual nesta versão do protótipo.
+          </p>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ====================================================
+         WEB DEVELOPMENT — Slideshow · Quiz · Feedback (JS puro)
+         ==================================================== -->
+    <section class="webdev-section">
+      <div class="webdev-panel glass-panel">
+        <div class="proto-header">
+          <div class="panel-title">◈ CENTRAL DE CONHECIMENTO HOLOPASS</div>
+          <div class="proto-subtitle">
+            Slideshow do tema · quiz espacial de 10 perguntas · canal de feedback — tudo em JavaScript puro
+          </div>
+        </div>
+
+        <!-- ---- Slideshow (3 imagens) ---- -->
+        <div class="slideshow">
+          <div class="slides">
+            <figure class="slide active">
+              <img src="assets/slide1-gnss.svg" alt="Ilustração de posicionamento por satélite GNSS">
+              <figcaption>Posição por satélite (GNSS)</figcaption>
+            </figure>
+            <figure class="slide">
+              <img src="assets/slide2-nfc.svg" alt="Ilustração de pagamento por aproximação NFC na catraca">
+              <figcaption>Pague aproximando o pulso (NFC)</figcaption>
+            </figure>
+            <figure class="slide">
+              <img src="assets/slide3-edge.svg" alt="Ilustração do módulo Arduino embarcado com LED e buzzer">
+              <figcaption>Cálculo na borda (Edge Computing)</figcaption>
+            </figure>
+          </div>
+          <button class="slide-nav prev" id="slidePrev" aria-label="Slide anterior">‹</button>
+          <button class="slide-nav next" id="slideNext" aria-label="Próximo slide">›</button>
+          <div class="slide-dots">
+            <button class="slide-dot active" aria-label="Ir para o slide 1"></button>
+            <button class="slide-dot" aria-label="Ir para o slide 2"></button>
+            <button class="slide-dot" aria-label="Ir para o slide 3"></button>
+          </div>
+        </div>
+
+        <!-- ---- Quiz (10 perguntas) ---- -->
+        <div class="quiz">
+          <div class="panel-title small">◈ QUIZ: VOCÊ CONHECE O TEMA ESPACIAL?</div>
+          <div id="quizPerguntas"></div>
+          <div class="quiz-actions">
+            <button class="proto-btn" id="btnCorrigirQuiz">✓ VER RESULTADO</button>
+            <button class="proto-btn" id="btnReiniciarQuiz">↺ REINICIAR</button>
+          </div>
+          <div class="quiz-resultado" id="quizResultado"></div>
+        </div>
+
+        <!-- ---- Formulário de feedback (validação) ---- -->
+        <div class="feedback">
+          <div class="panel-title small">◈ FALE CONOSCO</div>
+          <form id="feedbackForm" novalidate>
+            <input type="text"  id="fbNome"  class="holo-input" placeholder="SEU NOME">
+            <input type="email" id="fbEmail" class="holo-input" placeholder="SEU E-MAIL">
+            <textarea id="fbMsg" class="holo-input" rows="3" placeholder="SUA MENSAGEM"></textarea>
+            <button type="submit" class="login-btn">ENVIAR FEEDBACK</button>
+          </form>
+          <div class="feedback-resultado" id="feedbackResultado"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         FASE 5 — PROTÓTIPO 3D DA PULSEIRA HOLOPASS
+         Visualização interativa com Three.js
+         ==================================================== -->
+    <section class="prototype-section">
+      <div class="proto-panel glass-panel">
+
+        <div class="proto-header">
+          <div class="panel-title">◈ PROTÓTIPO 3D DA PULSEIRA HOLOPASS</div>
+          <div class="proto-subtitle">
+            Couro slim · módulo baixo · vidro 2.5D · display próprio · NFC traseiro · sem depender do celular
+          </div>
+        </div>
+
+        <div class="proto-layout native-design-layout">
+          <div class="native-design-shell">
+            <iframe
+              class="proto-design-iframe"
+              src="design/HoloPass%20Band.html"
+              title="HoloPass Band - protótipo 3D original do arquivo Pulseira.zip"
+              loading="lazy">
+            </iframe>
+          </div>
+        </div>
+
+        <div class="design-brief design-brief-compact" id="designBrief">
+          <div class="design-notes">
+            <div class="proto-section-title">ARQUIVO USADO</div>
+            <ul class="design-list">
+              <li><span>Origem:</span> Pulseira.zip → HoloPass Band.html.</li>
+              <li><span>Decisão:</span> o MVP agora usa o design original diretamente, sem recriar o modelo em outro canvas.</li>
+            </ul>
+            <a class="proto-link-btn" href="design/HoloPass%20Band.html" target="_blank" rel="noopener">
+              ABRIR DESIGN EM TELA CHEIA
+            </a>
+          </div>
+
+          <div class="design-notes">
+            <div class="proto-section-title">POR QUE ESSE DESIGN FUNCIONA</div>
+            <ul class="design-list">
+              <li><span>Proporção:</span> pulseira mais fina, módulo baixo e tela integrada como smartband.</li>
+              <li><span>Uso real:</span> saldo e rota aparecem no display próprio, sem precisar tirar o celular.</li>
+              <li><span>Transporte:</span> NFC traseiro facilita aproximar o pulso da catraca rapidamente.</li>
+            </ul>
+          </div>
+
+          <div class="design-notes">
+            <div class="proto-section-title">PRÓXIMO PASSO</div>
+            <ul class="design-list">
+              <li><span>Modelagem:</span> criar uma vista explodida com bateria, NFC, display, motor de vibração e placa.</li>
+              <li><span>Protótipo físico:</span> simular com ESP32, RFID/NFC, OLED e vibração.</li>
+              <li><span>Acessibilidade:</span> validar vibração, alto contraste e botão discreto de emergência.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================
+         FASES 6 E 7 — RA + INTELIGÊNCIA ARTIFICIAL FUNCIONAIS
+         ==================================================== -->
+    <section class="future-section">
+      <div class="future-panel glass-panel">
+        <div class="proto-header">
+          <div class="panel-title">◈ CENTRAL AVANÇADA HOLOPASS</div>
+          <div class="proto-subtitle">
+            Fase 6 e Fase 7 funcionando no MVP: holograma 3D, RA simulada/compatível, gesto de pulso e IA de mobilidade
+          </div>
+        </div>
+
+        <div class="advanced-grid">
+          <article class="future-card phase6-card">
+            <div class="future-badge">FASE 6</div>
+            <h3>Interface 3D e Realidade Aumentada</h3>
+
+            <div class="holo-lab">
+              <canvas id="holo3dCanvas"></canvas>
+              <div class="holo-lab-status">
+                <span id="holoStatus">Holograma carregando...</span>
+              </div>
+            </div>
+
+            <div class="advanced-actions">
+              <button class="proto-btn" onclick="ativarHolograma3D()">◈ ATIVAR HOLOGRAMA</button>
+              <button class="proto-btn" onclick="iniciarRA()">▣ INICIAR RA / WEBXR</button>
+              <button class="proto-btn" onclick="ativarGestosPulso()">⌁ ATIVAR GESTO</button>
+              <button class="proto-btn" onclick="simularLevantarPulso()">↟ SIMULAR PULSO</button>
+            </div>
+
+            <div class="feature-status-grid">
+              <div class="feature-status">
+                <span>Three.js</span>
+                <strong id="statusThree">Verificando...</strong>
+              </div>
+              <div class="feature-status">
+                <span>WebXR</span>
+                <strong id="statusWebXR">Verificando...</strong>
+              </div>
+              <div class="feature-status">
+                <span>Gesto</span>
+                <strong id="statusGesture">Aguardando</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="future-card phase7-card">
+            <div class="future-badge ai">FASE 7</div>
+            <h3>Inteligência Artificial</h3>
+
+            <div class="ai-dashboard">
+              <div class="ai-metric">
+                <span>RISCO DE ATRASO</span>
+                <strong id="aiDelayRisk">--</strong>
+                <div class="ai-bar"><i id="aiDelayBar"></i></div>
+              </div>
+              <div class="ai-metric">
+                <span>LOTAÇÃO PREVISTA</span>
+                <strong id="aiCrowdRisk">--</strong>
+                <div class="ai-bar"><i id="aiCrowdBar"></i></div>
+              </div>
+              <div class="ai-output">
+                <span>ROTA INTELIGENTE</span>
+                <strong id="aiRouteSuggestion">Calcule uma rota para a IA analisar.</strong>
+              </div>
+              <div class="ai-output">
+                <span>PADRÃO DO USUÁRIO</span>
+                <strong id="aiPattern">Faça login demo para detectar padrões.</strong>
+              </div>
+            </div>
+
+            <div class="advanced-actions">
+              <button class="proto-btn" onclick="executarIA()">◇ ANALISAR COM IA</button>
+              <button class="proto-btn" onclick="aplicarRotaIA()">→ USAR ROTA IA</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="implementation-steps">
+          <div class="proto-section-title">PIPELINE ATIVO NO MVP</div>
+          <div class="steps-grid">
+            <div class="step-pill"><span>1</span> Rota calculada alimenta holograma 3D, painel de RA e modelo de IA.</div>
+            <div class="step-pill"><span>2</span> Gesto de pulso usa sensores do aparelho ou simulação no desktop.</div>
+            <div class="step-pill"><span>3</span> WebXR tenta RA real e abre overlay simulado quando não há suporte.</div>
+            <div class="step-pill"><span>4</span> IA cruza horário, clima simulado, linha, lotação e histórico local.</div>
+            <div class="step-pill"><span>5</span> Sistema sugere rota menos lotada e permite aplicar no MVP.</div>
+            <div class="step-pill"><span>6</span> Padrões de deslocamento aparecem sem enviar dados para servidor.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ar-overlay" id="arOverlay" style="display:none">
+      <div class="ar-camera-feed">
+        <div class="ar-grid"></div>
+        <div class="ar-card">
+          <div class="proto-section-title">MODO RA HOLOPASS</div>
+          <div class="ar-line" id="arLine">Linha: --</div>
+          <div class="ar-route" id="arRoute">Calcule uma rota para visualizar em RA.</div>
+          <div class="ar-eta" id="arEta">ETA: --</div>
+          <button class="proto-btn" onclick="fecharRA()">FECHAR RA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== FASE 4: BARRA DE AÇÕES MOBILE (fixa no rodapé) ====== -->
+    <nav class="mobile-actions" id="mobileActions">
+      <button class="action-btn" onclick="acaoGPS()" title="Detectar estação por satélite (GNSS)">
+        <span class="act-icon">🛰️</span>
+        <span class="act-label">GNSS</span>
+      </button>
+      <button class="action-btn primary" onclick="acaoNFC()" title="Aproximar pulseira NFC">
+        <span class="act-icon">◈</span>
+        <span class="act-label">NFC</span>
+      </button>
+      <button class="action-btn" onclick="acaoNotificar()" title="Ativar notificações">
+        <span class="act-icon">🔔</span>
+        <span class="act-label">ALERTA</span>
+      </button>
+      <button class="action-btn install-btn" id="installBtn" onclick="instalarApp()" title="Instalar como app">
+        <span class="act-icon">⬇</span>
+        <span class="act-label">INSTALAR</span>
+      </button>
+    </nav>
+
+    <div class="payment-status" id="paymentStatus"></div>
+
+    <footer class="footer">
+      ◈ HOLOPASS v7.0 · MVP + Protótipo 3D · Roadmap RA/WebXR · IA para Rotas e Atrasos ◈
+    </footer>
+  </div>
+
+  <script src="script.js?v=7.1"></script>
+  <script src="webdev.js?v=1"></script>
+</body>
+</html>

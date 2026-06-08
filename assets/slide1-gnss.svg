@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Posicionamento por satélite GNSS">
+  <rect width="640" height="300" fill="#04101e"/>
+  <g fill="#fff" opacity="0.7"><circle cx="80" cy="40" r="1.5"/><circle cx="200" cy="70" r="1"/><circle cx="540" cy="50" r="1.4"/><circle cx="600" cy="120" r="1"/><circle cx="360" cy="40" r="1"/></g>
+  <circle cx="320" cy="360" r="190" fill="#06243d" stroke="#00f5ff" stroke-opacity="0.35"/>
+  <g fill="none" stroke="#00f5ff"><circle cx="320" cy="120" r="46" opacity="0.5"/><circle cx="320" cy="120" r="74" opacity="0.28"/><circle cx="320" cy="120" r="102" opacity="0.14"/></g>
+  <g transform="translate(320 120)">
+    <rect x="-18" y="-15" width="36" height="30" rx="4" fill="#11202e" stroke="#00f5ff"/>
+    <rect x="-64" y="-11" width="40" height="22" rx="2" fill="#00aaff"/>
+    <rect x="24" y="-11" width="40" height="22" rx="2" fill="#00aaff"/>
+    <circle cx="0" cy="0" r="6" fill="#00ff88"/>
+  </g>
+  <text x="320" y="250" text-anchor="middle" font-family="Orbitron, monospace" font-size="26" font-weight="700" fill="#00f5ff">GNSS</text>
+  <text x="320" y="278" text-anchor="middle" font-family="monospace" font-size="14" fill="#9fb3c8">Sua posição vem do espaço — precisão em metros</text>
+</svg>

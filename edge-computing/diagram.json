@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "author": "Equipe HoloPass",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -110,
+      "left": 130,
+      "attrs": { "color": "cyan", "label": "Fix GNSS" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -60,
+      "left": 110,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -120,
+      "left": 230,
+      "attrs": { "volume": "0.1", "label": "Alerta chegada" }
+    }
+  ],
+  "connections": [
+    [ "uno:13", "r1:1", "green", [ "v0" ] ],
+    [ "r1:2", "led1:A", "green", [ "v0" ] ],
+    [ "led1:C", "uno:GND.1", "black", [ "v0" ] ],
+    [ "uno:8", "bz1:1", "green", [ "v0" ] ],
+    [ "bz1:2", "uno:GND.2", "black", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

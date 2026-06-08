@@ -1,0 +1,10 @@
+HoloPass — Pulseira Inteligente de Transporte por Satélite (GNSS)
+Global Solution 2026 · 1º Semestre · Indústria Espacial
+Engenharia de Software · 1º Ano · Presencial · FIAP
+
+INTEGRANTES
+- Nome: Thiago Souza de Lima | RM: 568732
+
+(Acrescente os demais integrantes da equipe, até 5, no formato acima.)
+
+Repositório GitHub: https://github.com/thiagoxzw/gs2026espg

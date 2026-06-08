@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoloPass — Transporte por Satélite | Landing Page</title>
+  <meta name="description" content="HoloPass: pulseira inteligente que usa satélite (GNSS) e NFC para o transporte público.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Reset + estilos (separação conteúdo/estilo) -->
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+</head>
+<body>
+
+  <!-- ===== NAVEGAÇÃO ===== -->
+  <header class="nav">
+    <div class="nav__brand">
+      <img src="img/logo.svg" alt="Logo do HoloPass">
+      <span>HOLOPASS</span>
+    </div>
+    <nav class="nav__menu" aria-label="Navegação principal">
+      <a href="#problema">Problema</a>
+      <a href="#tecnologia">Tecnologia</a>
+      <a href="#objetivos">Objetivos</a>
+      <a href="#publico">Público-alvo</a>
+      <a href="#beneficios">Benefícios</a>
+      <a href="#aplicacao">No dia a dia</a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero__content">
+        <h1>O código que move o universo, <span>movendo as cidades</span>.</h1>
+        <p>HoloPass é a pulseira que paga a passagem por NFC e localiza você por satélite — sem celular.</p>
+        <a class="btn" href="#problema">Conhecer a solução</a>
+      </div>
+      <div class="hero__media">
+        <img src="img/hero-satellite.svg" alt="Satélite GNSS emitindo sinal de posicionamento para a Terra">
+      </div>
+    </section>
+
+    <!-- ===== 1. PROBLEMA ===== -->
+    <section class="section" id="problema">
+      <span class="section__tag">Seção 1</span>
+      <h2 class="section__title">O Problema</h2>
+      <div class="split">
+        <div class="split__text">
+          <p>Manusear o celular em estações lotadas expõe o aparelho ao furto todos os dias.</p>
+          <p>Bilhetes e cartões físicos geram filas, perdas e fraudes — e excluem quem não usa apps.</p>
+        </div>
+        <div class="split__media">
+          <img src="img/city-metro.svg" alt="Cidade com linha de metrô e estações conectadas">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. TECNOLOGIA ===== -->
+    <section class="section" id="tecnologia">
+      <span class="section__tag">Seção 2</span>
+      <h2 class="section__title">A Tecnologia</h2>
+      <p>Usamos posicionamento por satélite (GNSS) e NFC, com a fórmula de Haversine para distâncias reais.</p>
+      <div class="cards">
+        <article class="card">
+          <div class="card__icon">🛰️</div>
+          <h3>GNSS</h3>
+          <p>GPS, Galileo, GLONASS e BeiDou localizam a estação com precisão em metros.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">◈</div>
+          <h3>NFC</h3>
+          <p>Pagamento por aproximação do pulso, sem cartão e sem celular.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🌎</div>
+          <h3>Satélites do INPE</h3>
+          <p>Imagens do CBERS-4A e Amazonia-1 apontam áreas mal atendidas.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">⚙️</div>
+          <h3>Edge + Web</h3>
+          <p>Arduino embarcado e app PWA que funciona offline.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== 3. OBJETIVOS ===== -->
+    <section class="section" id="objetivos">
+      <span class="section__tag">Seção 3</span>
+      <h2 class="section__title">Os Objetivos</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="card__icon">🔒</div>
+          <h3>Mais segurança</h3>
+          <p>Viajar sem expor o celular nas estações e nos veículos.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">♿</div>
+          <h3>Mais inclusão</h3>
+          <p>Funcionar para quem não tem smartphone ou tem dificuldade com apps.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">📈</div>
+          <h3>Mais eficiência</h3>
+          <p>Antecipar atrasos, sugerir rotas e reduzir filas e fraudes.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== 4. PÚBLICO-ALVO ===== -->
+    <section class="section" id="publico">
+      <span class="section__tag">Seção 4</span>
+      <h2 class="section__title">Público-alvo</h2>
+      <div class="split split--reverse">
+        <div class="split__text">
+          <p>Trabalhadores e estudantes que usam metrô e trem todos os dias na cidade.</p>
+          <p>Idosos e pessoas com pouca familiaridade com aplicativos de transporte no celular.</p>
+        </div>
+        <div class="split__media">
+          <img src="img/bracelet.svg" alt="Pulseira HoloPass com display mostrando saldo e antena NFC">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. BENEFÍCIOS ===== -->
+    <section class="section" id="beneficios">
+      <span class="section__tag">Seção 5</span>
+      <h2 class="section__title">Os Benefícios</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="card__icon">⚡</div>
+          <h3>Passe rápido</h3>
+          <p>Aproxime o pulso da catraca e siga viagem na hora.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">📍</div>
+          <h3>Sempre localizado</h3>
+          <p>A pulseira sabe sua estação e avisa a chegada.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🔔</div>
+          <h3>Avisos úteis</h3>
+          <p>Alertas de desembarque, lotação e melhor vagão.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">📡</div>
+          <h3>Funciona offline</h3>
+          <p>Continua útil mesmo sem internet durante a viagem.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== 6. APLICAÇÃO NO DIA A DIA ===== -->
+    <section class="section" id="aplicacao">
+      <span class="section__tag">Seção 6</span>
+      <h2 class="section__title">Aplicação no Dia a Dia</h2>
+      <div class="split">
+        <div class="split__text">
+          <p>De manhã, você toca o pulso na catraca e a viagem começa sem fila.</p>
+          <p>No trajeto, a pulseira vibra ao chegar e mostra a rota menos lotada.</p>
+        </div>
+        <div class="split__media">
+          <img src="img/hero-satellite.svg" alt="Satélite acompanhando a viagem do usuário em tempo real">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== RODAPÉ PADRONIZADO ===== -->
+  <footer class="footer">
+    <div class="footer__brand">
+      <strong>◈ HoloPass</strong> · Global Solution 2026 · Indústria Espacial
+    </div>
+    <div class="footer__team">
+      <span>Thiago — RM 568732</span>
+    </div>
+  </footer>
+
+</body>
+</html>
