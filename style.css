@@ -224,6 +224,7 @@ body {
     inset 0 0 22px rgba(0,245,255,0.08);
   transition: border-color 0.5s, box-shadow 0.5s;
   animation: ringPulse 3.5s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes ringPulse {
@@ -569,6 +570,78 @@ body {
   border-radius: 6px;
   font-size: 0.72rem;
   min-height: 38px;
+}
+
+.route-timeline {
+  position: relative;
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.route-timeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 27px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan), var(--neon-gold));
+  opacity: 0.3;
+}
+
+.route-step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 8px 5px 0;
+  color: var(--neon-cyan);
+  animation: routeStepIn 0.45s ease both;
+  animation-delay: var(--step-delay, 0ms);
+}
+
+.route-step:not(:last-child)::after {
+  content: '';
+  width: 18px;
+  height: 2px;
+  margin-left: 2px;
+  background: rgba(0,245,255,0.28);
+  box-shadow: 0 0 8px rgba(0,245,255,0.3);
+}
+
+.route-node {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: rgba(2,11,24,0.95);
+  box-shadow: 0 0 10px currentColor;
+  flex: 0 0 auto;
+}
+
+.route-label {
+  max-width: 132px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route-step.current { color: var(--neon-green); font-weight: bold; }
+.route-step.destination { color: var(--neon-gold); font-weight: bold; }
+.route-step.transfer { color: var(--neon-purple); }
+
+.route-gap {
+  align-items: center;
+  padding: 5px 12px;
+  color: rgba(0,245,255,0.45);
+  letter-spacing: 3px;
+}
+
+@keyframes routeStepIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .route-station {

@@ -2749,11 +2749,13 @@ function calcularRotaDireta(nomeLinha, origem, destino) {
   const paradas  = Math.abs(iD - iO);
   const inicio   = Math.min(iO, iD);
   const fim      = Math.max(iO, iD);
+  const trecho   = linha.estacoes.slice(inicio, fim + 1);
+  if (iO > iD) trecho.reverse();
 
   return montarRota({
     tipo: 'direta',
     linhas: [nomeLinha],
-    estacoes: linha.estacoes.slice(inicio, fim + 1),
+    estacoes: trecho,
     origem, destino, paradas, transferencias: [], extra: 0
   });
 }
@@ -2903,34 +2905,37 @@ function exibirRota(rota) {
 function renderizarRotaVisual(rota) {
   const c = document.getElementById('routeDisplay');
   c.innerHTML = '';
+  c.className = 'route-display route-timeline';
 
-  let lista = rota.estacoes;
+  let lista = rota.estacoes.map((est, index) => ({ est, index }));
   if (lista.length > 9) {
-    lista = [...rota.estacoes.slice(0, 3), '···', ...rota.estacoes.slice(-3)];
+    lista = [
+      ...rota.estacoes.slice(0, 3).map((est, index) => ({ est, index })),
+      { est: '···', index: -1 },
+      ...rota.estacoes.slice(-3).map((est, offset) => ({
+        est,
+        index: rota.estacoes.length - 3 + offset
+      }))
+    ];
   }
 
-  lista.forEach((est, i) => {
-    if (i > 0) {
-      const seta = document.createElement('span');
-      seta.className   = 'route-arrow';
-      seta.textContent = ' › ';
-      c.appendChild(seta);
-    }
-
-    const chip = document.createElement('span');
+  lista.forEach(({ est, index }, i) => {
+    const step = document.createElement('span');
 
     if (est === '···') {
-      chip.className   = 'route-dots';
-      chip.textContent = '···';
+      step.className   = 'route-step route-gap';
+      step.textContent = '···';
     } else {
-      chip.className   = 'route-station';
-      chip.textContent = est;
-      if (est === rota.origem)                              chip.classList.add('current');
-      if (est === rota.destino)                             chip.classList.add('destination');
-      if (rota.transferencias && rota.transferencias.includes(est)) chip.classList.add('transfer');
+      step.className   = 'route-step';
+      step.style.setProperty('--step-delay', `${Math.min(i, 8) * 90}ms`);
+      step.innerHTML = `<span class="route-node"></span><span class="route-label">${est}</span>`;
+      if (est === rota.origem) step.classList.add('current');
+      if (est === rota.destino) step.classList.add('destination');
+      if (rota.transferencias && rota.transferencias.includes(est)) step.classList.add('transfer');
+      if (index >= 0) step.title = `Parada ${index + 1} de ${rota.estacoes.length}`;
     }
 
-    c.appendChild(chip);
+    c.appendChild(step);
   });
 }
 
