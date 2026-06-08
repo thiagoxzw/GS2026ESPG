@@ -1,46 +1,32 @@
-# HoloPass - Design do Protótipo
+# HoloPass - Design fisico da pulseira
 
-Esta pasta guarda o re-design visual da pulseira HoloPass.
+Esta pasta guarda a referencia visual local do design fisico da pulseira
+HoloPass usada no app principal.
 
 ## Arquivos
 
-- `holopass-band-redesign.html`: estudo 3D separado, com a pulseira em tela cheia.
-- `holopass-band-redesign-preview.png`: imagem usada como prévia dentro do MVP principal.
+- `holopass-band-redesign-preview.png`: imagem local exibida no app web.
 
-## Decisão principal
+## Decisao de produto
 
-O HoloPass deve funcionar sem depender do celular durante o transporte. Por isso, o módulo central precisa ter display próprio, vidro de proteção, antena NFC, bateria e vibração dentro da própria pulseira.
+O HoloPass foi simplificado para focar no que melhora a nota e a viabilidade:
+uma pulseira realista com display proprio, antena NFC, vibracao, bateria e
+processamento embarcado. A antiga experiencia visual futurista foi removida da entrega
+principal porque nao era requisito obrigatorio e aumentava risco de desempenho,
+links externos e manutencao.
 
-## O que melhorou no conceito
+## Diretrizes do design
 
-- O módulo não parece mais colado na pulseira: ele fica em um berço metálico baixo, embutido no couro.
-- O display fica protegido por vidro curvado 2.5D, como em uma smartband.
-- A área NFC fica na parte traseira/inferior, facilitando aproximar o pulso da catraca.
-- O holograma continua como simulação visual futurista, mas a experiência real fica garantida pelo display e pela vibração.
+- Modulo baixo com vidro 2.5D para leitura rapida de saldo, rota e chegada.
+- Area NFC traseira para aproximar o pulso da catraca de forma natural.
+- Vibracao como alerta acessivel para chegada, erro ou pagamento aprovado.
+- Estrutura modular para troca de pulseira, bateria ou modulo eletronico.
+- Uso viavel com componentes educacionais: OLED/AMOLED pequeno, RFID/NFC,
+  motor de vibracao e microcontrolador.
 
-## Pontos que ainda precisam ser decididos
+## Proximo passo fisico
 
-- Material final da pulseira: couro slim, silicone, tecido técnico ou material híbrido.
-- Tipo de fecho: magnético, encaixe por trilho ou presilha simples.
-- Tamanho real do módulo para caber bateria, NFC, microcontrolador e display.
-- Resistência contra suor, chuva, queda, atrito e uso diário.
-- Modo de acessibilidade: vibração, áudio opcional, alto contraste e botão de emergência.
-- Segurança de dados e pagamento: autenticação, criptografia e bloqueio em caso de perda.
-
-## Próximo passo de prototipagem
-
-Criar uma versão física simples com ESP32, RFID/NFC, display OLED e motor de vibração. Essa versão não precisa ter pagamento real; ela deve apenas simular identificação, saldo, estação detectada e aviso de rota.
-
-## Fase 6 - Interface 3D e RA
-
-- O MVP agora tem um canvas Three.js para criar o holograma 3D no navegador.
-- O botão de RA tenta usar WebXR e abre uma sobreposição simulada quando o aparelho não é compatível.
-- O botão de gesto tenta ler sensores do aparelho e também tem simulação de levantar o pulso.
-- Manter a pulseira funcional sem celular; RA deve ser recurso extra, não requisito para pagar passagem.
-
-## Fase 7 - Inteligência artificial
-
-- O MVP calcula risco de atraso usando horário, clima simulado, linha, paradas e baldeações.
-- O sistema sugere rota menos lotada/mais eficiente entre candidatas possíveis.
-- O histórico local detecta padrões de deslocamento do usuário para antecipar destino provável.
-- Proteger dados pessoais com criptografia e opção de apagar histórico.
+Construir uma versao simples com ESP32 ou Arduino, display OLED, RFID/NFC,
+motor de vibracao e bateria. O pagamento real nao precisa ser implementado no
+protótipo educacional; basta demonstrar identificacao, saldo, estacao detectada
+e alerta de rota.

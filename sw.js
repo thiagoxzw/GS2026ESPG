@@ -1,9 +1,9 @@
 // ============================================================
-// HOLOPASS — SERVICE WORKER (Fase 4)
+// HOLOPASS — SERVICE WORKER
 // Permite que o app funcione 100% offline e receba notificações
 // ============================================================
 
-const CACHE_NAME = 'holopass-v7.4';
+const CACHE_NAME = 'holopass-v7.5';
 
 // Arquivos que serão guardados em cache para uso offline
 const ARQUIVOS_CACHE = [
@@ -17,8 +17,6 @@ const ARQUIVOS_CACHE = [
   './assets/slide1-gnss.svg',
   './assets/slide2-nfc.svg',
   './assets/slide3-edge.svg',
-  './design/HoloPass Band.html',
-  './design/holopass-band-redesign.html',
   './design/holopass-band-redesign-preview.png',
   './design/README.md'
 ];
@@ -27,7 +25,7 @@ const ARQUIVOS_CACHE = [
 // INSTALAÇÃO — guarda todos os arquivos no cache
 // ============================================================
 self.addEventListener('install', evento => {
-  console.log('[SW] Instalando HoloPass v7.4...');
+  console.log('[SW] Instalando HoloPass v7.5...');
   evento.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {

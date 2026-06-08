@@ -1,7 +1,7 @@
 {
   "name": "HoloPass — Pulseira Inteligente de Transporte",
   "short_name": "HoloPass",
-  "description": "Sistema holográfico de transporte público com NFC, holograma simulado e IA",
+  "description": "Pulseira inteligente de transporte público com GNSS, NFC, rotas e PWA offline",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

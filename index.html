@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HoloPass — Fase 7 | RA + IA</title>
-  <link rel="stylesheet" href="style.css?v=7.1">
+  <title>HoloPass — Mobilidade Inteligente por GNSS e NFC</title>
+  <link rel="stylesheet" href="style.css?v=7.5">
 
-  <!-- ====== FASE 6: THREE.JS para holograma 3D funcional ====== -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-
-  <!-- ====== FASE 4: PWA META TAGS ====== -->
+  <!-- ====== PWA META TAGS ====== -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00f5ff">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -30,7 +27,7 @@
   <div class="holo-grid"></div>
 
   <!-- ======================================================
-       FASE 3 — OVERLAY DE LOGIN / CADASTRO
+       OVERLAY DE LOGIN / CADASTRO
        Aparece quando não há sessão salva.
        ====================================================== -->
   <div class="login-overlay" id="loginOverlay">
@@ -76,13 +73,13 @@
       </div>
 
       <div class="login-info">
-        🔒 Dados salvos localmente no dispositivo · Fase 3.5: Firebase
+        🔒 Dados salvos localmente no dispositivo
       </div>
     </div>
   </div>
 
   <!-- ======================================================
-       FASE 3 — MODAL DE RECARGA DE SALDO
+       MODAL DE RECARGA DE SALDO
        ====================================================== -->
   <div class="modal-overlay" id="rechargeModal" style="display:none">
     <div class="modal-box glass-panel">
@@ -124,7 +121,7 @@
         <div class="logo-icon">◈</div>
         <div class="logo-text">
           <span class="logo-main">HOLOPASS</span>
-          <span class="logo-sub">SISTEMA HOLOGRÁFICO DE TRANSPORTE INTELIGENTE</span>
+          <span class="logo-sub">MOBILIDADE INTELIGENTE POR GNSS E NFC</span>
         </div>
         <div class="logo-icon">◈</div>
       </div>
@@ -132,7 +129,7 @@
         <span class="status-item"><span class="dot green"></span> NFC ATIVO</span>
         <span class="status-item"><span class="dot blue"></span> BLUETOOTH</span>
         <span class="status-item"><span class="dot cyan"></span> CONECTADO</span>
-        <span class="phase-badge">FASE 7 — RA + IA</span>
+        <span class="phase-badge">CENTRAL GNSS + NFC</span>
         <span class="conn-status" id="connStatus">◉ ONLINE</span>
         <span class="time" id="currentTime">00:00:00</span>
         <span class="theme-switch" role="group" aria-label="Trocar tema de cor da página">
@@ -150,7 +147,7 @@
       <!-- ---- COLUNA ESQUERDA ---- -->
       <section class="bracelet-section">
 
-        <!-- Painel do usuário logado (Fase 3) -->
+        <!-- Painel do usuário logado -->
         <div class="user-panel glass-panel" id="userPanel" style="display:none">
           <div class="panel-title">◈ USUÁRIO IDENTIFICADO</div>
           <div class="user-info-row">
@@ -184,7 +181,7 @@
           <div class="bracelet-label">◈ PULSEIRA HOLOPASS ATIVA ◈</div>
         </div>
 
-        <!-- Estatísticas do mês (Fase 3 — aparece após login) -->
+        <!-- Estatísticas do mês -->
         <div class="stats-panel glass-panel" id="statsPanel" style="display:none">
           <div class="panel-title">◈ ESTE MÊS</div>
           <div class="stats-grid">
@@ -203,7 +200,7 @@
           </div>
         </div>
 
-        <!-- Histórico de viagens (Fase 3 — dinâmico) -->
+        <!-- Histórico de viagens -->
         <div class="history-panel glass-panel">
           <div class="panel-title">◈ HISTÓRICO DE VIAGENS</div>
           <div id="historyContent">
@@ -270,7 +267,7 @@
             </div>
           </div>
 
-          <!-- Dados em tempo real (Fase 2) -->
+          <!-- Dados operacionais estimados -->
           <div class="realtime-grid">
             <div class="journey-item">
               <div class="journey-icon">👥</div>
@@ -280,7 +277,7 @@
             </div>
             <div class="journey-item">
               <div class="journey-icon">🚆</div>
-              <div class="journey-label">PRÓXIMO TREM</div>
+              <div class="journey-label">TREM ESTIMADO</div>
               <div class="journey-value countdown" id="nextTrainDisplay">-</div>
             </div>
             <div class="journey-item">
@@ -311,7 +308,7 @@
           <div id="alertsContent"></div>
         </div>
 
-        <!-- ====== FASE 4: PAINEL DE DEVICE APIs ====== -->
+        <!-- ====== PAINEL DE DEVICE APIs ====== -->
         <div class="device-panel glass-panel">
           <div class="panel-title">◈ RECURSOS DO DISPOSITIVO</div>
           <div class="device-grid">
@@ -378,7 +375,7 @@
             <div class="eo-copy">
               <div class="eo-badge">DEMO CONCEITUAL · NÃO É DADO SATELITAL REAL</div>
               <p>
-                O protótipo cruza a estação detectada por <strong>GNSS</strong> com uma leitura urbana
+                O HoloPass cruza a estação detectada por <strong>GNSS</strong> com uma leitura urbana
                 conceitual inspirada em imagens públicas do <strong>INPE</strong>.
               </p>
               <p>
@@ -456,16 +453,14 @@
     </section>
 
     <!-- ====================================================
-         FASE 5 — PROTÓTIPO 3D DA PULSEIRA HOLOPASS
-         Visualização interativa com Three.js
+         DESIGN FÍSICO DA PULSEIRA HOLOPASS
          ==================================================== -->
-    <section class="prototype-section">
+    <section class="prototype-section product-design-section">
       <div class="proto-panel glass-panel">
-
         <div class="proto-header">
-          <div class="panel-title">◈ PROTÓTIPO 3D DA PULSEIRA HOLOPASS</div>
+          <div class="panel-title">◈ DESIGN FÍSICO DA PULSEIRA HOLOPASS</div>
           <div class="proto-subtitle">
-            Couro slim · módulo baixo · vidro 2.5D · display próprio · NFC traseiro · sem depender do celular
+            Pulseira fina, módulo baixo, vidro 2.5D, display próprio, NFC traseiro e vibração para uso real na catraca.
           </div>
         </div>
 
@@ -474,152 +469,112 @@
             <img
               class="proto-design-preview"
               src="design/holopass-band-redesign-preview.png"
-              alt="Prévia local do protótipo 3D da pulseira HoloPass com display e NFC">
-            <div class="proto-preview-caption">Preview local otimizado · abra o render completo só quando precisar girar o modelo</div>
+              alt="Design físico da pulseira HoloPass com display integrado, corpo fino e área NFC traseira">
+            <div class="proto-preview-caption">Design local otimizado · referência visual para a pulseira física viável</div>
           </div>
         </div>
 
         <div class="design-brief design-brief-compact" id="designBrief">
           <div class="design-notes">
-            <div class="proto-section-title">ARQUIVO USADO</div>
+            <div class="proto-section-title">ARQUITETURA FÍSICA</div>
             <ul class="design-list">
-              <li><span>Origem:</span> Pulseira.zip → HoloPass Band.html.</li>
-              <li><span>Decisão:</span> o MVP agora usa o design original diretamente, sem recriar o modelo em outro canvas.</li>
-            </ul>
-            <a class="proto-link-btn" href="design/HoloPass%20Band.html" target="_blank" rel="noopener">
-              ABRIR DESIGN EM TELA CHEIA
-            </a>
-          </div>
-
-          <div class="design-notes">
-            <div class="proto-section-title">POR QUE ESSE DESIGN FUNCIONA</div>
-            <ul class="design-list">
-              <li><span>Proporção:</span> pulseira mais fina, módulo baixo e tela integrada como smartband.</li>
-              <li><span>Uso real:</span> saldo e rota aparecem no display próprio, sem precisar tirar o celular.</li>
-              <li><span>Transporte:</span> NFC traseiro facilita aproximar o pulso da catraca rapidamente.</li>
+              <li><span>Módulo:</span> microcontrolador, display, antena NFC, motor de vibração e bateria em corpo compacto.</li>
+              <li><span>NFC:</span> área traseira voltada para aproximação natural do pulso na catraca.</li>
+              <li><span>GNSS:</span> leitura de posição no dispositivo e diagnóstico de precisão no app.</li>
             </ul>
           </div>
 
           <div class="design-notes">
-            <div class="proto-section-title">PRÓXIMO PASSO</div>
+            <div class="proto-section-title">POR QUE É VIÁVEL</div>
             <ul class="design-list">
-              <li><span>Modelagem:</span> criar uma vista explodida com bateria, NFC, display, motor de vibração e placa.</li>
-              <li><span>Protótipo físico:</span> simular com ESP32, RFID/NFC, OLED e vibração.</li>
-              <li><span>Acessibilidade:</span> validar vibração, alto contraste e botão discreto de emergência.</li>
+              <li><span>Uso real:</span> a pulseira mostra saldo, rota e aviso de chegada sem expor o celular.</li>
+              <li><span>Componentes:</span> display OLED/AMOLED pequeno, módulo NFC/RFID e vibração já existem em protótipos educacionais.</li>
+              <li><span>Entrega:</span> o app demonstra a lógica enquanto o Arduino simula a camada embarcada.</li>
+            </ul>
+          </div>
+
+          <div class="design-notes">
+            <div class="proto-section-title">VALIDAÇÃO</div>
+            <ul class="design-list">
+              <li><span>Acessibilidade:</span> alto contraste, vibração e leitura rápida para passageiros sem smartphone.</li>
+              <li><span>Segurança:</span> menos manuseio do celular em estações lotadas.</li>
+              <li><span>Manutenção:</span> design modular para trocar pulseira, bateria ou módulo eletrônico.</li>
             </ul>
           </div>
         </div>
-
       </div>
     </section>
 
     <!-- ====================================================
-         FASES 6 E 7 — RA + INTELIGÊNCIA ARTIFICIAL FUNCIONAIS
+         MOTOR HOLOROUTE E CENTRAL OPERACIONAL
          ==================================================== -->
-    <section class="future-section">
+    <section class="future-section holoroute-section">
       <div class="future-panel glass-panel">
         <div class="proto-header">
-          <div class="panel-title">◈ CENTRAL AVANÇADA HOLOPASS</div>
+          <div class="panel-title">◈ HOLOROUTE · OTIMIZADOR DE VIAGEM</div>
           <div class="proto-subtitle">
-            Fase 6 e Fase 7 funcionando no MVP: holograma 3D, RA simulada/compatível, gesto de pulso e IA de mobilidade
+            Motor determinístico de decisão: cruza rota, baldeações, operação, lotação simulada e saldo sem usar dados externos não comprovados.
           </div>
         </div>
 
-        <div class="advanced-grid">
-          <article class="future-card phase6-card">
-            <div class="future-badge">FASE 6</div>
-            <h3>Interface 3D e Realidade Aumentada</h3>
-
-            <div class="holo-lab">
-              <canvas id="holo3dCanvas"></canvas>
-              <div class="holo-lab-status">
-                <span id="holoStatus">Holograma carregando...</span>
+        <div class="advanced-grid holoroute-grid">
+          <article class="future-card route-engine-card">
+            <div class="future-badge">GNSS + REDE</div>
+            <h3>Rota operacional explicável</h3>
+            <div class="route-dashboard holoroute-dashboard">
+              <div class="route-metric">
+                <span>RISCO DE ATRASO</span>
+                <strong id="routeDelayRisk">--</strong>
+                <div class="route-bar"><i id="routeDelayBar"></i></div>
+              </div>
+              <div class="route-metric">
+                <span>LOTAÇÃO ESTIMADA</span>
+                <strong id="routeCrowdRisk">--</strong>
+                <div class="route-bar"><i id="routeCrowdBar"></i></div>
+              </div>
+              <div class="route-output">
+                <span>RECOMENDAÇÃO HOLOROUTE</span>
+                <strong id="routeSuggestion">Calcule uma rota para ver a recomendação.</strong>
+              </div>
+              <div class="route-output">
+                <span>PADRÃO LOCAL</span>
+                <strong id="routePattern">Faça login demo para avaliar histórico local.</strong>
               </div>
             </div>
 
             <div class="advanced-actions">
-              <button class="proto-btn" onclick="ativarHolograma3D()">◈ ATIVAR HOLOGRAMA</button>
-              <button class="proto-btn" onclick="iniciarRA()">▣ INICIAR RA / WEBXR</button>
-              <button class="proto-btn" onclick="ativarGestosPulso()">⌁ ATIVAR GESTO</button>
-              <button class="proto-btn" onclick="simularLevantarPulso()">↟ SIMULAR PULSO</button>
-            </div>
-
-            <div class="feature-status-grid">
-              <div class="feature-status">
-                <span>Three.js</span>
-                <strong id="statusThree">Verificando...</strong>
-              </div>
-              <div class="feature-status">
-                <span>WebXR</span>
-                <strong id="statusWebXR">Verificando...</strong>
-              </div>
-              <div class="feature-status">
-                <span>Gesto</span>
-                <strong id="statusGesture">Aguardando</strong>
-              </div>
+              <button class="proto-btn" onclick="executarHoloRoute()">↻ ATUALIZAR HOLOROUTE</button>
+              <button class="proto-btn" onclick="aplicarRotaHoloRoute()">✓ APLICAR RECOMENDAÇÃO</button>
             </div>
           </article>
 
-          <article class="future-card phase7-card">
-            <div class="future-badge ai">FASE 7</div>
-            <h3>Inteligência Artificial</h3>
-
-            <div class="ai-dashboard">
-              <div class="ai-metric">
-                <span>RISCO DE ATRASO</span>
-                <strong id="aiDelayRisk">--</strong>
-                <div class="ai-bar"><i id="aiDelayBar"></i></div>
-              </div>
-              <div class="ai-metric">
-                <span>LOTAÇÃO PREVISTA</span>
-                <strong id="aiCrowdRisk">--</strong>
-                <div class="ai-bar"><i id="aiCrowdBar"></i></div>
-              </div>
-              <div class="ai-output">
-                <span>ROTA INTELIGENTE</span>
-                <strong id="aiRouteSuggestion">Calcule uma rota para a IA analisar.</strong>
-              </div>
-              <div class="ai-output">
-                <span>PADRÃO DO USUÁRIO</span>
-                <strong id="aiPattern">Faça login demo para detectar padrões.</strong>
-              </div>
-            </div>
-
-            <div class="advanced-actions">
-              <button class="proto-btn" onclick="executarIA()">◇ ANALISAR COM IA</button>
-              <button class="proto-btn" onclick="aplicarRotaIA()">→ USAR ROTA IA</button>
-            </div>
+          <article class="future-card route-engine-card">
+            <div class="future-badge">IMPACTO URBANO</div>
+            <h3>Prioridade de novas estações</h3>
+            <ul class="future-list">
+              <li><span>Entrada:</span> posição GNSS do passageiro e distância até estações existentes.</li>
+              <li><span>Critério:</span> regiões com maior distância média, baixa cobertura e maior dependência de integração.</li>
+              <li><span>Saída:</span> mapa de calor conceitual para priorizar estudos de construção e conexão.</li>
+              <li><span>Honestidade:</span> a camada é demonstrativa; dados reais exigiriam base pública/operacional validada.</li>
+            </ul>
           </article>
         </div>
 
         <div class="implementation-steps">
-          <div class="proto-section-title">PIPELINE ATIVO NO MVP</div>
+          <div class="proto-section-title">COMO O HOLOROUTE DECIDE</div>
           <div class="steps-grid">
-            <div class="step-pill"><span>1</span> Rota calculada alimenta holograma 3D, painel de RA e modelo de IA.</div>
-            <div class="step-pill"><span>2</span> Gesto de pulso usa sensores do aparelho ou simulação no desktop.</div>
-            <div class="step-pill"><span>3</span> WebXR tenta RA real e abre overlay simulado quando não há suporte.</div>
-            <div class="step-pill"><span>4</span> IA cruza horário, clima simulado, linha, lotação e histórico local.</div>
-            <div class="step-pill"><span>5</span> Sistema sugere rota menos lotada e permite aplicar no MVP.</div>
-            <div class="step-pill"><span>6</span> Padrões de deslocamento aparecem sem enviar dados para servidor.</div>
+            <div class="step-pill"><span>1</span> Monta a malha como grafo de estações, linhas e corredores de transferência.</div>
+            <div class="step-pill"><span>2</span> Calcula a rota com menor custo operacional, não apenas linha reta.</div>
+            <div class="step-pill"><span>3</span> Separa distância GNSS aproximada de distância operacional estimada.</div>
+            <div class="step-pill"><span>4</span> Mostra baldeações reais, como Linha 9 → Linha 4 → Linha 2.</div>
+            <div class="step-pill"><span>5</span> Explica risco, lotação e próximo trem como estimativas locais, sem prometer API real.</div>
+            <div class="step-pill"><span>6</span> Mantém histórico no dispositivo para privacidade e funcionamento offline.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="ar-overlay" id="arOverlay" style="display:none" aria-hidden="true">
-      <div class="ar-camera-feed">
-        <div class="ar-grid"></div>
-        <div class="ar-card">
-          <div class="proto-section-title">MODO RA HOLOPASS</div>
-          <div class="ar-line" id="arLine">Linha: --</div>
-          <div class="ar-route" id="arRoute">Calcule uma rota para visualizar em RA.</div>
-          <div class="ar-eta" id="arEta">ETA: --</div>
-          <button type="button" class="proto-btn" onclick="fecharRA()">FECHAR RA</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== FASE 4: BARRA DE AÇÕES MOBILE (fixa no rodapé) ====== -->
+    <!-- ====== BARRA DE AÇÕES MOBILE (fixa no rodapé) ====== -->
     <nav class="mobile-actions" id="mobileActions">
       <button class="action-btn" onclick="acaoGPS()" title="Detectar estação por satélite (GNSS)">
         <span class="act-icon">🛰️</span>
@@ -642,11 +597,11 @@
     <div class="payment-status" id="paymentStatus"></div>
 
     <footer class="footer">
-      ◈ HOLOPASS v7.0 · MVP + Protótipo 3D · Roadmap RA/WebXR · IA para Rotas e Atrasos ◈
+      ◈ HOLOPASS · GNSS · NFC · ROTAS · PWA OFFLINE · OBSERVAÇÃO DA TERRA CONCEITUAL ◈
     </footer>
   </div>
 
-  <script src="script.js?v=7.1"></script>
+  <script src="script.js?v=7.5"></script>
   <script src="webdev.js?v=1"></script>
 </body>
 </html>

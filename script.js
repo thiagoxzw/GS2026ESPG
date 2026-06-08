@@ -45,7 +45,7 @@ const redesMetro = {
     estacoes: [
       "Luz", "Higienópolis-Mackenzie", "República",
       "Paulista", "Oscar Freire", "Fradique Coutinho",
-      "Butantã", "São Paulo-Morumbi", "Vila Sônia"
+      "Pinheiros", "Butantã", "São Paulo-Morumbi", "Vila Sônia"
     ]
   },
   "Linha 5 - Lilás": {
@@ -58,7 +58,7 @@ const redesMetro = {
       "Chácara Klabin"
     ]
   },
-  // --- CPTM (Fase 2) ---
+  // --- CPTM ---
   "Linha 7 - Rubi": {
     cor: "#CE1126", corNeon: "#ff8899", tipo: "cptm",
     estacoes: [
@@ -145,12 +145,44 @@ const BALDEACOES = {
   "Lapa":           ["Linha 7 - Rubi",     "Linha 8 - Diamante"]
 };
 
+const TRANSFERENCIAS_CORREDOR = [
+  {
+    nome: "Pinheiros",
+    a: { linha: "Linha 4 - Amarela", estacao: "Pinheiros" },
+    b: { linha: "Linha 9 - Esmeralda", estacao: "Pinheiros" },
+    tempo: 4,
+    distancia: 0.35
+  },
+  {
+    nome: "Paulista/Consolação",
+    a: { linha: "Linha 4 - Amarela", estacao: "Paulista" },
+    b: { linha: "Linha 2 - Verde", estacao: "Consolação" },
+    tempo: 6,
+    distancia: 0.55
+  }
+];
+
 // ============================================================
 // 3. CONSTANTES DO SISTEMA
 // ============================================================
 
 const TARIFA         = 4.40;
 const KM_POR_ESTACAO = 1.2;
+const PENALIDADE_TRANSFERENCIA_GRAFO = 12;
+const KM_OPERACIONAL_LINHA = {
+  "Linha 1 - Azul": 1.12,
+  "Linha 2 - Verde": 1.05,
+  "Linha 3 - Vermelha": 1.18,
+  "Linha 4 - Amarela": 1.40,
+  "Linha 5 - Lilás": 1.30,
+  "Linha 7 - Rubi": 2.45,
+  "Linha 8 - Diamante": 2.25,
+  "Linha 9 - Esmeralda": 3.00,
+  "Linha 10 - Turquesa": 2.35,
+  "Linha 11 - Coral": 2.55,
+  "Linha 12 - Safira": 2.25,
+  "Linha 13 - Jade": 3.20
+};
 const VELOCIDADE     = 35;
 const PAUSA_EST      = 0.5;
 const PENALIDADE_1   = 3;
@@ -296,8 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarMapaEO();
   atualizarPeakBar();
   verificarSessao();         // Fase 3: restaura sessão salva
-  inicializarPWA();          // Fase 4: registra SW, detecta APIs, conexão
-  inicializarFasesAvancadas(); // Fases 6 e 7: holograma, RA, gesto e IA
+  inicializarPWA();          // registra SW, detecta APIs e conexão
+  inicializarCentralOperacional();
 });
 
 // ============================================================
@@ -453,6 +485,7 @@ function calcularLotacao() {
 }
 
 function segundosProximoTrem(nomeLinha) {
+  // Estimativa local para demonstracao. Nao consome API oficial de operacao.
   const p     = periodoAtual();
   const seed  = nomeLinha.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const int   = INTERVALOS[p];
@@ -601,361 +634,15 @@ function selecionarRegiaoEO(index) {
 }
 
 // ============================================================
-// FASE 6 — HOLOGRAMA 3D, RA E GESTO DE PULSO
+// MOTOR HOLOROUTE - ROTAS, LOTAÇÃO E PADRÕES LOCAIS
 // ============================================================
 
-let arSessionAtual = null;
-let gestoPulsoAtivo = false;
-let ultimoGestoPulso = 0;
-let resultadoIAAtual = null;
-let rotaSugeridaIA = null;
+let resultadoHoloRouteAtual = null;
+let rotaSugeridaHoloRoute = null;
 
-const holoFase6 = {
-  scene: null,
-  camera: null,
-  renderer: null,
-  group: null,
-  texture: null,
-  canvasText: null,
-  ctxText: null,
-  particles: null,
-  active: false,
-  started: false,
-
-  init() {
-    const canvas = document.getElementById('holo3dCanvas');
-    if (!canvas || typeof THREE === 'undefined') return false;
-
-    const box = canvas.parentElement.getBoundingClientRect();
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(42, box.width / box.height, 0.1, 100);
-    this.camera.position.set(0, 1.4, 5.2);
-
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setSize(box.width, box.height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setClearColor(0x000000, 0);
-
-    this.scene.add(new THREE.AmbientLight(0x66ccff, 0.6));
-    const light = new THREE.PointLight(0x00f5ff, 2.2, 12);
-    light.position.set(0, 2.6, 2.8);
-    this.scene.add(light);
-
-    this.group = new THREE.Group();
-    this.scene.add(this.group);
-
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x00f5ff,
-      transparent: true,
-      opacity: 0.38,
-      side: THREE.DoubleSide
-    });
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.01, 8, 96), ringMat);
-    ring.rotation.x = Math.PI / 2;
-    this.group.add(ring);
-
-    this.canvasText = document.createElement('canvas');
-    this.canvasText.width = 768;
-    this.canvasText.height = 384;
-    this.ctxText = this.canvasText.getContext('2d');
-    this.texture = new THREE.CanvasTexture(this.canvasText);
-
-    const panel = new THREE.Mesh(
-      new THREE.PlaneGeometry(2.85, 1.42),
-      new THREE.MeshBasicMaterial({
-        map: this.texture,
-        transparent: true,
-        side: THREE.DoubleSide
-      })
-    );
-    panel.position.y = 0.35;
-    this.group.add(panel);
-
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(0.92, 1.4, 5, 1, true),
-      new THREE.MeshBasicMaterial({
-        color: 0x00f5ff,
-        transparent: true,
-        opacity: 0.12,
-        side: THREE.DoubleSide,
-        depthWrite: false
-      })
-    );
-    cone.position.y = -0.45;
-    cone.rotation.x = Math.PI;
-    this.group.add(cone);
-
-    const geom = new THREE.BufferGeometry();
-    const pontos = new Float32Array(90);
-    for (let i = 0; i < 30; i++) {
-      const a = (i / 30) * Math.PI * 2;
-      const r = 0.75 + Math.random() * 0.65;
-      pontos[i * 3] = Math.cos(a) * r;
-      pontos[i * 3 + 1] = -0.35 + Math.random() * 1.45;
-      pontos[i * 3 + 2] = Math.sin(a) * r;
-    }
-    geom.setAttribute('position', new THREE.BufferAttribute(pontos, 3));
-    this.particles = new THREE.Points(
-      geom,
-      new THREE.PointsMaterial({
-        color: 0x00f5ff,
-        size: 0.04,
-        transparent: true,
-        opacity: 0.72
-      })
-    );
-    this.group.add(this.particles);
-
-    this.group.visible = false;
-    this.update();
-    this.animate();
-    window.addEventListener('resize', () => this.resize());
-    return true;
-  },
-
-  resize() {
-    const canvas = document.getElementById('holo3dCanvas');
-    if (!canvas || !this.renderer || !this.camera) return;
-    const box = canvas.parentElement.getBoundingClientRect();
-    this.camera.aspect = box.width / box.height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(box.width, box.height);
-  },
-
-  update() {
-    if (!this.ctxText || !this.texture) return;
-    const ctx = this.ctxText;
-    const W = this.canvasText.width;
-    const H = this.canvasText.height;
-    const rota = rotaCalculada;
-    const ia = resultadoIAAtual;
-
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(0, 18, 32, 0.72)';
-    ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(0,245,255,0.75)';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(12, 12, W - 24, H - 24);
-
-    ctx.fillStyle = '#00f5ff';
-    ctx.font = 'bold 28px Courier New';
-    ctx.fillText('HOLOPASS // DISPLAY HOLOGRAFICO', 32, 54);
-
-    ctx.font = 'bold 54px Courier New';
-    ctx.fillStyle = '#00ff88';
-    const saldo = usuarioAtual ? `R$ ${saldoAtual.toFixed(2).replace('.', ',')}` : 'LOGIN NECESSARIO';
-    ctx.fillText(saldo, 32, 126);
-
-    ctx.font = 'bold 30px Courier New';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(rota ? `${rota.origem}  ->  ${rota.destino}` : 'Selecione uma rota no painel principal', 32, 190);
-
-    ctx.font = '24px Courier New';
-    ctx.fillStyle = '#00f5ff';
-    ctx.fillText(rota ? `Linha: ${rota.linhas.map(l => l.split(' - ')[1]).join(' > ')}` : 'Linha: --', 32, 238);
-    ctx.fillText(rota ? `ETA: ${rota.tempo} min  |  Dist: ${rota.distancia} km` : 'ETA: --', 32, 278);
-
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText(ia ? `IA: atraso ${ia.atrasoMin} min | lotacao ${ia.lotacaoTexto}` : 'IA: aguardando analise', 32, 322);
-
-    this.texture.needsUpdate = true;
-  },
-
-  setActive(on) {
-    this.active = on;
-    if (this.group) this.group.visible = on;
-    const status = document.getElementById('holoStatus');
-    if (status) status.textContent = on
-      ? 'Holograma ativo: dados da rota sincronizados.'
-      : 'Holograma pronto: toque em ATIVAR HOLOGRAMA.';
-    this.update();
-  },
-
-  animate() {
-    if (this.started) return;
-    this.started = true;
-    const loop = () => {
-      requestAnimationFrame(loop);
-      if (this.group) {
-        const t = Date.now() * 0.001;
-        this.group.rotation.y = Math.sin(t * 0.6) * 0.12;
-        this.group.position.y = Math.sin(t * 1.2) * 0.04;
-      }
-      if (this.particles) this.particles.rotation.y += 0.008;
-      if (this.renderer && this.scene && this.camera) {
-        this.renderer.render(this.scene, this.camera);
-      }
-    };
-    loop();
-  }
-};
-
-function inicializarFasesAvancadas() {
-  const statusThree = document.getElementById('statusThree');
-  const statusHolo = document.getElementById('holoStatus');
-
-  if (typeof THREE === 'undefined') {
-    if (statusThree) statusThree.textContent = 'Falhou CDN';
-    if (statusHolo) statusHolo.textContent = 'Three.js não carregou. Verifique conexão.';
-  } else {
-    const ok = holoFase6.init();
-    if (statusThree) statusThree.textContent = ok ? 'Ativo' : 'Sem canvas';
-    if (statusHolo) statusHolo.textContent = ok
-      ? 'Holograma pronto: toque em ATIVAR HOLOGRAMA.'
-      : 'Canvas do holograma não encontrado.';
-  }
-
-  verificarWebXR();
-  executarIA(false);
+function inicializarCentralOperacional() {
+  executarHoloRoute(false);
 }
-
-async function verificarWebXR() {
-  const el = document.getElementById('statusWebXR');
-  if (!el) return;
-
-  if (!('xr' in navigator)) {
-    el.textContent = 'Simulado';
-    return;
-  }
-
-  try {
-    const ok = await navigator.xr.isSessionSupported('immersive-ar');
-    el.textContent = ok ? 'AR real disponível' : 'Simulado';
-  } catch (erro) {
-    el.textContent = 'Simulado';
-  }
-}
-
-function ativarHolograma3D() {
-  if (!holoFase6.scene) {
-    exibirAviso('Holograma 3D ainda não está disponível.');
-    return;
-  }
-  holoFase6.setActive(!holoFase6.active);
-  vibrar(VIBRACOES.notificacao);
-}
-
-async function iniciarRA() {
-  preencherOverlayRA();
-  const overlay = document.getElementById('arOverlay');
-  const statusWebXR = document.getElementById('statusWebXR');
-
-  if ('xr' in navigator) {
-    try {
-      const ok = await navigator.xr.isSessionSupported('immersive-ar');
-      if (ok) {
-        arSessionAtual = await navigator.xr.requestSession('immersive-ar', {
-          optionalFeatures: ['dom-overlay'],
-          domOverlay: { root: document.body }
-        });
-        if (statusWebXR) statusWebXR.textContent = 'Sessão AR ativa';
-      }
-    } catch (erro) {
-      if (statusWebXR) statusWebXR.textContent = 'RA simulada';
-    }
-  } else if (statusWebXR) {
-    statusWebXR.textContent = 'RA simulada';
-  }
-
-  if (overlay) {
-    overlay.style.display = 'flex';
-    overlay.setAttribute('aria-hidden', 'false');
-  }
-  vibrar(VIBRACOES.notificacao);
-}
-
-function preencherOverlayRA() {
-  const linha = document.getElementById('arLine');
-  const rota = document.getElementById('arRoute');
-  const eta = document.getElementById('arEta');
-
-  if (!rotaCalculada) {
-    if (linha) linha.textContent = 'Linha: --';
-    if (rota) rota.textContent = 'Calcule uma rota para visualizar em RA.';
-    if (eta) eta.textContent = 'ETA: --';
-    return;
-  }
-
-  if (linha) linha.textContent = `Linha: ${rotaCalculada.linhas.map(l => l.split(' - ')[1]).join(' > ')}`;
-  if (rota) rota.textContent = `${rotaCalculada.origem} -> ${rotaCalculada.destino}`;
-  if (eta) eta.textContent = `ETA: ${rotaCalculada.tempo} min | Próximo trem: ${Math.ceil(segundosProximoTrem(linhaAtiva) / 60)} min`;
-}
-
-function fecharRA() {
-  const overlay = document.getElementById('arOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
-    overlay.setAttribute('aria-hidden', 'true');
-  }
-
-  if (arSessionAtual) {
-    arSessionAtual.end().catch(() => {});
-    arSessionAtual = null;
-  }
-}
-
-async function ativarGestosPulso() {
-  const status = document.getElementById('statusGesture');
-  if (gestoPulsoAtivo) {
-    if (status) status.textContent = 'Já ativo';
-    return;
-  }
-
-  if (!('DeviceMotionEvent' in window)) {
-    if (status) status.textContent = 'Simulação';
-    exibirAviso('Sensor indisponível neste aparelho. Use SIMULAR PULSO.');
-    return;
-  }
-
-  try {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      const permissao = await DeviceMotionEvent.requestPermission();
-      if (permissao !== 'granted') {
-        if (status) status.textContent = 'Negado';
-        return;
-      }
-    }
-
-    window.addEventListener('devicemotion', detectarMovimentoPulso);
-    gestoPulsoAtivo = true;
-    if (status) status.textContent = 'Ativo';
-    exibirAviso('Gesto ativado: levante o pulso para abrir o display.');
-  } catch (erro) {
-    if (status) status.textContent = 'Simulação';
-    exibirAviso('Não foi possível ativar sensor. Use SIMULAR PULSO.');
-  }
-}
-
-function detectarMovimentoPulso(evento) {
-  const acc = evento.accelerationIncludingGravity;
-  if (!acc) return;
-
-  const intensidade = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
-  const agora = Date.now();
-
-  if (intensidade > 18 && agora - ultimoGestoPulso > 2500) {
-    registrarGestoPulso(false);
-  }
-}
-
-function simularLevantarPulso() {
-  registrarGestoPulso(true);
-}
-
-function registrarGestoPulso(simulado) {
-  ultimoGestoPulso = Date.now();
-  const status = document.getElementById('statusGesture');
-  if (status) status.textContent = simulado ? 'Simulado' : 'Detectado';
-
-  if (holoFase6.scene) holoFase6.setActive(true);
-  executarIA(false);
-  vibrar(VIBRACOES.notificacao);
-  exibirAviso(simulado ? 'Pulso levantado: display ativado.' : 'Gesto detectado: display ativado.');
-}
-
-// ============================================================
-// FASE 7 — IA DE ATRASOS, LOTAÇÃO, ROTAS E PADRÕES
-// ============================================================
 
 function climaSimulado() {
   const h = new Date().getHours();
@@ -966,7 +653,7 @@ function climaSimulado() {
     : { nome: 'tempo estável', fator: 3 };
 }
 
-function pesoLinhaIA(nomeLinha) {
+function pesoLinhaHoloRoute(nomeLinha) {
   const pesos = {
     'Linha 1 - Azul': 14,
     'Linha 2 - Verde': 9,
@@ -984,39 +671,39 @@ function pesoLinhaIA(nomeLinha) {
   return pesos[nomeLinha] || 10;
 }
 
-function mediaLinhaIA(linhas) {
-  return linhas.reduce((soma, linha) => soma + pesoLinhaIA(linha), 0) / Math.max(linhas.length, 1);
+function mediaLinhaHoloRoute(linhas) {
+  return linhas.reduce((soma, linha) => soma + pesoLinhaHoloRoute(linha), 0) / Math.max(linhas.length, 1);
 }
 
-function riscoPorPeriodoIA() {
+function riscoPorPeriodoHoloRoute() {
   const p = periodoAtual();
   if (p === 'pico') return 30;
   if (p === 'normal') return 14;
   return 6;
 }
 
-function calcularRiscoRotaIA(rota) {
+function calcularRiscoRotaHoloRoute(rota) {
   const clima = climaSimulado();
-  const pesoLinha = mediaLinhaIA(rota.linhas);
+  const pesoLinha = mediaLinhaHoloRoute(rota.linhas);
   const baldeacao = (rota.transferencias?.length || 0) * 7;
   const paradas = Math.min(18, rota.paradas * 0.9);
-  const risco = Math.min(96, Math.round(riscoPorPeriodoIA() + clima.fator + pesoLinha + baldeacao + paradas));
+  const risco = Math.min(96, Math.round(riscoPorPeriodoHoloRoute() + clima.fator + pesoLinha + baldeacao + paradas));
   const lotacao = Math.min(98, Math.round(calcularLotacao().pct * 0.55 + pesoLinha * 2 + baldeacao));
   return { risco, lotacao, clima };
 }
 
-function textoLotacaoIA(valor) {
+function textoLotacaoHoloRoute(valor) {
   if (valor >= 76) return 'ALTA';
   if (valor >= 46) return 'MÉDIA';
   return 'BAIXA';
 }
 
-function pontuarRotaIA(rota) {
-  const risco = calcularRiscoRotaIA(rota);
+function pontuarRotaHoloRoute(rota) {
+  const risco = calcularRiscoRotaHoloRoute(rota);
   return Number(rota.tempo) + risco.risco * 0.12 + risco.lotacao * 0.18 + (rota.transferencias?.length || 0) * 3;
 }
 
-function coletarRotasCandidatasIA(linhaO, estO, linhaD, estD, rotaBase) {
+function coletarRotasCandidatasHoloRoute(linhaO, estO, linhaD, estD, rotaBase) {
   const rotas = [];
   const adicionar = rota => {
     if (!rota) return;
@@ -1033,7 +720,7 @@ function coletarRotasCandidatasIA(linhaO, estO, linhaD, estD, rotaBase) {
     const s2 = calcularRotaDireta(linhaD, estBal, estD);
     if (!s1 || !s2) continue;
     adicionar(montarRota({
-      tipo: 'baldeacao-ia',
+      tipo: 'baldeacao-holoroute',
       linhas: [linhaO, linhaD],
       estacoes: [...s1.estacoes, ...s2.estacoes.slice(1)],
       origem: estO,
@@ -1048,7 +735,7 @@ function coletarRotasCandidatasIA(linhaO, estO, linhaD, estD, rotaBase) {
   return rotas.map(item => item.rota);
 }
 
-function detectarPadraoUsuarioIA() {
+function detectarPadraoUsuarioHoloRoute() {
   if (!usuarioAtual) return 'Login necessário para analisar padrão.';
 
   const hist = DB.buscarHistorico(usuarioAtual.email);
@@ -1065,25 +752,25 @@ function detectarPadraoUsuarioIA() {
   return `${trajeto} aparece ${qtd}x. Sugestão automática ativada para ${periodo}.`;
 }
 
-function executarIA(mostrarAviso = true) {
-  const delayText = document.getElementById('aiDelayRisk');
-  const crowdText = document.getElementById('aiCrowdRisk');
-  const routeText = document.getElementById('aiRouteSuggestion');
-  const patternText = document.getElementById('aiPattern');
-  const delayBar = document.getElementById('aiDelayBar');
-  const crowdBar = document.getElementById('aiCrowdBar');
+function executarHoloRoute(mostrarAviso = true) {
+  const delayText = document.getElementById('routeDelayRisk');
+  const crowdText = document.getElementById('routeCrowdRisk');
+  const routeText = document.getElementById('routeSuggestion');
+  const patternText = document.getElementById('routePattern');
+  const delayBar = document.getElementById('routeDelayBar');
+  const crowdBar = document.getElementById('routeCrowdBar');
 
   if (!rotaCalculada) {
     if (delayText) delayText.textContent = '--';
     if (crowdText) crowdText.textContent = '--';
-    if (routeText) routeText.textContent = 'Calcule uma rota para a IA analisar.';
-    if (patternText) patternText.textContent = detectarPadraoUsuarioIA();
+    if (routeText) routeText.textContent = 'Calcule uma rota para o HoloRoute avaliar.';
+    if (patternText) patternText.textContent = detectarPadraoUsuarioHoloRoute();
     if (delayBar) delayBar.style.width = '0%';
     if (crowdBar) crowdBar.style.width = '0%';
     return;
   }
 
-  const risco = calcularRiscoRotaIA(rotaCalculada);
+  const risco = calcularRiscoRotaHoloRoute(rotaCalculada);
   const atrasoMin = Math.max(1, Math.round(risco.risco / 14));
 
   const origemVal = document.getElementById('currentStation').value;
@@ -1093,22 +780,22 @@ function executarIA(mostrarAviso = true) {
   if (origemVal && destinoVal) {
     const [linhaO, estO] = origemVal.split('|');
     const [linhaD, estD] = destinoVal.split('|');
-    const candidatas = coletarRotasCandidatasIA(linhaO, estO, linhaD, estD, rotaCalculada);
-    melhor = candidatas.sort((a, b) => pontuarRotaIA(a) - pontuarRotaIA(b))[0] || rotaCalculada;
+    const candidatas = coletarRotasCandidatasHoloRoute(linhaO, estO, linhaD, estD, rotaCalculada);
+    melhor = candidatas.sort((a, b) => pontuarRotaHoloRoute(a) - pontuarRotaHoloRoute(b))[0] || rotaCalculada;
   }
 
-  rotaSugeridaIA = melhor;
-  resultadoIAAtual = {
+  rotaSugeridaHoloRoute = melhor;
+  resultadoHoloRouteAtual = {
     risco: risco.risco,
     lotacao: risco.lotacao,
-    lotacaoTexto: textoLotacaoIA(risco.lotacao),
+    lotacaoTexto: textoLotacaoHoloRoute(risco.lotacao),
     atrasoMin,
     clima: risco.clima.nome,
     rota: melhor
   };
 
   if (delayText) delayText.textContent = `${risco.risco}% (~${atrasoMin} min)`;
-  if (crowdText) crowdText.textContent = `${textoLotacaoIA(risco.lotacao)} · ${risco.lotacao}%`;
+  if (crowdText) crowdText.textContent = `${textoLotacaoHoloRoute(risco.lotacao)} · ${risco.lotacao}%`;
   if (delayBar) delayBar.style.width = `${risco.risco}%`;
   if (crowdBar) crowdBar.style.width = `${risco.lotacao}%`;
 
@@ -1118,46 +805,37 @@ function executarIA(mostrarAviso = true) {
       ? `${melhor.linhas.map(l => l.split(' - ')[1]).join(' > ')} · ${melhor.tempo} min · menor lotação prevista`
       : `Rota atual recomendada · ${melhor.tempo} min · clima: ${risco.clima.nome}`;
   }
-  if (patternText) patternText.textContent = detectarPadraoUsuarioIA();
+  if (patternText) patternText.textContent = detectarPadraoUsuarioHoloRoute();
 
-  holoFase6.update();
-  preencherOverlayRA();
-
-  if (mostrarAviso) exibirAviso('IA atualizada com previsão de atraso, lotação e rota.');
+  if (mostrarAviso) exibirAviso('HoloRoute atualizado com risco, lotação e recomendação de rota.');
 }
 
-function aplicarRotaIA() {
-  if (!rotaSugeridaIA) {
-    executarIA(false);
+function aplicarRotaHoloRoute() {
+  if (!rotaSugeridaHoloRoute) {
+    executarHoloRoute(false);
   }
 
-  if (!rotaSugeridaIA) {
-    exibirAviso('Calcule uma rota antes de aplicar IA.');
+  if (!rotaSugeridaHoloRoute) {
+    exibirAviso('Calcule uma rota antes de aplicar a recomendação.');
     return;
   }
 
-  rotaCalculada = rotaSugeridaIA;
+  rotaCalculada = rotaSugeridaHoloRoute;
   linhaAtiva = rotaCalculada.linhas[0];
   exibirRota(rotaCalculada);
-  executarIA(false);
+  executarHoloRoute(false);
   exibirAviso('Rota inteligente aplicada ao painel.');
 }
 
 // ============================================================
-// FASE 5 — PROTÓTIPO 3D LEGADO
-// ============================================================
-// O canvas legado foi substituído pelo preview local do design.
-// A experiência 3D ativa fica concentrada no holograma da Central Avançada.
-
-// ============================================================
-// FASE 4 — PWA / DEVICE APIs
+// PWA / DEVICE APIs
 // ============================================================
 //
 // Esta seção transforma o HoloPass em um Progressive Web App.
 // O usuário pode INSTALAR no celular e usar OFFLINE, com NFC
 // real, vibração, notificações push e geolocalização.
 //
-// APIs usadas (todas REAIS, suportadas por navegadores modernos):
+// APIs usadas quando suportadas por navegadores modernos:
 // - Service Worker (cache offline)
 // - Web App Manifest (instalação)
 // - Web NFC (Android Chrome)
@@ -1469,7 +1147,7 @@ async function acaoGPS() {
       }
     }
 
-    exibirAviso(`🛰️ Mais próxima: ${r.estacao} (fora do MVP)`);
+    exibirAviso(`🛰️ Mais próxima: ${r.estacao} (fora da rede cadastrada)`);
   } catch (e) {
     exibirAviso('Não foi possível detectar localização por satélite');
   }
@@ -1609,7 +1287,7 @@ async function testarTodosRecursos() {
 }
 
 // ============================================================
-// INICIALIZAÇÃO FASE 4 — chamada do DOMContentLoaded
+// INICIALIZAÇÃO PWA — chamada do DOMContentLoaded
 // ============================================================
 
 function inicializarPWA() {
@@ -1758,8 +1436,7 @@ function entrarComUsuario(user) {
   renderizarSaldo();
   renderizarHistorico();
   renderizarEstatisticas();
-  executarIA(false);
-  holoFase6.update();
+  executarHoloRoute(false);
 }
 
 // ---- Tela de Login ----
@@ -1997,11 +1674,12 @@ function calcularRota() {
   const [linhaO, estO] = valO.split('|');
   const [linhaD, estD] = valD.split('|');
 
-  const rota = linhaO === linhaD
-    ? calcularRotaDireta(linhaO, estO, estD)
-    : (tentarUmaBaldeacao(linhaO, estO, linhaD, estD)
-    || tentarDuasBaldeacoes(linhaO, estO, linhaD, estD)
-    || calcularEstimativa(linhaO, estO, linhaD, estD));
+  const rota = calcularRotaEmGrafo(linhaO, estO, linhaD, estD)
+    || (linhaO === linhaD
+      ? calcularRotaDireta(linhaO, estO, estD)
+      : (tentarUmaBaldeacao(linhaO, estO, linhaD, estD)
+      || tentarDuasBaldeacoes(linhaO, estO, linhaD, estD)
+      || calcularEstimativa(linhaO, estO, linhaD, estD)));
 
   if (!rota) { exibirAviso('Não foi possível calcular rota.'); return; }
 
@@ -2010,9 +1688,7 @@ function calcularRota() {
   rotaCalculada = rota;
   linhaAtiva    = rota.linhas[0];
   exibirRota(rota);
-  executarIA(false);
-  holoFase6.update();
-  preencherOverlayRA();
+  executarHoloRoute(false);
 }
 
 function calcularRotaDireta(nomeLinha, origem, destino) {
@@ -2033,6 +1709,160 @@ function calcularRotaDireta(nomeLinha, origem, destino) {
     estacoes: trecho,
     origem, destino, paradas, transferencias: [], extra: 0
   });
+}
+
+function chaveNo(linha, estacao) {
+  return `${linha}|${estacao}`;
+}
+
+function adicionarAresta(grafo, de, para, dados) {
+  if (!grafo.has(de)) grafo.set(de, []);
+  grafo.get(de).push({ para, ...dados });
+}
+
+function construirGrafoRotas() {
+  const grafo = new Map();
+
+  Object.entries(redesMetro).forEach(([linha, dados]) => {
+    const km = KM_OPERACIONAL_LINHA[linha] || KM_POR_ESTACAO;
+    dados.estacoes.forEach((estacao, index) => {
+      const atual = chaveNo(linha, estacao);
+      if (!grafo.has(atual)) grafo.set(atual, []);
+      const proxima = dados.estacoes[index + 1];
+      if (!proxima) return;
+      const destino = chaveNo(linha, proxima);
+      const trecho = {
+        tipo: "trecho",
+        linha,
+        estacao,
+        km,
+        tempo: Math.max(2, Math.round((km / VELOCIDADE) * 60 + PAUSA_EST))
+      };
+      adicionarAresta(grafo, atual, destino, trecho);
+      adicionarAresta(grafo, destino, atual, { ...trecho, estacao: proxima });
+    });
+  });
+
+  Object.entries(BALDEACOES).forEach(([estacao, linhas]) => {
+    linhas.forEach(linhaA => {
+      linhas.forEach(linhaB => {
+        if (linhaA === linhaB) return;
+        if (!redesMetro[linhaA]?.estacoes.includes(estacao)) return;
+        if (!redesMetro[linhaB]?.estacoes.includes(estacao)) return;
+        adicionarAresta(grafo, chaveNo(linhaA, estacao), chaveNo(linhaB, estacao), {
+          tipo: "transferencia",
+          linha: linhaB,
+          estacao,
+          nomeTransferencia: estacao,
+          km: 0.15,
+          tempo: 4
+        });
+      });
+    });
+  });
+
+  TRANSFERENCIAS_CORREDOR.forEach(t => {
+    const a = chaveNo(t.a.linha, t.a.estacao);
+    const b = chaveNo(t.b.linha, t.b.estacao);
+    adicionarAresta(grafo, a, b, {
+      tipo: "transferencia",
+      linha: t.b.linha,
+      estacao: t.b.estacao,
+      nomeTransferencia: t.nome,
+      km: t.distancia,
+      tempo: t.tempo
+    });
+    adicionarAresta(grafo, b, a, {
+      tipo: "transferencia",
+      linha: t.a.linha,
+      estacao: t.a.estacao,
+      nomeTransferencia: t.nome,
+      km: t.distancia,
+      tempo: t.tempo
+    });
+  });
+
+  return grafo;
+}
+
+function calcularRotaEmGrafo(linhaO, estO, linhaD, estD) {
+  const origem = chaveNo(linhaO, estO);
+  const destino = chaveNo(linhaD, estD);
+  const grafo = construirGrafoRotas();
+  if (!grafo.has(origem) || !grafo.has(destino)) return null;
+
+  const dist = new Map([[origem, 0]]);
+  const prev = new Map();
+  const fila = [{ no: origem, custo: 0 }];
+
+  while (fila.length) {
+    fila.sort((a, b) => a.custo - b.custo);
+    const atual = fila.shift();
+    if (!atual || atual.custo !== dist.get(atual.no)) continue;
+    if (atual.no === destino) break;
+
+    for (const aresta of grafo.get(atual.no) || []) {
+      const custo = atual.custo + aresta.tempo + (aresta.tipo === "transferencia" ? PENALIDADE_TRANSFERENCIA_GRAFO : 0);
+      if (custo >= (dist.get(aresta.para) ?? Infinity)) continue;
+      dist.set(aresta.para, custo);
+      prev.set(aresta.para, { anterior: atual.no, aresta });
+      fila.push({ no: aresta.para, custo });
+    }
+  }
+
+  if (!prev.has(destino) && origem !== destino) return null;
+
+  const passos = [];
+  let cursor = destino;
+  while (cursor !== origem) {
+    const item = prev.get(cursor);
+    if (!item) return null;
+    passos.unshift({ de: item.anterior, para: cursor, aresta: item.aresta });
+    cursor = item.anterior;
+  }
+
+  const estacoes = [estO];
+  const linhas = [linhaO];
+  const transferencias = [];
+  let kmTotal = 0;
+  let tempoTotal = 0;
+  let paradas = 0;
+
+  passos.forEach(passo => {
+    const [, estacaoPara] = passo.para.split("|");
+    kmTotal += passo.aresta.km;
+    tempoTotal += passo.aresta.tempo;
+
+    if (passo.aresta.tipo === "transferencia") {
+      transferencias.push(passo.aresta.nomeTransferencia || estacaoPara);
+      if (!linhas.includes(passo.aresta.linha)) linhas.push(passo.aresta.linha);
+      const marcador = passo.aresta.nomeTransferencia || estacaoPara;
+      if (estacoes[estacoes.length - 1] !== marcador) estacoes.push(marcador);
+      if (estacoes[estacoes.length - 1] !== estacaoPara) estacoes.push(estacaoPara);
+    } else {
+      paradas++;
+      if (!linhas.includes(passo.aresta.linha)) linhas.push(passo.aresta.linha);
+      if (estacoes[estacoes.length - 1] !== estacaoPara) estacoes.push(estacaoPara);
+    }
+  });
+
+  const tipo = transferencias.length === 0
+    ? "direta"
+    : transferencias.length === 1 ? "baldeacao" : "baldeacao2";
+
+  return {
+    tipo,
+    linhas,
+    estacoes,
+    origem: estO,
+    destino: estD,
+    paradas,
+    transferencias,
+    distancia: kmTotal.toFixed(1),
+    distanciaMetodo: "operacional estimada por trechos da rede",
+    tempo: Math.max(1, tempoTotal),
+    tarifa: TARIFA
+  };
 }
 
 function tentarUmaBaldeacao(linhaO, estO, linhaD, estD) {
@@ -2197,7 +2027,7 @@ function renderizarRotaVisual(rota) {
   c.className = 'route-display route-timeline';
 
   let lista = rota.estacoes.map((est, index) => ({ est, index }));
-  if (lista.length > 9) {
+  if (lista.length > 16) {
     lista = [
       ...rota.estacoes.slice(0, 3).map((est, index) => ({ est, index })),
       { est: '···', index: -1 },
@@ -2241,7 +2071,7 @@ function pagarPassagem() {
 
   if (saldoAtual < tarifa) {
     mostrarStatusPagamento(false, tarifa);
-    vibrar(VIBRACOES.erro);  // Fase 4: vibração de erro
+    vibrar(VIBRACOES.erro);  // vibração de erro quando suportada
     return;
   }
 
@@ -2276,7 +2106,7 @@ function pagarPassagem() {
   renderizarEstatisticas();
   mostrarStatusPagamento(true, tarifa);
 
-  // FASE 4: feedback háptico + notificação
+  // Feedback háptico + notificação quando suportado
   vibrar(VIBRACOES.pagamento);
   if (rotaCalculada.tipo && rotaCalculada.tipo.includes('baldeacao')) {
     setTimeout(() => vibrar(VIBRACOES.baldeacao), 400);

@@ -1,5 +1,5 @@
 /* ============================================================
-   HOLOPASS — SISTEMA DE TRANSPORTE HOLOGRÁFICO
+   HOLOPASS — SISTEMA DE MOBILIDADE GNSS + NFC
    style.css — Interface Futurista / Holográfica
    ============================================================ */
 
@@ -178,7 +178,7 @@ body {
 }
 
 /* ============================================================
-   PULSEIRA HOLOGRÁFICA
+   PULSEIRA INTELIGENTE
    ============================================================ */
 
 .bracelet-section {
@@ -783,7 +783,7 @@ body {
 .animated-in { animation: fadeIn 0.35s ease forwards; }
 
 /* ============================================================
-   FASE 5 — PROTÓTIPO 3D COM THREE.JS
+   DESIGN FÍSICO DA PULSEIRA E HOLOROUTE
    ============================================================ */
 
 .prototype-section {
@@ -861,7 +861,7 @@ body {
   backdrop-filter: blur(10px);
 }
 
-/* Botões do protótipo */
+/* Botões operacionais */
 .proto-btn {
   width: 100%;
   background: rgba(0,245,255,0.06);
@@ -963,7 +963,7 @@ body {
   font-weight: bold;
 }
 
-/* Roadmap das fases avançadas */
+/* Central HoloRoute */
 .future-section {
   margin-top: 26px;
 }
@@ -1014,12 +1014,6 @@ body {
   font-size: 0.62rem;
   font-weight: bold;
   letter-spacing: 2px;
-}
-
-.future-badge.ai {
-  color: var(--neon-purple);
-  border-color: rgba(191,0,255,0.45);
-  background: rgba(191,0,255,0.08);
 }
 
 .future-card h3 {
@@ -1110,7 +1104,7 @@ body {
 }
 
 .feature-status-grid,
-.ai-dashboard {
+.route-dashboard {
   display: grid;
   gap: 8px;
   margin-top: 12px;
@@ -1120,13 +1114,13 @@ body {
   grid-template-columns: repeat(3, 1fr);
 }
 
-.ai-dashboard {
+.route-dashboard {
   grid-template-columns: repeat(2, 1fr);
 }
 
 .feature-status,
-.ai-metric,
-.ai-output {
+.route-metric,
+.route-output {
   min-height: 74px;
   padding: 10px;
   border: 1px solid rgba(0,245,255,0.12);
@@ -1135,8 +1129,8 @@ body {
 }
 
 .feature-status span,
-.ai-metric span,
-.ai-output span {
+.route-metric span,
+.route-output span {
   display: block;
   margin-bottom: 6px;
   color: var(--text-dim);
@@ -1145,18 +1139,18 @@ body {
 }
 
 .feature-status strong,
-.ai-metric strong,
-.ai-output strong {
+.route-metric strong,
+.route-output strong {
   color: var(--text-primary);
   font-size: 0.72rem;
   line-height: 1.3;
 }
 
-.ai-output {
+.route-output {
   grid-column: span 2;
 }
 
-.ai-bar {
+.route-bar {
   height: 6px;
   margin-top: 10px;
   overflow: hidden;
@@ -1164,7 +1158,7 @@ body {
   background: rgba(255,255,255,0.08);
 }
 
-.ai-bar i {
+.route-bar i {
   display: block;
   width: 0%;
   height: 100%;
@@ -1301,16 +1295,16 @@ body {
   }
   .advanced-actions,
   .feature-status-grid,
-  .ai-dashboard {
+  .route-dashboard {
     grid-template-columns: 1fr;
   }
-  .ai-output {
+  .route-output {
     grid-column: auto;
   }
 }
 
 /* ============================================================
-   FASE 4 — PWA: DEVICE PANEL, MOBILE ACTIONS, CONEXÃO
+   PWA: DEVICE PANEL, MOBILE ACTIONS, CONEXÃO
    ============================================================ */
 
 /* Padding extra na container para não esconder atrás da barra mobile */
@@ -2155,7 +2149,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
    FASE 2 — NOVOS ELEMENTOS
    ============================================================ */
 
-/* Badge de fase no header */
+/* Badge de status no header */
 .phase-badge {
   background: linear-gradient(135deg, rgba(191,0,255,0.3), rgba(0,102,255,0.3));
   border: 1px solid var(--neon-purple);

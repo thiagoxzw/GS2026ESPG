@@ -44,7 +44,7 @@ Este repositório integra as entregas de código das disciplinas da Global Solut
 | **`computational-thinking/`** | Computational Thinking with Python | **Programa de menu** no terminal (`holopass_menu.py`) |
 | **`differentiated-problem-solving/`** | Differentiated Problem Solving | Modelo matemático do GNSS em Python (`modelo_gnss.py`) |
 | **`docs/`** | Storytelling / Pitch | Roteiro do pitch em vídeo |
-| `AI.md` · `equipe.txt` · `integrantes.txt` | — | Uso de IA e identificação da equipe |
+| `equipe.txt` · `integrantes.txt` | — | Identificação da equipe |
 
 ---
 
@@ -82,7 +82,7 @@ para pagar a passagem.
   fórmula de **Haversine** para distâncias reais sobre a esfera terrestre.
 - **Embarcado (Edge):** Arduino UNO simulado no **Wokwi**; LED + buzzer.
 - **Web / Mobile:** PWA (HTML, CSS, JS puro), Service Worker (offline),
-  **Three.js** (holograma 3D), WebXR (RA), Web NFC, Vibration e Notification API.
+  **HoloRoute** (otimizador determinístico), Web NFC, Vibration, Notification API e PWA offline.
 - **Matemática:** Python (`matplotlib`, `numpy`) — funções trigonométrica,
   polinomial, logarítmica e exponencial.
 
@@ -103,9 +103,8 @@ Equipe individual conforme informado pelo autor do projeto.
 Documentamos com clareza o que é **fato verificado**, o que é **proposta** a
 implementar e o que é **visão de futuro**. O posicionamento GNSS entrega a
 precisão real do dispositivo (em metros); a camada de observação da Terra
-(CBERS-4A / Amazonia-1) é conceitual nesta versão do protótipo, com link para os
-catálogos públicos do INPE. Veja [`AI.md`](AI.md) e
-[`CHANGELOG_GNSS.md`](CHANGELOG_GNSS.md).
+(CBERS-4A / Amazonia-1) é conceitual nesta versão demonstrativa, com link para os
+catálogos públicos do INPE. Veja [`CHANGELOG_GNSS.md`](CHANGELOG_GNSS.md).
 
 ---
 

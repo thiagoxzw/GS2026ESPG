@@ -12,7 +12,7 @@ espacial brasileira (tema da Global Solution 2026 — Space Connect).
 - Adicionada faixa informativa **"🌎 CAMADA ESPACIAL BRASILEIRA"** explicando o
   cruzamento entre posição GNSS e imagens dos satélites brasileiros CBERS-4A
   (parceria Brasil–China, INPE+AEB+CNSA) e Amazonia-1 (100% brasileiro, INPE).
-- Indicação clara de que a camada é **conceitual nesta versão do protótipo**.
+- Indicação clara de que a camada é **conceitual nesta versão demonstrativa**.
 
 ### Justificativa
 
@@ -35,7 +35,7 @@ satélites brasileiros está alinhado com as próprias fontes que a banca indica
 
 ## O que NÃO foi alterado
 
-- Lógica de NFC, IA preditiva, holograma 3D, PWA e Firebase intactas.
+- Lógica de NFC, HoloRoute determinístico, PWA e persistência local intactas.
 - Não simulamos processamento real de imagens de satélite no app — a camada
   de observação da Terra é apresentada como conceito documentado, com link
   para os catálogos oficiais do INPE.
