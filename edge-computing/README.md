@@ -1,111 +1,107 @@
-# HoloPass — Módulo Embarcado (Edge Computing & Computer Systems)
+# HoloPass - Modulo Embarcado
 
-Global Solution 2026 · 1º Semestre · **Indústria Espacial**
-Engenharia de Software · 1º Ano · Presencial · FIAP
+Global Solution 2026 - Industria Espacial  
+Engenharia de Software - 1o Ano - FIAP  
+Equipe: Thiago Souza de Lima - RM 568732
 
----
+## 1. Descricao
 
-## 1. Descrição do projeto
+Esta pasta contem a camada de Edge Computing do HoloPass: uma simulacao em
+Arduino UNO da pulseira inteligente usada no transporte publico. O firmware
+representa o processamento local da pulseira, sem depender da nuvem para tomar
+decisoes basicas de embarque e localizacao.
 
-O **HoloPass** é uma pulseira inteligente de transporte público que substitui o
-bilhete e o cartão por pagamento via **NFC** e usa **posicionamento por satélite
-(GNSS — GPS, Galileo, GLONASS, BeiDou)** para identificar automaticamente a
-estação em que o usuário está, calcular a rota e avisar a chegada.
+O Arduino recebe fixes GNSS simulados, calcula a estacao mais proxima pela
+formula de Haversine, valida um pagamento NFC simulado, atualiza saldo, emite
+telemetria no Serial Monitor e aciona LED/buzzer para feedback fisico.
 
-Esta pasta contém a **camada de Edge Computing** do projeto: a simulação do
-microcontrolador embarcado na pulseira, que processa a posição do satélite
-*na borda* (no próprio dispositivo, sem depender da nuvem) e reage em tempo real.
+## 2. Objetivo
 
-## 2. Objetivo da solução
+Demonstrar que a solucao existe como arquitetura fisica possivel:
 
-Demonstrar, em hardware simulado, o "coração físico" da pulseira:
+1. detectar posicao por satelite no dispositivo;
+2. calcular distancia ate estacoes por Haversine;
+3. aprovar ou negar pagamento NFC conforme saldo;
+4. avisar chegada ao destino por buzzer;
+5. gerar telemetria para diagnostico;
+6. indicar prioridade urbana conceitual para regioes com menor cobertura.
 
-1. **Receber** a posição do usuário (fix GNSS).
-2. **Processar localmente** (edge) qual é a estação mais próxima, usando a
-   fórmula de **Haversine** — a mesma do app web e do modelo matemático em Python.
-3. **Avisar o usuário**: o **LED** pisca a cada leitura de posição e o **buzzer**
-   apita quando a pulseira chega na estação de destino.
+## 3. Componentes
 
-## 3. Componentes utilizados
-
-| Componente | Função | Ligação |
+| Componente | Funcao | Ligacao |
 |---|---|---|
-| Arduino UNO | Microcontrolador (processamento na borda) | — |
-| LED (cyan) "Fix GNSS" | Indica cada leitura de posição do satélite | Pino **13** → resistor 220 Ω → LED → GND |
-| Resistor 220 Ω | Limita a corrente do LED | Entre o pino 13 e o anodo do LED |
-| Buzzer "Alerta chegada" | Aviso sonoro de desembarque | Pino **8** → buzzer → GND |
+| Arduino UNO | Processamento local da pulseira | placa principal |
+| LED | Indica cada leitura GNSS e estados de erro | pino 13 -> resistor 220 ohm -> LED -> GND |
+| Resistor 220 ohm | Protege o LED | em serie com o LED |
+| Buzzer | Pagamento aprovado/negado e chegada | pino 8 -> buzzer -> GND |
 
-> Os pinos do código (`sketch.ino`) correspondem exatamente às ligações do
-> arquivo `diagram.json` usado no simulador Wokwi.
+Nao ha bibliotecas externas obrigatorias. O codigo usa apenas `math.h` e funcoes
+nativas do core Arduino.
 
-## 4. Explicação do funcionamento
+## 4. Funcionamento
 
-A cada ciclo (~1,2 s, simulando a cadência de um fix GNSS):
+A cada ciclo, o firmware:
 
-1. O firmware "recebe" uma nova coordenada (latitude/longitude). Como o
-   Arduino UNO não tem receptor GNSS, a posição é **simulada** por um trajeto
-   que se aproxima da estação **Sé** (partindo das proximidades do Brás) — é
-   exatamente assim que ligaríamos um módulo real **NEO-6M + TinyGPS++**.
-2. O **LED do pino 13 pisca** — representa o sinal/leitura recebido do satélite.
-3. O microcontrolador calcula, com **Haversine**, a estação mais próxima e a
-   distância até o destino, e imprime essa telemetria no **Serial Monitor**
-   (como se fosse o display da pulseira).
-4. Quando a distância até o destino fica abaixo de **250 m**, o **buzzer do
-   pino 8 apita** três vezes: é o alerta de chegada/desembarque.
-5. Ao chegar, a simulação reinicia para uma nova viagem.
+1. interpola uma coordenada do trajeto Bras -> Se;
+2. pisca o LED para representar um novo fix GNSS;
+3. processa a catraca NFC simulada no inicio da viagem;
+4. aprova o pagamento se houver saldo ou nega e simula recarga PIX;
+5. calcula a estacao mais proxima e a distancia ate o destino;
+6. imprime telemetria com precisao GNSS, saldo, estacao, distancia e prioridade;
+7. toca o buzzer de chegada quando a distancia fica abaixo de 250 m.
 
-Isso ilustra o conceito de **Edge Computing**: todo o cálculo de posição e a
-decisão de alertar acontecem **no próprio dispositivo**, com latência mínima e
-sem depender de conexão — requisito típico de sistemas embarcados.
+A prioridade urbana e conceitual: ela combina distancia ate a estacao mais
+proxima e um indice interno de cobertura para representar como o HoloPass poderia
+apoiar estudos de novas estacoes em areas menos atendidas. Dados reais exigiriam
+base publica/operacional validada.
 
 ## 5. Estrutura do circuito
 
-```
+```text
 Arduino UNO
-   Pino 13 ──[ Resistor 220 Ω ]──►|── LED "Fix GNSS" ──┐
-                                                        ├── GND
-   Pino 8  ────────────────────────  Buzzer ───────────┘
+  Pino 13 -> resistor 220 ohm -> LED -> GND
+  Pino 8  -> buzzer -> GND
 ```
 
-- **Pino 13 → Resistor 220 Ω → LED → GND** (pisca a cada leitura GNSS)
-- **Pino 8 → Buzzer → GND** (apita ao chegar na estação)
+O arquivo `diagram.json` contem o circuito equivalente para Wokwi.
 
-O esquema completo e editável está em [`diagram.json`](diagram.json).
+## 6. Como executar
 
-## 6. Instruções de execução
+### Wokwi
 
-### Opção A — Wokwi (recomendado, online, sem instalar nada)
+1. Abra <https://wokwi.com>.
+2. Crie um projeto Arduino UNO.
+3. Cole `sketch.ino` no editor.
+4. Cole `diagram.json` na aba de diagrama.
+5. Clique em Play.
+6. Abra o Serial Monitor em 9600 baud.
 
-1. Acesse <https://wokwi.com> e crie um novo projeto **Arduino UNO**.
-2. Substitua o conteúdo de `sketch.ino` pelo arquivo desta pasta.
-3. Abra a aba **diagram.json** e cole o conteúdo de `diagram.json` desta pasta.
-4. Clique em **▶ Play**. Abra o **Serial Monitor** (9600 baud) para acompanhar
-   a telemetria. Observe o LED piscando a cada leitura e o buzzer apitando na
-   chegada.
+Evidencias esperadas:
 
-> Link do projeto no Wokwi: _adicione aqui o link público do seu projeto após
-> publicá-lo em wokwi.com (Share → Save a copy / Publish)._
+- LED pisca a cada leitura GNSS.
+- Serial mostra `fix=`, latitude, longitude, estacao mais proxima, saldo e prioridade.
+- Buzzer toca em pagamento aprovado, negado e chegada.
+- Em uma viagem com saldo insuficiente, o Serial mostra `NFC catraca: NEGADO`.
 
-### Opção B — Arduino IDE (hardware real, opcional)
+Link publico do Wokwi: adicionar apos publicar o projeto.
 
-1. Abra `sketch.ino` na Arduino IDE.
-2. Monte o circuito conforme a seção 5 (LED com resistor de 220 Ω no pino 13,
-   buzzer no pino 8).
-3. Selecione a placa **Arduino UNO**, a porta correta e clique em **Upload**.
-4. Abra o **Monitor Serial** a **9600 baud**.
+### Arduino IDE
 
-Não são necessárias bibliotecas externas — o código usa apenas `math.h` e as
-funções nativas do core do Arduino (`tone`, `radians`, etc.). Veja
-[`libraries.txt`](libraries.txt).
+1. Abra `sketch.ino`.
+2. Selecione Arduino UNO.
+3. Monte LED no pino 13 e buzzer no pino 8.
+4. Envie o codigo para a placa.
+5. Abra o Serial Monitor em 9600 baud.
 
-## 7. Integrantes do grupo
+## 7. Integracao com o projeto
 
-| Nome completo | RM |
+- Web Development: a pulseira web usa NFC, saldo, historico, GNSS e HoloRoute.
+- Computational Thinking: o menu Python simula operacoes de usuario e rota.
+- DPS: o modelo matematico reforca Haversine e funcoes ligadas ao espaco.
+- Software/TXD: o documento explica arquitetura, fluxo, viabilidade e impacto.
+
+## 8. Integrante
+
+| Nome | RM |
 |---|---|
 | Thiago Souza de Lima | 568732 |
-
-Equipe individual conforme informado pelo autor do projeto.
-
----
-
-*HoloPass · Edge Computing & Computer Systems · GS 2026 · FIAP*

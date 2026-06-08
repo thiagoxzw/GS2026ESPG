@@ -1,74 +1,67 @@
 /* ============================================================
-   HoloPass — Módulo Embarcado (Edge Computing)
-   Global Solution 2026 · 1º Semestre · Indústria Espacial
-   Disciplina: Edge Computing & Computer Systems
-   ------------------------------------------------------------
-   Simula o "coração físico" da pulseira HoloPass: um
-   microcontrolador que recebe a posição por satélite (GNSS),
-   calcula a estação de metrô mais próxima usando a fórmula de
-   Haversine e avisa o usuário quando ele chega ao destino.
+   HoloPass - Modulo Embarcado (Edge Computing)
+   Global Solution 2026 - Industria Espacial - FIAP
 
-   Hardware (ver diagram.json — simulação no Wokwi):
-     - Arduino UNO
-     - LED  "Fix GNSS"      -> pino 13 (via resistor de 220 Ohm)
-     - Buzzer "Alerta chegada" -> pino 8
+   Simula a logica fisica da pulseira:
+   - recebe fixes GNSS simulados;
+   - calcula estacao mais proxima por Haversine;
+   - registra pagamento NFC com saldo aprovado/negado;
+   - emite telemetria no Serial Monitor;
+   - pisca LED a cada leitura;
+   - toca buzzer no pagamento e na chegada ao destino;
+   - calcula prioridade urbana conceitual para areas mal atendidas.
 
-   Comportamento:
-     - O LED pisca a CADA leitura de posição (fix do GNSS).
-     - O buzzer APITA quando a pulseira chega na estação destino.
+   Hardware no Wokwi:
+   - Arduino UNO
+   - LED no pino 13 com resistor 220 ohm
+   - Buzzer no pino 8
 
-   Observação de honestidade técnica:
-     O Arduino UNO não possui receptor GNSS embutido. Aqui a
-     posição é SIMULADA (um trajeto que se aproxima da estação Sé),
-     exatamente como faríamos com um módulo real NEO-6M + TinyGPS++.
-     A matemática (Haversine) é idêntica à usada no app web e no
-     modelo em Python do projeto.
+   Honestidade tecnica:
+   O Arduino UNO nao possui GNSS/NFC embutido. Aqui os fixes e a catraca NFC
+   sao simulados para demonstrar a arquitetura. A formula de Haversine e a
+   decisao de borda sao reais e equivalentes ao app web e ao modelo Python.
    ============================================================ */
 
 #include <math.h>
 
-// ---------- Pinos (devem casar com o diagram.json) ----------
-const uint8_t PINO_LED    = 13;   // LED "Fix GNSS" (com resistor de 220 Ohm)
-const uint8_t PINO_BUZZER = 8;    // Buzzer "Alerta chegada"
+const uint8_t PINO_LED = 13;
+const uint8_t PINO_BUZZER = 8;
 
-// ---------- Constantes do modelo ----------
-const float RAIO_TERRA_KM   = 6371.0;   // raio médio da Terra
-const float RAIO_CHEGADA_KM = 0.25;     // < 250 m  -> considera "chegou"
-const unsigned long INTERVALO_LEITURA_MS = 1200; // cadência do fix GNSS
+const float RAIO_TERRA_KM = 6371.0;
+const float RAIO_CHEGADA_KM = 0.25;
+const unsigned long INTERVALO_LEITURA_MS = 1100;
 
-// ---------- Base de estações (mesmas coordenadas do app/Python) ----------
+const int TARIFA_CENTAVOS = 440;
+int saldoCentavos = 920;
+
 struct Estacao {
   const char* nome;
   float lat;
   float lng;
+  uint8_t cobertura; // 0 = baixa cobertura, 100 = bem atendida
 };
 
 const Estacao ESTACOES[] = {
-  { "Luz",      -23.5345, -46.6356 },
-  { "Se",       -23.5505, -46.6333 },   // destino desta simulacao
-  { "Liberdade",-23.5588, -46.6336 },
-  { "Bras",     -23.5446, -46.6175 },
-  { "Republica",-23.5436, -46.6428 },
-  { "Paraiso",  -23.5736, -46.6403 }
+  { "Luz",       -23.5345, -46.6356, 92 },
+  { "Se",        -23.5505, -46.6333, 95 },
+  { "Liberdade", -23.5588, -46.6336, 82 },
+  { "Bras",      -23.5446, -46.6175, 90 },
+  { "Republica", -23.5436, -46.6428, 94 },
+  { "Paraiso",   -23.5736, -46.6403, 88 },
+  { "Pinheiros", -23.5666, -46.7019, 86 },
+  { "Osasco",    -23.5329, -46.7918, 54 }
 };
+
 const uint8_t N_ESTACOES = sizeof(ESTACOES) / sizeof(ESTACOES[0]);
+const uint8_t IDX_ORIGEM = 3;  // Bras
+const uint8_t IDX_DESTINO = 1; // Se
 
-// Estação destino da viagem (índice em ESTACOES[]): "Se"
-const uint8_t IDX_DESTINO = 1;
+float progresso = 0.0;
+uint16_t ciclo = 0;
+uint8_t numeroViagem = 1;
+bool jaAvisouChegada = false;
+bool pagamentoProcessado = false;
 
-// ---------- Trajeto SIMULADO (Bras -> Se) ----------
-// Ponto de partida e destino; a posição é interpolada entre eles.
-const float LAT_INICIO = -23.5446, LNG_INICIO = -46.6175; // proximo a Bras
-const float LAT_DESTINO = -23.5505, LNG_DESTINO = -46.6333; // Se
-const float PASSO_PROGRESSO = 0.12; // ~9 leituras ate chegar
-
-float progresso = 0.0;   // 0.0 = inicio do trajeto, 1.0 = destino
-bool  jaAvisou  = false; // evita repetir o alarme de chegada
-
-// ------------------------------------------------------------
-// Haversine: distancia real (km) entre dois pontos da esfera.
-// Mesma formula do app web (script.js) e do modelo Python.
-// ------------------------------------------------------------
 float haversineKm(float lat1, float lon1, float lat2, float lon2) {
   float dLat = radians(lat2 - lat1);
   float dLon = radians(lon2 - lon1);
@@ -78,42 +71,131 @@ float haversineKm(float lat1, float lon1, float lat2, float lon2) {
   return 2 * RAIO_TERRA_KM * asin(sqrt(a));
 }
 
-// ------------------------------------------------------------
-// Retorna o indice da estacao mais proxima de (lat, lng).
-// Mesma logica de "detectar estacao mais proxima" do app.
-// ------------------------------------------------------------
 uint8_t estacaoMaisProxima(float lat, float lng, float &distKm) {
   uint8_t melhor = 0;
-  float menor = 1e9;
+  float menor = 9999.0;
   for (uint8_t i = 0; i < N_ESTACOES; i++) {
     float d = haversineKm(lat, lng, ESTACOES[i].lat, ESTACOES[i].lng);
-    if (d < menor) { menor = d; melhor = i; }
+    if (d < menor) {
+      menor = d;
+      melhor = i;
+    }
   }
   distKm = menor;
   return melhor;
 }
 
-// ------------------------------------------------------------
-// Pisca o LED uma vez = "fix GNSS recebido / leitura de posicao".
-// ------------------------------------------------------------
+uint8_t precisaoGnssMetros() {
+  // Variacao deterministica para simular qualidade real do fix GNSS urbano.
+  return 6 + ((ciclo * 7) % 18);
+}
+
+const char* prioridadeUrbana(float distKm, uint8_t idxEstacao) {
+  uint8_t cobertura = ESTACOES[idxEstacao].cobertura;
+  if (distKm > 1.2 || cobertura < 60) return "ALTA";
+  if (distKm > 0.7 || cobertura < 78) return "MEDIA";
+  return "BAIXA";
+}
+
 void piscarFixGNSS() {
   digitalWrite(PINO_LED, HIGH);
-  delay(120);
+  delay(90);
   digitalWrite(PINO_LED, LOW);
 }
 
-// ------------------------------------------------------------
-// Toca o aviso sonoro de chegada na estacao (buzzer).
-// ------------------------------------------------------------
-void alertaChegada() {
-  for (uint8_t i = 0; i < 3; i++) {
-    tone(PINO_BUZZER, 1760, 150);  // La6
-    digitalWrite(PINO_LED, HIGH);  // LED aceso junto com o bip
-    delay(200);
+void beepAprovado() {
+  tone(PINO_BUZZER, 1319, 90);
+  delay(120);
+  tone(PINO_BUZZER, 1760, 110);
+  delay(140);
+  noTone(PINO_BUZZER);
+}
+
+void beepNegado() {
+  for (uint8_t i = 0; i < 2; i++) {
+    tone(PINO_BUZZER, 220, 160);
+    digitalWrite(PINO_LED, HIGH);
+    delay(190);
     noTone(PINO_BUZZER);
     digitalWrite(PINO_LED, LOW);
     delay(120);
   }
+}
+
+void alertaChegada() {
+  for (uint8_t i = 0; i < 3; i++) {
+    tone(PINO_BUZZER, 1976, 130);
+    digitalWrite(PINO_LED, HIGH);
+    delay(170);
+    noTone(PINO_BUZZER);
+    digitalWrite(PINO_LED, LOW);
+    delay(100);
+  }
+}
+
+void imprimirValor(int centavos) {
+  Serial.print(F("R$ "));
+  Serial.print(centavos / 100);
+  Serial.print(F(","));
+  int resto = centavos % 100;
+  if (resto < 10) Serial.print(F("0"));
+  Serial.print(resto);
+}
+
+void processarNFC() {
+  if (pagamentoProcessado) return;
+
+  Serial.print(F("NFC catraca: "));
+  if (saldoCentavos >= TARIFA_CENTAVOS) {
+    saldoCentavos -= TARIFA_CENTAVOS;
+    Serial.print(F("APROVADO | tarifa="));
+    imprimirValor(TARIFA_CENTAVOS);
+    Serial.print(F(" | saldo="));
+    imprimirValor(saldoCentavos);
+    Serial.println();
+    beepAprovado();
+  } else {
+    Serial.print(F("NEGADO | saldo="));
+    imprimirValor(saldoCentavos);
+    Serial.println(F(" | recarga PIX simulada +R$ 20,00"));
+    beepNegado();
+    saldoCentavos += 2000;
+  }
+
+  pagamentoProcessado = true;
+}
+
+void imprimirTelemetria(float lat, float lng, uint8_t idxProx, float distProx, float distDestino) {
+  Serial.print(F("#"));
+  Serial.print(ciclo);
+  Serial.print(F(" viagem="));
+  Serial.print(numeroViagem);
+  Serial.print(F(" fix="));
+  Serial.print(precisaoGnssMetros());
+  Serial.print(F("m lat="));
+  Serial.print(lat, 5);
+  Serial.print(F(" lng="));
+  Serial.print(lng, 5);
+  Serial.print(F(" prox="));
+  Serial.print(ESTACOES[idxProx].nome);
+  Serial.print(F(" distProx="));
+  Serial.print(distProx, 2);
+  Serial.print(F("km destino="));
+  Serial.print(distDestino, 2);
+  Serial.print(F("km prioridadeEO="));
+  Serial.print(prioridadeUrbana(distProx, idxProx));
+  Serial.print(F(" saldo="));
+  imprimirValor(saldoCentavos);
+  Serial.println();
+}
+
+void reiniciarViagem() {
+  progresso = 0.0;
+  jaAvisouChegada = false;
+  pagamentoProcessado = false;
+  numeroViagem++;
+  Serial.println(F("--- Nova viagem simulada ---"));
+  delay(1200);
 }
 
 void setup() {
@@ -122,53 +204,44 @@ void setup() {
   Serial.begin(9600);
 
   Serial.println(F("============================================"));
-  Serial.println(F("  HoloPass - Modulo Embarcado (Edge/GNSS)"));
-  Serial.println(F("  LED pino 13 = fix GNSS | Buzzer pino 8 = chegada"));
-  Serial.print  (F("  Destino da viagem: "));
+  Serial.println(F("  HoloPass Edge - GNSS + NFC + alerta"));
+  Serial.print(F("  Origem: "));
+  Serial.print(ESTACOES[IDX_ORIGEM].nome);
+  Serial.print(F(" | Destino: "));
   Serial.println(ESTACOES[IDX_DESTINO].nome);
+  Serial.print(F("  Saldo inicial: "));
+  imprimirValor(saldoCentavos);
+  Serial.println();
   Serial.println(F("============================================"));
 }
 
 void loop() {
-  // 1) "Recebe" uma nova posicao do satelite (simulada por interpolacao)
-  float lat = LAT_INICIO + (LAT_DESTINO - LAT_INICIO) * progresso;
-  float lng = LNG_INICIO + (LNG_DESTINO - LNG_INICIO) * progresso;
+  ciclo++;
 
-  // 2) Sinaliza a leitura de posicao piscando o LED
+  const Estacao origem = ESTACOES[IDX_ORIGEM];
+  const Estacao destino = ESTACOES[IDX_DESTINO];
+  float lat = origem.lat + (destino.lat - origem.lat) * progresso;
+  float lng = origem.lng + (destino.lng - origem.lng) * progresso;
+
   piscarFixGNSS();
+  processarNFC();
 
-  // 3) Calcula a estacao mais proxima e a distancia ate o destino
   float distProx;
   uint8_t idxProx = estacaoMaisProxima(lat, lng, distProx);
-  float distDestino = haversineKm(lat, lng,
-                                  ESTACOES[IDX_DESTINO].lat,
-                                  ESTACOES[IDX_DESTINO].lng);
+  float distDestino = haversineKm(lat, lng, destino.lat, destino.lng);
 
-  // 4) Mostra a telemetria no Serial Monitor (como um display da pulseira)
-  Serial.print(F("GNSS lat="));   Serial.print(lat, 5);
-  Serial.print(F(" lng="));       Serial.print(lng, 5);
-  Serial.print(F(" | + proxima: "));
-  Serial.print(ESTACOES[idxProx].nome);
-  Serial.print(F(" (~")); Serial.print(distProx, 2); Serial.print(F(" km)"));
-  Serial.print(F(" | destino "));
-  Serial.print(ESTACOES[IDX_DESTINO].nome);
-  Serial.print(F(": ")); Serial.print(distDestino, 2); Serial.println(F(" km"));
+  imprimirTelemetria(lat, lng, idxProx, distProx, distDestino);
 
-  // 5) Chegou na estacao destino? Dispara o alerta sonoro uma unica vez.
-  if (distDestino <= RAIO_CHEGADA_KM && !jaAvisou) {
-    Serial.println(F(">>> CHEGANDO NA ESTACAO! Prepare o desembarque. <<<"));
+  if (distDestino <= RAIO_CHEGADA_KM && !jaAvisouChegada) {
+    Serial.print(F(">>> CHEGADA CONFIRMADA EM "));
+    Serial.print(destino.nome);
+    Serial.println(F(" | buzzer de desembarque acionado <<<"));
     alertaChegada();
-    jaAvisou = true;
+    jaAvisouChegada = true;
   }
 
-  // 6) Avanca no trajeto; ao chegar, reinicia a simulacao
-  progresso += PASSO_PROGRESSO;
-  if (progresso > 1.0001) {
-    progresso = 0.0;
-    jaAvisou  = false;
-    Serial.println(F("--- Nova viagem simulada ---"));
-    delay(1500);
-  }
+  progresso += 0.115;
+  if (progresso > 1.0001) reiniciarViagem();
 
   delay(INTERVALO_LEITURA_MS);
 }
