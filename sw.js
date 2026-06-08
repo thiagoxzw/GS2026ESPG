@@ -3,7 +3,7 @@
 // Permite que o app funcione 100% offline e receba notificações
 // ============================================================
 
-const CACHE_NAME = 'holopass-v7.3';
+const CACHE_NAME = 'holopass-v7.4';
 
 // Arquivos que serão guardados em cache para uso offline
 const ARQUIVOS_CACHE = [
@@ -27,7 +27,7 @@ const ARQUIVOS_CACHE = [
 // INSTALAÇÃO — guarda todos os arquivos no cache
 // ============================================================
 self.addEventListener('install', evento => {
-  console.log('[SW] Instalando HoloPass v7.2...');
+  console.log('[SW] Instalando HoloPass v7.4...');
   evento.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {

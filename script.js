@@ -1992,10 +1992,7 @@ function calcularRota() {
   if (!valO || !valD) { exibirAviso('Selecione a estação atual e o destino!'); return; }
   if (valO === valD)  { exibirAviso('Origem e destino são a mesma estação!'); return; }
 
-  if (!estaFuncionando()) {
-    exibirAviso('Sistema fora do horário de operação (04:40–00:00)');
-    return;
-  }
+  const foraOperacao = !estaFuncionando();
 
   const [linhaO, estO] = valO.split('|');
   const [linhaD, estD] = valD.split('|');
@@ -2007,6 +2004,8 @@ function calcularRota() {
     || calcularEstimativa(linhaO, estO, linhaD, estD));
 
   if (!rota) { exibirAviso('Não foi possível calcular rota.'); return; }
+
+  if (foraOperacao) exibirAviso('Sistema fora do horário de operação (04:40–00:00) · rota em modo planejamento');
 
   rotaCalculada = rota;
   linhaAtiva    = rota.linhas[0];
@@ -2165,13 +2164,27 @@ function exibirRota(rota) {
 
   atualizarContadorTrem();
 
-  // Aviso de encerramento próximo
+  // Avisos de operação
   const aviso  = document.getElementById('opWarning');
   const minRest = Math.round((FUNCIONAMENTO.fim - horaDecimal()) * 60);
   if (aviso) {
-    aviso.style.display = (minRest <= 60 && minRest > 0) ? 'block' : 'none';
-    if (minRest <= 60 && minRest > 0)
+    if (!estaFuncionando()) {
+      aviso.style.display = 'block';
+      aviso.textContent = '⚠ Sistema fora do horário de operação (04:40–00:00) · rota exibida para planejamento';
+    } else {
+      aviso.style.display = (minRest <= 60 && minRest > 0) ? 'block' : 'none';
+    }
+    if (estaFuncionando() && minRest <= 60 && minRest > 0)
       aviso.textContent = `⚠ Sistema encerra em ~${minRest} minutos`;
+  }
+
+  if (!estaFuncionando()) {
+    const trem = document.getElementById('nextTrainDisplay');
+    if (trem) {
+      trem.textContent = 'Retorna às 04:40';
+      trem.style.color = 'var(--neon-yellow)';
+      trem.style.textShadow = '0 0 12px var(--neon-yellow)';
+    }
   }
 
   renderizarRotaVisual(rota);
