@@ -370,19 +370,24 @@
           </button>
         </div>
 
-        <!-- Faixa informativa sobre a camada de Observação da Terra -->
-        <div class="glass-panel" style="margin-top:14px; padding:14px 18px; border-left:4px solid #00b3c4;">
-          <div class="panel-title" style="margin-bottom:6px;">🌎 CAMADA ESPACIAL BRASILEIRA</div>
-          <p style="margin:6px 0; font-size:13px; line-height:1.5; color:#cbd6e2;">
-            O HoloPass cruza a posição detectada por <strong>GNSS</strong> com imagens públicas dos satélites
-            brasileiros <strong>CBERS-4A</strong> (resolução 2 m, parceria Brasil–China)
-            e <strong>Amazonia-1</strong> (100% brasileiro, INPE/MCTI) para identificar áreas
-            urbanas mal atendidas pelo transporte coletivo — gerando informação de planejamento
-            para operadoras e prefeituras.
-          </p>
-          <p style="margin:6px 0 0; font-size:11px; color:#7d8b9c; font-style:italic;">
-            Imagens disponíveis gratuitamente em data.inpe.br · Camada conceitual nesta versão do protótipo.
-          </p>
+        <!-- Demo conceitual da camada de Observação da Terra -->
+        <div class="earth-panel glass-panel">
+          <div class="panel-title">🌎 MAPA DE CALOR CONCEITUAL · CBERS-4A / AMAZONIA-1</div>
+          <div class="eo-layout">
+            <div class="eo-map" id="eoHeatmap" role="img" aria-label="Mapa de calor conceitual de áreas mal atendidas por transporte"></div>
+            <div class="eo-copy">
+              <div class="eo-badge">DEMO CONCEITUAL · NÃO É DADO SATELITAL REAL</div>
+              <p>
+                O protótipo cruza a estação detectada por <strong>GNSS</strong> com uma leitura urbana
+                conceitual inspirada em imagens públicas do <strong>INPE</strong>.
+              </p>
+              <p>
+                As manchas indicam prioridade simulada para planejamento: distância até estações,
+                densidade urbana e ausência de integração.
+              </p>
+              <div class="eo-detail" id="eoDetail">Selecione uma região no mapa para ver o diagnóstico.</div>
+            </div>
+          </div>
         </div>
 
       </section>

@@ -1418,6 +1418,174 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   transform: translateY(-2px);
 }
 
+/* ============================================================
+   CAMADA DE OBSERVAÇÃO DA TERRA
+   ============================================================ */
+
+.earth-panel {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-left: 4px solid #00b3c4;
+}
+
+.eo-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.15fr) 0.85fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.eo-map {
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  border: 1px solid rgba(0,245,255,0.18);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 46% 46%, rgba(0,245,255,0.18), transparent 20%),
+    linear-gradient(135deg, rgba(0,102,255,0.16), transparent 46%),
+    #04111f;
+}
+
+.eo-grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.eo-line {
+  position: absolute;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(0,245,255,0.55);
+  box-shadow: 0 0 14px rgba(0,245,255,0.28);
+}
+
+.eo-line.l1 { width: 72%; left: 14%; top: 48%; transform: rotate(-8deg); }
+.eo-line.l2 { width: 62%; left: 22%; top: 56%; transform: rotate(31deg); background: rgba(0,255,136,0.52); }
+.eo-line.l3 { width: 55%; left: 21%; top: 39%; transform: rotate(58deg); background: rgba(255,215,0,0.5); }
+
+.eo-station {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+.eo-station.core { left: 47%; top: 46%; }
+.eo-station.east { left: 72%; top: 41%; }
+.eo-station.south { left: 58%; top: 68%; }
+
+.eo-hotspot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--hot-color), white 25%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--hot-color), transparent 35%), transparent 68%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.eo-hotspot span {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(2,11,24,0.75);
+  border: 1px solid rgba(255,255,255,0.24);
+}
+
+.eo-hotspot:hover,
+.eo-hotspot.active {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--hot-color), transparent 30%);
+}
+
+.eo-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #cbd6e2;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.eo-copy p { margin: 0; }
+
+.eo-badge {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid rgba(255,170,0,0.35);
+  border-radius: 6px;
+  color: var(--neon-gold);
+  background: rgba(255,170,0,0.08);
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+}
+
+.eo-detail {
+  margin-top: auto;
+  padding: 12px;
+  border: 1px solid rgba(0,245,255,0.16);
+  border-radius: 8px;
+  background: rgba(0,245,255,0.045);
+}
+
+.eo-detail strong,
+.eo-detail span {
+  display: block;
+}
+
+.eo-detail strong {
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+}
+
+.eo-detail span {
+  color: var(--neon-gold);
+  margin: 3px 0 6px;
+}
+
+.eo-detail p {
+  color: var(--text-dim);
+}
+
+.eo-legend {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+}
+
+.eo-legend span {
+  width: 34px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00ff88, #ffd700, #ff3366);
+}
+
 /* ---- Barra de Ações Mobile (fixa no rodapé) ---- */
 .mobile-actions {
   position: fixed;
@@ -2139,6 +2307,14 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   /* Mobile: grade de dispositivos em 1 coluna */
   .device-grid {
     grid-template-columns: 1fr;
+  }
+
+  .eo-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .eo-map {
+    min-height: 230px;
   }
 
   /* Mobile: mais espaço para a barra de ações */

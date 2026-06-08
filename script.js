@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
   iniciarRelogio();
   popularSelects();
   gerarAlertas();
+  inicializarMapaEO();
   atualizarPeakBar();
   verificarSessao();         // Fase 3: restaura sessão salva
   inicializarPWA();          // Fase 4: registra SW, detecta APIs, conexão
@@ -521,6 +522,82 @@ function gerarAlertas() {
   `).join('');
 
   if (countEl) countEl.textContent = `(${alertas.length})`;
+}
+
+// ============================================================
+// CAMADA CONCEITUAL DE OBSERVAÇÃO DA TERRA
+// ============================================================
+
+const EO_REGIOES = [
+  {
+    nome: 'Extremo Leste',
+    x: 78, y: 38, intensidade: 86, cor: '#ff3366',
+    diagnostico: 'Alta prioridade: grande distância até estações e integração radial sobrecarregada.'
+  },
+  {
+    nome: 'Sul periférico',
+    x: 58, y: 74, intensidade: 72, cor: '#ffaa00',
+    diagnostico: 'Prioridade média-alta: corredores longos e baixa redundância entre trem, metrô e ônibus.'
+  },
+  {
+    nome: 'Noroeste',
+    x: 25, y: 33, intensidade: 61, cor: '#ffd700',
+    diagnostico: 'Prioridade média: boa malha ferroviária, mas grandes bolsões dependem de ônibus.'
+  },
+  {
+    nome: 'Centro expandido',
+    x: 47, y: 46, intensidade: 28, cor: '#00ff88',
+    diagnostico: 'Baixa prioridade: maior concentração de estações e alternativas de baldeação.'
+  }
+];
+
+function inicializarMapaEO() {
+  const mapa = document.getElementById('eoHeatmap');
+  const detail = document.getElementById('eoDetail');
+  if (!mapa || !detail) return;
+
+  mapa.innerHTML = `
+    <div class="eo-grid-lines"></div>
+    <div class="eo-line l1"></div>
+    <div class="eo-line l2"></div>
+    <div class="eo-line l3"></div>
+    <div class="eo-station core"></div>
+    <div class="eo-station east"></div>
+    <div class="eo-station south"></div>
+    <div class="eo-legend"><span></span> prioridade simulada</div>
+  `;
+
+  EO_REGIOES.forEach((regiao, index) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'eo-hotspot';
+    btn.style.setProperty('--x', `${regiao.x}%`);
+    btn.style.setProperty('--y', `${regiao.y}%`);
+    btn.style.setProperty('--size', `${48 + regiao.intensidade * 0.6}px`);
+    btn.style.setProperty('--hot-color', regiao.cor);
+    btn.setAttribute('aria-label', `${regiao.nome}: prioridade ${regiao.intensidade}`);
+    btn.innerHTML = `<span>${regiao.intensidade}</span>`;
+    btn.addEventListener('click', () => selecionarRegiaoEO(index));
+    mapa.appendChild(btn);
+  });
+
+  selecionarRegiaoEO(0);
+}
+
+function selecionarRegiaoEO(index) {
+  const regiao = EO_REGIOES[index];
+  const detail = document.getElementById('eoDetail');
+  if (!regiao || !detail) return;
+
+  document.querySelectorAll('.eo-hotspot').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+
+  detail.innerHTML = `
+    <strong>${regiao.nome}</strong>
+    <span>Prioridade ${regiao.intensidade}/100</span>
+    <p>${regiao.diagnostico}</p>
+  `;
 }
 
 // ============================================================
