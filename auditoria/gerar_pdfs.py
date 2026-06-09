@@ -7,7 +7,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Preformatted, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Preformatted, Spacer, Table, TableStyle, Image as RLImage
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -63,6 +63,10 @@ def normalizar(texto: str) -> str:
 def inline_md(texto: str) -> str:
     texto = normalizar(texto)
     return re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", texto)
+
+
+def imagem_md(line: str):
+    return re.match(r"!\[(.*?)\]\((.*?)\)", line)
 
 
 def decorar_pagina(canvas, doc):
@@ -160,6 +164,20 @@ def converter(md_path: Path, pdf_path: Path) -> None:
             table_lines.append(line)
             continue
         flush_table()
+        img_match = imagem_md(line)
+        if img_match:
+            alt, ref = img_match.groups()
+            img_path = (md_path.parent / ref).resolve()
+            if img_path.exists():
+                img = RLImage(str(img_path), width=16.2 * cm, height=19.1 * cm)
+                img.hAlign = "CENTER"
+                story.append(img)
+                if alt:
+                    story.append(Paragraph(f"<i>{inline_md(alt)}</i>", estilos["BodyCustom"]))
+                story.append(Spacer(1, 0.2 * cm))
+            else:
+                story.append(Paragraph(f"<b>Imagem nao encontrada:</b> {inline_md(ref)}", estilos["BodyCustom"]))
+            continue
         if not line:
             story.append(Spacer(1, 0.12 * cm))
         elif line.startswith("# "):

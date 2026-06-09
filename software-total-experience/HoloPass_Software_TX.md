@@ -114,6 +114,8 @@ O fluxo abaixo usa pecas fundamentais de fluxograma: terminal para inicio/fim,
 retangulo para processo, losango para decisao, paralelogramo para entrada/saida
 e cilindro para dados persistidos.
 
+![Fluxograma do User Flow HoloPass](user_flow_holopass.png)
+
 **Legenda dos simbolos**
 
 | Simbolo | Peca de fluxograma | Uso no HoloPass |
