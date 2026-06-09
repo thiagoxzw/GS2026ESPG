@@ -10,7 +10,7 @@
 | Categoria geral | Status | Evidencia | Observacao |
 |---|---:|---|---|
 | Problema real identificado | PASS | `software-total-experience/Software_TXD_HoloPass.docx` | Mobilidade, seguranca, dependencia de celular e acesso desigual |
-| Solucao tecnologica coerente | PASS | `index.html`, `script.js`, `edge-computing/sketch.ino` | Pulseira NFC/GNSS + painel operacional + PWA + Edge + Python |
+| Solucao tecnologica coerente | PASS | `WEB/index.html`, `WEB/src/js/script.js`, `edge-computing/sketch.ino` | Pulseira NFC/GNSS + painel operacional + PWA + Edge + Python |
 | Conexao com Industria Espacial | PASS | `modelo_gnss.py`, camada GNSS do app | GNSS, Haversine, FSPL e contexto de Observacao da Terra |
 | Integracao entre disciplinas | PASS | `software-total-experience/HoloPass_Software_TX.pdf` | Todas as entregas defendem o mesmo produto |
 | Viabilidade tecnica | PASS | `edge-computing/README.md`, `diagram.json` | Simulacoes rotuladas; circuito educacional mais completo |
@@ -37,8 +37,8 @@
 | Computational Thinking | Arquivo unico, menu, retorno | PASS | execucao automatizada opcoes 1-6 | 0 |
 | Computational Thinking | Estruturas obrigatorias | PASS | `holopass_menu.py` | 0 |
 | Computational Thinking | Dependencias | PASS | somente bibliotecas nativas | 0 |
-| Web Development | JS puro, sem frameworks | PASS | `script.js`, `webdev.js` | 0 |
-| Web Development | Slideshow, quiz, temas, forms | PASS | `webdev.js`, sintaxe OK | 0 |
+| Web Development | JS puro, sem frameworks | PASS | `WEB/src/js/script.js`, `WEB/src/js/webdev.js` | 0 |
+| Web Development | Slideshow, quiz, temas, forms | PASS | `WEB/src/js/webdev.js`, sintaxe OK | 0 |
 | Web Development | Rotas, NFC, GNSS e PWA | PASS | rota critica, API real e SW v7.7 | 0 |
 | Web Development | GitHub/commits/Org | PARCIAL externo | remoto existe; Org depende da turma | variavel |
 | DPS | Funcoes, graficos e relatorio | PASS | `modelo_gnss.py`, PDF e 4 graficos SVG | 0 |
@@ -47,7 +47,7 @@
 
 | Componente | Cenario | Resultado | Evidencia |
 |---|---|---:|---|
-| JS app | Sintaxe | OK | `node --check script.js`, `webdev.js`, `sw.js` sem erro |
+| JS app | Sintaxe | OK | `node --check WEB/src/js/script.js`, `WEB/src/js/webdev.js`, `WEB/sw.js` sem erro |
 | App web | HTTP local | OK | `/`, CSS, JS, landing e assets retornaram HTTP 200 |
 | App web | Painel operacional | OK | Edge headless: sem erros; painel GNSS/NFC presente; painel anterior ausente |
 | App web | Assets locais | OK | imagens com `alt`, ancoras e recursos locais existentes |
@@ -79,9 +79,9 @@
 ## 5. Comandos de Evidencia
 
 ```powershell
-node --check script.js
-node --check webdev.js
-node --check sw.js
+node --check WEB\src\js\script.js
+node --check WEB\src\js\webdev.js
+node --check WEB\sw.js
 python -m py_compile computational-thinking\holopass_menu.py differentiated-problem-solving\modelo_gnss.py
 python auditoria\gerar_sptrans_gtfs_asset.py
 python auditoria\gerar_word_txd.py
@@ -106,7 +106,7 @@ Invoke-WebRequest https://ccm.artesp.sp.gov.br/metroferroviario/api/status/
 - `software-total-experience/HoloPass_Software_TX.pdf`
 - `computational-thinking/RELATORIO_EXECUCAO_CT.pdf`
 - `differentiated-problem-solving/RELATORIO_MODELO_GNSS.pdf`
-- `assets/sptrans-stops.min.json`
+- `WEB/src/assets/sptrans-stops.min.json`
 - `edge-computing/sketch.ino`, `diagram.json`, `README.md`
-- `index.html`, `style.css`, `script.js`, `webdev.js`, `sw.js`, `manifest.json`
+- `WEB/index.html`, `WEB/src/css/style.css`, `WEB/src/js/script.js`, `WEB/src/js/webdev.js`, `WEB/sw.js`, `WEB/manifest.json`, `WEB/AI.md`
 - `front-end-landing/`

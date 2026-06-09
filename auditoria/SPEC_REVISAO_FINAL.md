@@ -55,9 +55,9 @@ Validar sempre:
 ## 5. Checklist de Teste Antes da Entrega
 
 ```powershell
-node --check script.js
-node --check webdev.js
-node --check sw.js
+node --check WEB\src\js\script.js
+node --check WEB\src\js\webdev.js
+node --check WEB\sw.js
 python -m py_compile computational-thinking\holopass_menu.py differentiated-problem-solving\modelo_gnss.py auditoria\gerar_word_txd.py
 python computational-thinking\holopass_menu.py
 python differentiated-problem-solving\modelo_gnss.py
@@ -87,7 +87,8 @@ No navegador, conferir:
 
 ## 7. Arquivos de Entrega Prioritarios
 
-- `index.html`, `style.css`, `script.js`, `webdev.js`, `manifest.json`, `sw.js`
+- `WEB/index.html`, `WEB/manifest.json`, `WEB/sw.js`, `WEB/AI.md`
+- `WEB/src/css/style.css`, `WEB/src/js/script.js`, `WEB/src/js/webdev.js`, `WEB/src/assets/`
 - `front-end-landing/`
 - `edge-computing/sketch.ino`, `diagram.json`, `README.md`
 - `computational-thinking/holopass_menu.py`

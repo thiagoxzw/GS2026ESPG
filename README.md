@@ -38,7 +38,7 @@ Este repositório integra as entregas de código das disciplinas da Global Solut
 
 | Caminho | Disciplina | Conteúdo |
 |---|---|---|
-| **`/` (raiz)** + `design/` `assets/` | Web Development | App web (PWA): `index.html`, `style.css`, `script.js`, `webdev.js`, `sw.js` — inclui **quiz**, **slideshow** e **troca de temas** |
+| **`WEB/`** | Web Development | App web (PWA): `index.html`, `manifest.json`, `sw.js`, `AI.md` e `src/` com CSS, JS e assets — inclui **quiz**, **slideshow** e **troca de temas** |
 | **`front-end-landing/`** | Front-End Design | **Landing page** com 6 seções (HTML/CSS puro) |
 | **`edge-computing/`** | Edge Computing & Computer Systems | Firmware Arduino (`sketch.ino`) + circuito Wokwi (`diagram.json`) |
 | **`computational-thinking/`** | Computational Thinking with Python | **Programa de menu** no terminal (`holopass_menu.py`) |
@@ -56,10 +56,10 @@ frameworks) e funciona **offline** via Service Worker.
 ```bash
 # a partir da raiz do repositório, suba um servidor estático:
 python -m http.server 8000
-# depois abra http://localhost:8000 no navegador
+# depois abra http://localhost:8000/WEB/index.html no navegador
 ```
 
-> É necessário servir por HTTP (não abrir o `index.html` direto via `file://`),
+> É necessário servir por HTTP (não abrir o `WEB/index.html` direto via `file://`),
 > pois o Service Worker, o NFC e o GNSS exigem um contexto seguro/servido.
 
 **Demonstração:** entre como **DEMO**, calcule uma rota, toque em **🛰️ GNSS**

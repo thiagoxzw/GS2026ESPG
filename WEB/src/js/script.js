@@ -217,7 +217,7 @@ const OVERPASS_APIS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter'
 ];
-const SPTRANS_GTFS_STOPS_URL = './assets/sptrans-stops.min.json';
+const SPTRANS_GTFS_STOPS_URL = './src/assets/sptrans-stops.min.json';
 let cacheProximoTrem = null;
 let consultaProximoTremPendente = null;
 let cacheStatusLinha = null;
@@ -1381,8 +1381,8 @@ function notificar(titulo, corpo) {
 
   new Notification(titulo, {
     body: corpo,
-    icon: 'icon.svg',
-    badge: 'icon.svg',
+    icon: 'src/assets/icon.svg',
+    badge: 'src/assets/icon.svg',
     tag: 'holopass',
     vibrate: VIBRACOES.notificacao
   });

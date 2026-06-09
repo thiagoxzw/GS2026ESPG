@@ -2,7 +2,7 @@
   "name": "HoloPass — Pulseira Inteligente de Transporte",
   "short_name": "HoloPass",
   "description": "Pulseira inteligente de transporte público com GNSS, NFC, rotas e PWA offline",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -12,7 +12,7 @@
   "categories": ["travel", "utilities", "lifestyle"],
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "src/assets/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

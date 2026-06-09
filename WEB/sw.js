@@ -3,27 +3,28 @@
 // Permite que o app funcione 100% offline e receba notificações
 // ============================================================
 
-const CACHE_NAME = 'holopass-v7.7';
+const CACHE_NAME = 'holopass-v7.8';
 
 // Arquivos que serão guardados em cache para uso offline
 const ARQUIVOS_CACHE = [
   './',
   './index.html',
-  './style.css',
-  './script.js',
-  './webdev.js',
+  './src/css/style.css',
+  './src/js/script.js',
+  './src/js/webdev.js',
   './manifest.json',
-  './icon.svg',
-  './assets/slide1-gnss.svg',
-  './assets/slide2-nfc.svg',
-  './assets/slide3-edge.svg'
+  './src/assets/icon.svg',
+  './src/assets/slide1-gnss.svg',
+  './src/assets/slide2-nfc.svg',
+  './src/assets/slide3-edge.svg',
+  './src/assets/sptrans-stops.min.json'
 ];
 
 // ============================================================
 // INSTALAÇÃO — guarda todos os arquivos no cache
 // ============================================================
 self.addEventListener('install', evento => {
-  console.log('[SW] Instalando HoloPass v7.7...');
+  console.log('[SW] Instalando HoloPass v7.8...');
   evento.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -93,8 +94,8 @@ self.addEventListener('push', evento => {
   evento.waitUntil(
     self.registration.showNotification(dados.titulo, {
       body: dados.corpo,
-      icon: './icon.svg',
-      badge: './icon.svg',
+      icon: './src/assets/icon.svg',
+      badge: './src/assets/icon.svg',
       vibrate: [200, 100, 200],
       tag: 'holopass-notif',
       requireInteraction: false,

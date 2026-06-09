@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoloPass — Mobilidade Inteligente por GNSS e NFC</title>
+  <link rel="stylesheet" href="src/css/style.css?v=7.8">
+
+  <!-- ====== PWA META TAGS ====== -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00f5ff">
+  <link rel="icon" type="image/svg+xml" href="src/assets/icon.svg">
+
+  <!-- iOS PWA support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HoloPass">
+  <link rel="apple-touch-icon" href="src/assets/icon.svg">
+
+  <!-- Mobile viewport com suporte ao notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+</head>
+<body>
+
+  <!-- Fundo compartilhado entre login e app -->
+  <div class="particles" id="particles"></div>
+  <div class="holo-grid"></div>
+
+  <!-- ======================================================
+       OVERLAY DE LOGIN / CADASTRO
+       Aparece quando não há sessão salva.
+       ====================================================== -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box glass-panel">
+
+      <div class="login-logo">
+        <span class="login-icon">◈</span>
+        <span class="login-logo-text">HOLOPASS</span>
+        <span class="login-icon">◈</span>
+      </div>
+      <div class="login-subtitle">SISTEMA DE IDENTIFICAÇÃO HOLOGRÁFICA</div>
+
+      <!-- Abas ENTRAR / CADASTRAR -->
+      <div class="login-tabs">
+        <button class="tab-btn active" id="tabBtnLogin"    onclick="mostrarTab('login')">ENTRAR</button>
+        <button class="tab-btn"        id="tabBtnRegister" onclick="mostrarTab('register')">CADASTRAR</button>
+      </div>
+
+      <!-- Formulário de Login -->
+      <div id="formLogin">
+        <input type="email"    class="holo-input" id="loginEmail" placeholder="E-MAIL">
+        <input type="password" class="holo-input" id="loginPass"  placeholder="SENHA"
+               onkeydown="if(event.key==='Enter') fazerLogin()">
+        <div class="login-error" id="loginError"></div>
+        <button class="login-btn"  onclick="fazerLogin()">⚡ ACESSAR SISTEMA</button>
+        <button class="demo-btn"   onclick="loginDemo()">◈ ENTRAR COMO DEMO</button>
+      </div>
+
+      <!-- Formulário de Cadastro -->
+      <div id="formRegister" style="display:none">
+        <input type="text"     class="holo-input" id="regNome"  placeholder="SEU NOME COMPLETO">
+        <input type="email"    class="holo-input" id="regEmail" placeholder="E-MAIL">
+        <input type="password" class="holo-input" id="regPass"  placeholder="SENHA (mín. 4 caracteres)"
+               onkeydown="if(event.key==='Enter') fazerCadastro()">
+        <select class="holo-input" id="regTipo">
+          <option value="trabalhador">👔 Trabalhador</option>
+          <option value="estudante">🎓 Estudante</option>
+          <option value="idoso">🧓 Idoso (60+)</option>
+          <option value="pcd">♿ Pessoa c/ Deficiência</option>
+        </select>
+        <div class="login-error" id="registerError"></div>
+        <button class="login-btn" onclick="fazerCadastro()">◈ CRIAR MINHA CONTA</button>
+      </div>
+
+      <div class="login-info">
+        🔒 Dados salvos localmente no dispositivo
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       MODAL DE RECARGA DE SALDO
+       ====================================================== -->
+  <div class="modal-overlay" id="rechargeModal" style="display:none">
+    <div class="modal-box glass-panel">
+      <div class="panel-title">◈ RECARREGAR PULSEIRA</div>
+
+      <div class="recharge-grid">
+        <button class="recharge-btn" onclick="recarregar(20)">
+          <span class="r-value">R$ 20</span>
+          <span class="r-qty">~4 passagens</span>
+        </button>
+        <button class="recharge-btn" onclick="recarregar(50)">
+          <span class="r-value">R$ 50</span>
+          <span class="r-qty">~11 passagens</span>
+        </button>
+        <button class="recharge-btn" onclick="recarregar(100)">
+          <span class="r-value">R$ 100</span>
+          <span class="r-qty">~22 passagens</span>
+        </button>
+      </div>
+
+      <div class="recharge-methods">
+        <div class="method-btn active" onclick="selecionarMetodo(this)">🔷 PIX</div>
+        <div class="method-btn"        onclick="selecionarMetodo(this)">💳 Cartão</div>
+        <div class="method-btn"        onclick="selecionarMetodo(this)">🏦 Débito</div>
+      </div>
+
+      <button class="close-btn" onclick="fecharRecarga()">⊗ CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       APP PRINCIPAL
+       ====================================================== -->
+  <div class="container">
+
+    <!-- ====== CABEÇALHO ====== -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">◈</div>
+        <div class="logo-text">
+          <span class="logo-main">HOLOPASS</span>
+          <span class="logo-sub">MOBILIDADE INTELIGENTE POR GNSS E NFC</span>
+        </div>
+        <div class="logo-icon">◈</div>
+      </div>
+      <div class="status-bar">
+        <span class="status-item"><span class="dot green"></span> NFC ATIVO</span>
+        <span class="status-item"><span class="dot blue"></span> BLUETOOTH</span>
+        <span class="status-item"><span class="dot cyan"></span> CONECTADO</span>
+        <span class="phase-badge">CENTRAL GNSS + NFC</span>
+        <span class="conn-status" id="connStatus">◉ ONLINE</span>
+        <span class="time" id="currentTime">00:00:00</span>
+        <span class="theme-switch" role="group" aria-label="Trocar tema de cor da página">
+          <button class="theme-btn" data-tema="ciano"   title="Tema Ciano"   aria-label="Tema Ciano"></button>
+          <button class="theme-btn" data-tema="galaxia" title="Tema Galáxia" aria-label="Tema Galáxia"></button>
+          <button class="theme-btn" data-tema="aurora"  title="Tema Aurora"  aria-label="Tema Aurora"></button>
+        </span>
+      </div>
+      <div class="peak-bar" id="peakBar"></div>
+    </header>
+
+    <!-- ====== PAINEL PRINCIPAL — 2 COLUNAS ====== -->
+    <main class="main-panel">
+
+      <!-- ---- COLUNA ESQUERDA ---- -->
+      <section class="bracelet-section">
+
+        <!-- Painel do usuário logado -->
+        <div class="user-panel glass-panel" id="userPanel" style="display:none">
+          <div class="panel-title">◈ USUÁRIO IDENTIFICADO</div>
+          <div class="user-info-row">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <div class="user-details">
+              <div class="user-name" id="userName">-</div>
+              <div class="user-type" id="userType">-</div>
+            </div>
+            <button class="logout-btn" onclick="fazerLogout()" title="Sair do sistema">⊗</button>
+          </div>
+        </div>
+
+        <!-- Pulseira holográfica -->
+        <div class="bracelet-container">
+          <div class="bracelet-ring">
+            <div class="bracelet-inner">
+              <div class="holo-display">
+                <div class="holo-label">SALDO DISPONÍVEL</div>
+                <div class="balance-amount" id="balanceDisplay">---</div>
+                <div class="balance-bar">
+                  <div class="balance-fill" id="balanceFill"></div>
+                </div>
+                <div class="bracelet-id">ID: HP-2147-BR</div>
+                <!-- Botão de recarga integrado à pulseira -->
+                <button class="recharge-mini-btn" onclick="abrirRecarga()">↑ RECARREGAR</button>
+              </div>
+            </div>
+            <div class="ring-glow" id="ringGlow"></div>
+            <div class="scan-line"></div>
+          </div>
+          <div class="bracelet-label">◈ PULSEIRA HOLOPASS ATIVA ◈</div>
+        </div>
+
+        <!-- Estatísticas do mês -->
+        <div class="stats-panel glass-panel" id="statsPanel" style="display:none">
+          <div class="panel-title">◈ ESTE MÊS</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="statViagens">0</div>
+              <div class="stat-label">VIAGENS</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="statGasto">R$ 0</div>
+              <div class="stat-label">GASTO</div>
+            </div>
+            <div class="stat-item stat-linha">
+              <div class="stat-value" id="statLinha">-</div>
+              <div class="stat-label">LINHA FAVORITA</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico de viagens -->
+        <div class="history-panel glass-panel">
+          <div class="panel-title">◈ HISTÓRICO DE VIAGENS</div>
+          <div id="historyContent">
+            <div class="hist-empty">Faça login para ver seu histórico</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ---- COLUNA DIREITA ---- -->
+      <section class="control-panel">
+
+        <!-- Seleção de estações -->
+        <div class="stations-panel glass-panel">
+          <div class="panel-title">◈ INTERFACE DE NAVEGAÇÃO</div>
+          <div class="stations-grid">
+            <div class="station-select-group">
+              <label class="select-label"><span>📍</span> ESTAÇÃO ATUAL</label>
+              <div class="select-wrapper">
+                <select id="currentStation" class="station-select">
+                  <option value="">-- SELECIONAR --</option>
+                </select>
+              </div>
+            </div>
+            <div class="station-arrow">→</div>
+            <div class="station-select-group">
+              <label class="select-label"><span>🎯</span> DESTINO</label>
+              <div class="select-wrapper">
+                <select id="destination" class="station-select">
+                  <option value="">-- SELECIONAR --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcularRota()">
+            <span>⚡</span> CALCULAR ROTA
+          </button>
+        </div>
+
+        <!-- Painel de dados da viagem -->
+        <div class="journey-panel glass-panel" id="journeyPanel" style="display:none">
+          <div class="panel-title">◈ DADOS DA VIAGEM</div>
+
+          <div class="journey-grid">
+            <div class="journey-item">
+              <div class="journey-icon">🚇</div>
+              <div class="journey-label">LINHA</div>
+              <div class="journey-value" id="lineInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">📏</div>
+              <div class="journey-label">DISTÂNCIA</div>
+              <div class="journey-value" id="distanceInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">⏱️</div>
+              <div class="journey-label">TEMPO EST.</div>
+              <div class="journey-value" id="timeInfo">-</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🛑</div>
+              <div class="journey-label">PARADAS</div>
+              <div class="journey-value" id="stopsInfo">-</div>
+            </div>
+          </div>
+
+          <!-- Dados operacionais estimados -->
+          <div class="realtime-grid">
+            <div class="journey-item">
+              <div class="journey-icon">👥</div>
+              <div class="journey-label">LOTAÇÃO</div>
+              <div class="journey-value" id="occupancyText">-</div>
+              <div class="occ-bar"><div class="occ-fill" id="occFill"></div></div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🚆</div>
+              <div class="journey-label">PRÓXIMO TREM</div>
+              <div class="journey-value countdown" id="nextTrainDisplay">-</div>
+              <div class="journey-source" id="nextTrainSource">Fonte: aguardando rota</div>
+            </div>
+            <div class="journey-item">
+              <div class="journey-icon">🚃</div>
+              <div class="journey-label">VAGÃO IDEAL</div>
+              <div class="journey-value" id="wagonSuggest">-</div>
+            </div>
+          </div>
+
+          <div class="op-warning" id="opWarning" style="display:none"></div>
+
+          <div class="fare-section">
+            <div class="fare-display">
+              <span class="fare-label">TARIFA</span>
+              <span class="fare-value" id="fareDisplay">R$ 5,40</span>
+            </div>
+            <button class="pay-btn" onclick="pagarPassagem()">
+              <span class="nfc-icon">◈</span> APROXIMAR &amp; PAGAR
+            </button>
+          </div>
+
+          <div class="route-display" id="routeDisplay"></div>
+        </div>
+
+        <!-- Alertas dinâmicos -->
+        <div class="alerts-panel glass-panel">
+          <div class="panel-title">◈ ALERTAS DO SISTEMA <span class="alerts-count" id="alertsCount"></span></div>
+          <div id="alertsContent"></div>
+        </div>
+
+        <!-- ====== PAINEL DE DEVICE APIs ====== -->
+        <div class="device-panel glass-panel">
+          <div class="panel-title">◈ RECURSOS DO DISPOSITIVO</div>
+          <div class="device-grid">
+            <div class="device-item" id="dev-pwa">
+              <span class="dev-icon">📱</span>
+              <div class="dev-info">
+                <div class="dev-name">PWA INSTALÁVEL</div>
+                <div class="dev-status" id="statPwa">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-offline">
+              <span class="dev-icon">📡</span>
+              <div class="dev-info">
+                <div class="dev-name">MODO OFFLINE</div>
+                <div class="dev-status" id="statOffline">Aguardando SW...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-nfc">
+              <span class="dev-icon">📶</span>
+              <div class="dev-info">
+                <div class="dev-name">WEB NFC</div>
+                <div class="dev-status" id="statNfc">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-notif">
+              <span class="dev-icon">🔔</span>
+              <div class="dev-info">
+                <div class="dev-name">NOTIFICAÇÕES</div>
+                <div class="dev-status" id="statNotif">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-vibe">
+              <span class="dev-icon">📳</span>
+              <div class="dev-info">
+                <div class="dev-name">VIBRAÇÃO</div>
+                <div class="dev-status" id="statVibe">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-gps">
+              <span class="dev-icon">🛰️</span>
+              <div class="dev-info">
+                <div class="dev-name">GNSS (GPS / Galileo)</div>
+                <div class="dev-status" id="statGps">Verificando...</div>
+              </div>
+            </div>
+            <div class="device-item" id="dev-eo">
+              <span class="dev-icon">🌎</span>
+              <div class="dev-info">
+                <div class="dev-name">OBSERVAÇÃO DA TERRA</div>
+                <div class="dev-status" id="statEo">GNSS · OSM/Overpass · Haversine</div>
+              </div>
+            </div>
+          </div>
+          <button class="test-btn" onclick="testarTodosRecursos()">
+            ⚡ ATIVAR &amp; TESTAR TODOS OS RECURSOS
+          </button>
+        </div>
+
+        <!-- Cobertura urbana com GNSS + OpenStreetMap/Overpass -->
+        <div class="earth-panel glass-panel">
+          <div class="panel-title">🌎 COBERTURA GNSS REAL · PRIORIDADE DE ESTAÇÕES</div>
+          <div class="eo-layout">
+            <div class="eo-map" id="eoHeatmap" role="img" aria-label="Mapa de prioridade de áreas mal atendidas por estações"></div>
+            <div class="eo-copy">
+              <div class="eo-badge">GNSS + OPENSTREETMAP/OVERPASS + HAVERSINE</div>
+              <p>
+                O HoloPass usa a posição <strong>GNSS real</strong>, busca estações próximas no
+                <strong>OpenStreetMap</strong> e calcula a distância por Haversine.
+              </p>
+              <p>
+                O resultado vira uma fila técnica de prioridade para novas conexões, com fonte e
+                horário da consulta visíveis.
+              </p>
+              <div class="eo-detail" id="eoDetail">Selecione uma região no mapa para ver o diagnóstico.</div>
+              <div class="coverage-grid" aria-live="polite">
+                <div><span>Status</span><strong id="coverageStatus">Aguardando análise</strong></div>
+                <div><span>Mais próxima</span><strong id="coverageNearest">-</strong></div>
+                <div><span>SPTrans GTFS</span><strong id="coverageBus">-</strong></div>
+                <div><span>Prioridade</span><strong id="coveragePriority">-</strong></div>
+              </div>
+              <div class="coverage-actions">
+                <button class="proto-btn" onclick="analisarCoberturaAtual()">ANALISAR MEU GNSS</button>
+                <button class="proto-btn" onclick="analisarCoberturaDemo()">TESTAR AMOSTRA REAL</button>
+              </div>
+              <div class="coverage-source" id="coverageSource">
+                Fonte: OpenStreetMap contributors via Overpass API + GTFS SPTrans local para São Paulo. Dados orbitais/INPE ficam como contexto técnico.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ====================================================
+         WEB DEVELOPMENT — Slideshow · Quiz · Feedback (JS puro)
+         ==================================================== -->
+    <section class="webdev-section">
+      <div class="webdev-panel glass-panel">
+        <div class="proto-header">
+          <div class="panel-title">◈ CENTRAL DE CONHECIMENTO HOLOPASS</div>
+          <div class="proto-subtitle">
+            Slideshow do tema · quiz espacial de 10 perguntas · canal de feedback — tudo em JavaScript puro
+          </div>
+        </div>
+
+        <!-- ---- Slideshow (3 imagens) ---- -->
+        <div class="slideshow">
+          <div class="slides">
+            <figure class="slide active">
+              <img src="src/assets/slide1-gnss.svg" alt="Ilustração de posicionamento por satélite GNSS">
+              <figcaption>Posição por satélite (GNSS)</figcaption>
+            </figure>
+            <figure class="slide">
+              <img src="src/assets/slide2-nfc.svg" alt="Ilustração de pagamento por aproximação NFC na catraca">
+              <figcaption>Pague aproximando o pulso (NFC)</figcaption>
+            </figure>
+            <figure class="slide">
+              <img src="src/assets/slide3-edge.svg" alt="Ilustração do módulo Arduino embarcado com LED e buzzer">
+              <figcaption>Cálculo na borda (Edge Computing)</figcaption>
+            </figure>
+          </div>
+          <button class="slide-nav prev" id="slidePrev" aria-label="Slide anterior">‹</button>
+          <button class="slide-nav next" id="slideNext" aria-label="Próximo slide">›</button>
+          <div class="slide-dots">
+            <button class="slide-dot active" aria-label="Ir para o slide 1"></button>
+            <button class="slide-dot" aria-label="Ir para o slide 2"></button>
+            <button class="slide-dot" aria-label="Ir para o slide 3"></button>
+          </div>
+        </div>
+
+        <!-- ---- Quiz (10 perguntas) ---- -->
+        <div class="quiz">
+          <div class="panel-title small">◈ QUIZ: VOCÊ CONHECE O TEMA ESPACIAL?</div>
+          <div id="quizPerguntas"></div>
+          <div class="quiz-actions">
+            <button class="proto-btn" id="btnCorrigirQuiz">✓ VER RESULTADO</button>
+            <button class="proto-btn" id="btnReiniciarQuiz">↺ REINICIAR</button>
+          </div>
+          <div class="quiz-resultado" id="quizResultado"></div>
+        </div>
+
+        <!-- ---- Formulário de feedback (validação) ---- -->
+        <div class="feedback">
+          <div class="panel-title small">◈ FALE CONOSCO</div>
+          <form id="feedbackForm" novalidate>
+            <input type="text"  id="fbNome"  class="holo-input" placeholder="SEU NOME">
+            <input type="email" id="fbEmail" class="holo-input" placeholder="SEU E-MAIL">
+            <textarea id="fbMsg" class="holo-input" rows="3" placeholder="SUA MENSAGEM"></textarea>
+            <button type="submit" class="login-btn">ENVIAR FEEDBACK</button>
+          </form>
+          <div class="feedback-resultado" id="feedbackResultado"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         DIAGNOSTICO OPERACIONAL GNSS + NFC
+         ==================================================== -->
+    <section class="prototype-section ops-diagnostic-section">
+      <div class="ops-diagnostic-grid">
+        <article class="ops-card glass-panel">
+          <div class="ops-title">◈ Diagnóstico GNSS</div>
+          <div class="gnss-diagnostic-layout">
+            <div class="gnss-radar" aria-hidden="true">
+              <span></span>
+            </div>
+            <dl class="ops-kv">
+              <div><dt>Latitude</dt><dd id="diagLat">--</dd></div>
+              <div><dt>Longitude</dt><dd id="diagLng">--</dd></div>
+              <div><dt>Precisão real</dt><dd id="diagAcc">--</dd></div>
+              <div><dt>Estação + próxima</dt><dd id="diagStation">--</dd></div>
+              <div><dt>Distância</dt><dd id="diagDistance">--</dd></div>
+            </dl>
+          </div>
+          <button class="ops-action" onclick="lerPosicaoDiagnostico()">LER POSIÇÃO (GNSS REAL)</button>
+          <p class="ops-note">Usa a Geolocation API do navegador. A precisão (±m) é informada pelo aparelho.</p>
+        </article>
+
+        <article class="ops-card glass-panel">
+          <div class="ops-title">◈ Catraca NFC (simulada)</div>
+          <dl class="ops-kv compact">
+            <div><dt>Saldo</dt><dd id="opsNfcBalance">--</dd></div>
+            <div><dt>Tarifa</dt><dd id="opsNfcFare">R$ 5,40</dd></div>
+          </dl>
+          <div class="nfc-reader-status" id="opsNfcStatus">Aproxime o pulso para validar.</div>
+          <button class="ops-action" onclick="simularCatracaDiagnostico()">APROXIMAR PULSO</button>
+          <div class="ops-subtitle">Últimas validações</div>
+          <div class="ops-history" id="opsNfcHistory">Nenhuma validação ainda.</div>
+        </article>
+
+        <article class="ops-card glass-panel">
+          <div class="ops-title">▣ Painel de operação</div>
+          <div class="ops-metrics">
+            <div><span>Horário</span><strong id="opsClock">--</strong></div>
+            <div><span>Status da linha</span><strong id="opsLineStatus">--</strong></div>
+            <div><span>Tempo estimado</span><strong id="opsTripTime">--</strong></div>
+            <div><span>Paradas</span><strong id="opsStops">--</strong></div>
+            <div><span>Baldeação</span><strong id="opsTransfer">--</strong></div>
+            <div><span>Tarifa</span><strong id="opsFare">R$ 5,40</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         MOTOR HOLOROUTE E CENTRAL OPERACIONAL
+         ==================================================== -->
+    <section class="future-section holoroute-section">
+      <div class="future-panel glass-panel">
+        <div class="proto-header">
+          <div class="panel-title">◈ HOLOROUTE · OTIMIZADOR DE VIAGEM</div>
+          <div class="proto-subtitle">
+            Motor determinístico de decisão: cruza rota, baldeações, operação, lotação simulada e saldo sem usar dados externos não comprovados.
+          </div>
+        </div>
+
+        <div class="advanced-grid holoroute-grid">
+          <article class="future-card route-engine-card">
+            <div class="future-badge">GNSS + REDE</div>
+            <h3>Rota operacional explicável</h3>
+            <div class="route-dashboard holoroute-dashboard">
+              <div class="route-metric">
+                <span>RISCO DE ATRASO</span>
+                <strong id="routeDelayRisk">--</strong>
+                <div class="route-bar"><i id="routeDelayBar"></i></div>
+              </div>
+              <div class="route-metric">
+                <span>LOTAÇÃO ESTIMADA</span>
+                <strong id="routeCrowdRisk">--</strong>
+                <div class="route-bar"><i id="routeCrowdBar"></i></div>
+              </div>
+              <div class="route-output">
+                <span>RECOMENDAÇÃO HOLOROUTE</span>
+                <strong id="routeSuggestion">Calcule uma rota para ver a recomendação.</strong>
+              </div>
+              <div class="route-output">
+                <span>PADRÃO LOCAL</span>
+                <strong id="routePattern">Faça login demo para avaliar histórico local.</strong>
+              </div>
+            </div>
+
+            <div class="advanced-actions">
+              <button class="proto-btn" onclick="executarHoloRoute()">↻ ATUALIZAR HOLOROUTE</button>
+              <button class="proto-btn" onclick="aplicarRotaHoloRoute()">✓ APLICAR RECOMENDAÇÃO</button>
+            </div>
+          </article>
+
+          <article class="future-card route-engine-card">
+            <div class="future-badge">IMPACTO URBANO</div>
+            <h3>Prioridade de novas estações</h3>
+            <ul class="future-list">
+              <li><span>Entrada:</span> posição GNSS do passageiro e distância até estações existentes.</li>
+              <li><span>Critério:</span> regiões com maior distância média, baixa cobertura e maior dependência de integração.</li>
+              <li><span>Saída:</span> prioridade de cobertura calculada por GNSS, OpenStreetMap/Overpass e Haversine.</li>
+              <li><span>Honestidade:</span> a camada é demonstrativa; dados reais exigiriam base pública/operacional validada.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="implementation-steps">
+          <div class="proto-section-title">COMO O HOLOROUTE DECIDE</div>
+          <div class="steps-grid">
+            <div class="step-pill"><span>1</span> Monta a malha como grafo de estações, linhas e corredores de transferência.</div>
+            <div class="step-pill"><span>2</span> Calcula a rota com menor custo operacional, não apenas linha reta.</div>
+            <div class="step-pill"><span>3</span> Separa distância GNSS aproximada de distância operacional estimada.</div>
+            <div class="step-pill"><span>4</span> Mostra baldeações reais, como Linha 9 → Linha 4 → Linha 2.</div>
+            <div class="step-pill"><span>5</span> Explica risco, lotação e próximo trem real quando a API cobre a estação.</div>
+            <div class="step-pill"><span>6</span> Mantém histórico no dispositivo para privacidade e funcionamento offline.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== BARRA DE AÇÕES MOBILE (fixa no rodapé) ====== -->
+    <nav class="mobile-actions" id="mobileActions">
+      <button class="action-btn" onclick="acaoGPS()" title="Detectar estação por satélite (GNSS)">
+        <span class="act-icon">🛰️</span>
+        <span class="act-label">GNSS</span>
+      </button>
+      <button class="action-btn primary" onclick="acaoNFC()" title="Aproximar pulseira NFC">
+        <span class="act-icon">◈</span>
+        <span class="act-label">NFC</span>
+      </button>
+      <button class="action-btn" onclick="acaoNotificar()" title="Ativar notificações">
+        <span class="act-icon">🔔</span>
+        <span class="act-label">ALERTA</span>
+      </button>
+      <button class="action-btn install-btn" id="installBtn" onclick="instalarApp()" title="Instalar como app">
+        <span class="act-icon">⬇</span>
+        <span class="act-label">INSTALAR</span>
+      </button>
+    </nav>
+
+    <div class="payment-status" id="paymentStatus"></div>
+
+    <footer class="footer">
+      ◈ HOLOPASS · GNSS · NFC · ROTAS · PWA OFFLINE · OBSERVAÇÃO DA TERRA CONCEITUAL ◈
+    </footer>
+  </div>
+
+  <script src="src/js/script.js?v=7.8"></script>
+  <script src="src/js/webdev.js?v=1"></script>
+</body>
+</html>
