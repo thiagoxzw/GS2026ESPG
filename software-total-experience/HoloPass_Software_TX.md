@@ -1,156 +1,156 @@
-# HoloPass - Software & Total Experience Design
+﻿# HoloPass - Software & Total Experience Design
 
-**Global Solution 2026 - Industria Espacial - FIAP**  
+**Global Solution 2026 - Indústria Espacial - FIAP**
 **Equipe:** Thiago Souza de Lima - RM 568732
 
-## 1. Sumario Executivo
+## 1. Sumário Executivo
 
-O HoloPass e uma pulseira inteligente para transporte publico urbano. Ela une
-pagamento por NFC, localizacao por GNSS, planejamento de rota operacional e PWA
-offline para reduzir filas, inseguranca, dependencia do celular e falta de
-informacao durante deslocamentos.
+O HoloPass é uma pulseira inteligente para transporte público urbano. Ela une
+pagamento por NFC, localização por GNSS, planejamento de rota operacional e PWA
+offline para reduzir filas, insegurança, dependência do celular e falta de
+informação durante deslocamentos.
 
 O projeto existe como sistema integrado: app web em HTML/CSS/JS puro, landing
-page, firmware Arduino, programa Python de menu, modelo matematico GNSS e
-documentacao de pitch. Cada disciplina entrega uma camada da mesma solucao.
+page, firmware Arduino, programa Python de menu, modelo matemático GNSS e
+documentação de pitch. Cada disciplina entrega uma camada da mesma solução.
 
 ## 2. Problema Real
 
-Passageiros enfrentam catracas lentas, saldo pouco visivel, celulares expostos em
-estacoes lotadas e informacao limitada sobre rota, baldeacao e chegada. Pessoas
-com menor acesso a smartphone/dados moveis sofrem mais, ampliando desigualdade
+Passageiros enfrentam catracas lentas, saldo pouco visível, celulares expostos em
+estações lotadas e informação limitada sobre rota, baldeação e chegada. Pessoas
+com menor acesso a smartphone ou dados móveis sofrem mais, ampliando a desigualdade
 de mobilidade.
 
 O custo aparece em tempo perdido, risco de furto, atraso operacional e menor
-confianca no transporte publico. A solucao importa porque mobilidade previsivel
-melhora acesso a estudo, trabalho, saude e lazer.
+confiança no transporte público. A solução importa porque a mobilidade previsível
+melhora o acesso a estudo, trabalho, saúde e lazer.
 
-## 3. Solucao Tecnologica
+## 3. Solução Tecnológica
 
-O HoloPass propoe uma pulseira com display, NFC, vibracao e leitura GNSS. O app
-demonstra autenticacao, saldo, recarga, historico, rotas, pagamento, modo
-offline, HoloRoute deterministico, proximo trem real quando a API cobre a estacao
-e diagnostico urbano com OpenStreetMap/Overpass e GTFS SPTrans local.
+O HoloPass propõe uma pulseira com display, NFC, vibração e leitura GNSS. O app
+demonstra autenticação, saldo, recarga, histórico, rotas, pagamento, modo offline,
+HoloRoute determinístico, próximo trem real quando a API cobre a estação e
+diagnóstico urbano com OpenStreetMap/Overpass e GTFS SPTrans local.
 
-O HoloRoute substitui recursos pouco relevantes por uma decisao explicavel:
-monta a malha metroferroviaria como grafo de estacoes, linhas e corredores de
-transferencia. A rota Osasco -> Trianon-MASP, por exemplo, passa por Linha 9,
-transferencia em Pinheiros para Linha 4, transferencia Paulista/Consolacao para
-Linha 2 e chegada em Trianon-MASP.
+O HoloRoute substitui recursos pouco relevantes por uma decisão explicável: monta
+a malha metroferroviária como grafo de estações, linhas e corredores de
+transferência. A rota Osasco -> Trianon-MASP, por exemplo, passa pela Linha 9,
+faz transferência em Pinheiros para a Linha 4, segue pela transferência
+Paulista/Consolação para a Linha 2 e chega à estação Trianon-MASP.
 
-No site principal, a antiga vitrine visual foi substituida por um painel
-operacional com diagnostico GNSS real pelo navegador, catraca NFC simulada,
-historico de validacoes e metricas de operacao da viagem.
+No site principal, a antiga vitrine visual foi substituída por um painel
+operacional com diagnóstico GNSS real pelo navegador, catraca NFC simulada,
+histórico de validações e métricas de operação da viagem.
 
-## 4. Conexao com a Industria Espacial
+## 4. Conexão com a Indústria Espacial
 
-A conexao espacial e direta por GNSS: o sistema usa latitude/longitude,
-precisao em metros e Haversine para identificar a estacao mais proxima. A camada
-de cobertura urbana usa OpenStreetMap/Overpass para localizar estacoes reais e
-GTFS SPTrans para contar paradas de onibus no raio consultado dentro da cobertura
-municipal de Sao Paulo. CBERS-4A/Amazonia-1 entram como contexto de Observacao
-da Terra, sem inventar imagem satelital real.
+A conexão espacial é direta por GNSS: o sistema usa latitude, longitude, precisão
+em metros e Haversine para identificar a estação mais próxima. A camada de
+cobertura urbana usa OpenStreetMap/Overpass para localizar estações reais e GTFS
+SPTrans para contar paradas de ônibus no raio consultado dentro da cobertura
+municipal de São Paulo. CBERS-4A/Amazonia-1 entram como contexto de Observação da
+Terra, sem inventar imagem satelital real.
 
 ## 5. Arquitetura Integrada
 
 | Camada | Entrega | Papel no sistema |
 |---|---|---|
-| Software/TXD | Este documento | Define problema, visao, arquitetura, backlog e fluxo |
-| Front-End Design | Landing page | Comunica problema, tecnologia, objetivos, publico e beneficios |
-| Web Development | PWA principal | Prototipo funcional de login, recarga, rota, NFC, GNSS, quiz e feedback |
-| Edge Computing | Arduino | Simula a pulseira fisica com GNSS, NFC, LED, buzzer e telemetria |
-| Computational Thinking | Python menu | Demonstra logica de usuario, saldo, rota, historico e validacao |
-| DPS | Modelo GNSS | Explica matematica espacial com funcoes e graficos |
+| Software/TXD | Este documento | Define problema, visão, arquitetura, backlog e fluxo |
+| Front-End Design | Landing page | Comunica problema, tecnologia, objetivos, público e benefícios |
+| Web Development | PWA principal | Protótipo funcional de login, recarga, rota, NFC, GNSS, quiz e feedback |
+| Edge Computing | Arduino | Simula a pulseira física com GNSS, NFC, LED, buzzer e telemetria |
+| Computational Thinking | Python menu | Demonstra lógica de usuário, saldo, rota, histórico e validação |
+| DPS | Modelo GNSS | Explica matemática espacial com funções e gráficos |
 | Storytelling | Pitch | Apresenta narrativa, proposta de valor, tecnologia e equipe |
 
-## 6. Viabilidade Tecnica
+## 6. Viabilidade Técnica
 
-A versao educacional usa simulacoes honestas para o que depende de hardware real:
-GNSS e NFC no Arduino sao simulados, mas a matematica e as decisoes locais sao
-reais. A pulseira fisica poderia ser prototipada com ESP32/Arduino, modulo
-RFID/NFC, display OLED, motor de vibracao e bateria.
+A versão educacional usa simulações honestas para o que depende de hardware real:
+GNSS e NFC no Arduino são simulados, mas a matemática e as decisões locais são
+reais. A pulseira física poderia ser prototipada com ESP32/Arduino, módulo
+RFID/NFC, display OLED, motor de vibração e bateria.
 
-O app web nao depende de frameworks. O PWA funciona offline via service worker.
-O proximo trem usa API publica da ViaMobilidade em estacoes cobertas; fora disso,
-o sistema mostra fallback documentado. Uma versao de producao precisaria integrar
-dados oficiais, homologacao de pagamento e seguranca embarcada.
+O app web não depende de frameworks. O PWA funciona offline via service worker. O
+próximo trem usa API pública da ViaMobilidade em estações cobertas; fora disso,
+o sistema mostra fallback documentado. Uma versão de produção precisaria integrar
+dados oficiais, homologação de pagamento e segurança embarcada.
 
 ## 7. Impacto e ODS
 
-- **ODS 9 - Inovacao e infraestrutura:** integra software, dispositivo fisico e
-  dados de localizacao para modernizar o transporte.
-- **ODS 10 - Reducao de desigualdades:** reduz dependencia de smartphone e dados
-  moveis durante a viagem.
-- **ODS 11 - Cidades inteligentes:** melhora previsibilidade, conexao entre
-  linhas e priorizacao conceitual de areas mal atendidas.
-- **ODS 13 - Acao climatica:** apoia transporte coletivo mais atrativo, reduzindo
-  dependencia de deslocamentos individuais.
+- **ODS 9 - Inovação e infraestrutura:** integra software, dispositivo físico e
+  dados de localização para modernizar o transporte.
+- **ODS 10 - Redução de desigualdades:** reduz dependência de smartphone e dados
+  móveis durante a viagem.
+- **ODS 11 - Cidades inteligentes:** melhora previsibilidade, conexão entre
+  linhas e priorização conceitual de áreas mal atendidas.
+- **ODS 13 - Ação climática:** apoia transporte coletivo mais atrativo, reduzindo
+  dependência de deslocamentos individuais.
 
-## 8. Declaracao da Visao do Produto
+## 8. Declaração da Visão do Produto
 
-Para passageiros urbanos que precisam viajar com seguranca, previsibilidade e
-menos dependencia do celular, o HoloPass e uma pulseira de transporte inteligente
-que combina pagamento NFC, localizacao GNSS, rota operacional e alertas fisicos.
-Diferente de um bilhete comum, ele integra pagamento, posicao, historico e
-planejamento urbano em uma experiencia unica e acessivel.
+Para passageiros urbanos que precisam viajar com segurança, previsibilidade e
+menos dependência do celular, o HoloPass é uma pulseira de transporte inteligente
+que combina pagamento NFC, localização GNSS, rota operacional e alertas físicos.
+Diferente de um bilhete comum, ele integra pagamento, posição, histórico e
+planejamento urbano em uma experiência única e acessível.
 
 ## 9. Backlog Priorizado
 
-| ID | Historia | Prioridade | Criterio de aceite |
+| ID | História | Prioridade | Critério de aceite |
 |---|---|---|---|
-| US01 | Como passageiro, quero pagar por NFC para embarcar sem tirar celular/cartao do bolso. | Alta | pagamento debita saldo e registra historico |
-| US02 | Como passageiro, quero recarregar por PIX/cartao/debito para manter saldo ativo. | Alta | valores R$20/50/100 atualizam saldo |
-| US03 | Como passageiro, quero detectar estacao por GNSS para iniciar a rota com menos cliques. | Alta | app mostra estacao mais proxima e precisao |
-| US04 | Como passageiro, quero calcular rota com baldeacoes reais para planejar meu trajeto. | Alta | rota exibe linhas, paradas, tempo, tarifa e timeline |
-| US05 | Como passageiro, quero ver saldo, historico e estatisticas para controlar gastos. | Media | painel atualiza apos recarga/pagamento |
-| US06 | Como usuario com internet instavel, quero PWA offline para acessar dados essenciais. | Media | service worker mantem app aberto sem rede |
-| US07 | Como operador publico, quero mapa de calor conceitual para priorizar areas carentes. | Media | hotspots mostram diagnostico e prioridade |
-| US08 | Como passageiro em horario cheio, quero recomendacao HoloRoute explicavel. | Media | painel mostra risco, lotacao e recomendacao sem prometer API real |
-| US09 | Como avaliador, quero evidencias tecnicas para comprovar funcionamento. | Alta | relatorio lista comando, resultado e pendencias |
+| US01 | Como passageiro, quero pagar por NFC para embarcar sem tirar celular/cartão do bolso. | Alta | Pagamento debita saldo e registra histórico. |
+| US02 | Como passageiro, quero recarregar por PIX, cartão ou débito para manter saldo ativo. | Alta | Valores de R$ 20, R$ 50 ou R$ 100 atualizam saldo. |
+| US03 | Como passageiro, quero detectar estação por GNSS para iniciar a rota com menos cliques. | Alta | App mostra estação mais próxima e precisão. |
+| US04 | Como passageiro, quero calcular rota com baldeações reais para planejar meu trajeto. | Alta | Rota exibe linhas, paradas, tempo, tarifa e timeline. |
+| US05 | Como passageiro, quero ver saldo, histórico e estatísticas para controlar gastos. | Média | Painel atualiza após recarga ou pagamento. |
+| US06 | Como usuário com internet instável, quero PWA offline para acessar dados essenciais. | Média | Service worker mantém app aberto sem rede. |
+| US07 | Como operador público, quero mapa de calor conceitual para priorizar áreas carentes. | Média | Hotspots mostram diagnóstico e prioridade. |
+| US08 | Como passageiro em horário cheio, quero recomendação HoloRoute explicável. | Média | Painel mostra risco, lotação e recomendação sem prometer API real. |
+| US09 | Como avaliador, quero evidências técnicas para comprovar funcionamento. | Alta | Relatório lista comando, resultado e pendências. |
 
 ## 10. User Flow
 
-O fluxo abaixo usa pecas fundamentais de fluxograma: terminal para inicio/fim,
-retangulo para processo, losango para decisao, paralelogramo para entrada/saida
+O fluxo abaixo usa peças fundamentais de fluxograma: terminal para início/fim,
+retângulo para processo, losango para decisão, paralelogramo para entrada/saída
 e cilindro para dados persistidos.
 
 ![Fluxograma do User Flow HoloPass](user_flow_holopass.png)
 
-**Legenda dos simbolos**
+**Legenda dos símbolos**
 
-| Simbolo | Peca de fluxograma | Uso no HoloPass |
+| Símbolo | Peça de fluxograma | Uso no HoloPass |
 |---|---|---|
-| Oval | Terminal | Inicio e fim da jornada |
-| Retangulo | Processo | Login, recarga, calculo de rota e validacao NFC |
-| Losango | Decisao | Sessao ativa, saldo suficiente e pagamento aprovado |
-| Paralelogramo | Entrada/Saida | Origem GNSS/manual, destino e exibicao de rota |
-| Cilindro | Dados | Sessao, saldo, historico e cache offline |
+| Oval | Terminal | Início e fim da jornada |
+| Retângulo | Processo | Login, recarga, cálculo de rota e validação NFC |
+| Losango | Decisão | Sessão ativa, saldo suficiente e pagamento aprovado |
+| Paralelogramo | Entrada/Saída | Origem GNSS/manual, destino e exibição de rota |
+| Cilindro | Dados | Sessão, saldo, histórico e cache offline |
 
-**Sequencia do usuario**
+**Sequência do usuário**
 
-1. Inicio: passageiro abre o HoloPass.
-2. Decisao: existe sessao ativa?
-3. Se nao existir, o usuario faz login, cadastro ou entra no modo demo.
-4. O sistema carrega painel, saldo, historico e cache local.
-5. Decisao: saldo e suficiente para a tarifa de R$ 5,40?
-6. Se nao for suficiente, o usuario recarrega por PIX, cartao ou debito.
-7. Entrada: usuario detecta origem por GNSS ou escolhe manualmente.
-8. Entrada: usuario seleciona o destino.
-9. Processo: HoloRoute calcula grafo de linhas, estacoes e baldeacoes.
-10. Saida: app exibe tempo, tarifa, paradas, baldeacoes e rota visual.
-11. Processo: usuario aproxima a pulseira NFC na catraca simulada.
-12. Decisao: pagamento aprovado?
-13. Se aprovado, o sistema atualiza saldo, historico e estatisticas.
-14. Dados: PWA salva informacoes essenciais para uso offline.
-15. Fim: passageiro embarca com rota e comprovacao registradas.
+1. Início: passageiro abre o HoloPass.
+2. Decisão: existe sessão ativa?
+3. Se não existir, o usuário faz login, cadastro ou entra no modo demo.
+4. O sistema carrega painel, saldo, histórico e cache local.
+5. Decisão: saldo é suficiente para a tarifa de R$ 5,40?
+6. Se não for suficiente, o usuário recarrega por PIX, cartão ou débito.
+7. Entrada: usuário detecta origem por GNSS ou escolhe manualmente.
+8. Entrada: usuário seleciona o destino.
+9. Processo: HoloRoute calcula grafo de linhas, estações e baldeações.
+10. Saída: app exibe tempo, tarifa, paradas, baldeações e rota visual.
+11. Processo: usuário aproxima a pulseira NFC na catraca simulada.
+12. Decisão: pagamento aprovado?
+13. Se aprovado, o sistema atualiza saldo, histórico e estatísticas.
+14. Dados: PWA salva informações essenciais para uso offline.
+15. Fim: passageiro embarca com rota e comprovação registradas.
 
-## 11. Criterios de Aceite
+## 11. Critérios de Aceite
 
 - App sem erros de console nos fluxos principais.
 - Rota Osasco -> Trianon-MASP usa Linha 9 -> Linha 4 -> Linha 2.
-- Distancia exibida e rotulada como operacional estimada por trechos da rede.
-- Nenhuma promessa tecnica sem evidencia ou API real nao comprovada.
+- Distância exibida e rotulada como operacional estimada por trechos da rede.
+- Nenhuma promessa técnica sem evidência ou API real não comprovada.
 - Edge compila e demonstra LED, buzzer, NFC, saldo e telemetria.
-- CT Python usa conceitos obrigatorios e nao depende de pacote externo.
+- CT Python usa conceitos obrigatórios e não depende de pacote externo.
 - Toda imagem local usada no app possui texto alternativo.
-- Pendencias externas ficam separadas: video, Wokwi publico, organizacao GitHub.
+- Pendências externas ficam separadas: vídeo, Wokwi público e organização GitHub.
