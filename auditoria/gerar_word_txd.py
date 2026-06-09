@@ -7,10 +7,12 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
+from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "software-total-experience" / "Software_TXD_HoloPass.docx"
+FLOW_IMG = ROOT / "software-total-experience" / "user_flow_holopass.png"
 
 
 BLUE = RGBColor(46, 116, 181)
@@ -211,6 +213,156 @@ def configure_document(doc):
         set_run_font(run, size=8.5, color=MUTED)
 
 
+def load_font(size, bold=False):
+    candidates = [
+        Path("C:/Windows/Fonts/arialbd.ttf" if bold else "C:/Windows/Fonts/arial.ttf"),
+        Path("C:/Windows/Fonts/calibrib.ttf" if bold else "C:/Windows/Fonts/calibri.ttf"),
+    ]
+    for path in candidates:
+        if path.exists():
+            return ImageFont.truetype(str(path), size)
+    return ImageFont.load_default()
+
+
+def wrap_text(text, font, max_width):
+    words = text.split()
+    lines, current = [], ""
+    for word in words:
+        test = f"{current} {word}".strip()
+        width = font.getbbox(test)[2]
+        if width <= max_width:
+            current = test
+        else:
+            if current:
+                lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
+
+
+def draw_centered_text(draw, box, text, font, fill, max_width):
+    lines = wrap_text(text, font, max_width)
+    heights = [font.getbbox(line)[3] - font.getbbox(line)[1] for line in lines]
+    total_h = sum(heights) + (len(lines) - 1) * 6
+    y = box[1] + ((box[3] - box[1]) - total_h) / 2
+    for line, line_h in zip(lines, heights):
+        w = font.getbbox(line)[2]
+        x = box[0] + ((box[2] - box[0]) - w) / 2
+        draw.text((x, y), line, font=font, fill=fill)
+        y += line_h + 6
+
+
+def draw_arrow(draw, start, end, fill):
+    draw.line([start, end], fill=fill, width=4)
+    x1, y1 = start
+    x2, y2 = end
+    if y2 >= y1:
+        head = [(x2, y2), (x2 - 9, y2 - 16), (x2 + 9, y2 - 16)]
+    else:
+        head = [(x2, y2), (x2 - 9, y2 + 16), (x2 + 9, y2 + 16)]
+    draw.polygon(head, fill=fill)
+
+
+def draw_shape(draw, kind, box, label, font):
+    stroke = "#1F5E86"
+    fill = "#EAF6FA"
+    text = "#0B1F33"
+    if kind == "terminal":
+        draw.rounded_rectangle(box, radius=34, fill="#DFF7EF", outline=stroke, width=4)
+    elif kind == "decision":
+        x1, y1, x2, y2 = box
+        points = [((x1 + x2) / 2, y1), (x2, (y1 + y2) / 2), ((x1 + x2) / 2, y2), (x1, (y1 + y2) / 2)]
+        draw.polygon(points, fill="#FFF4D8", outline=stroke)
+        draw.line(points + [points[0]], fill=stroke, width=4)
+    elif kind == "io":
+        x1, y1, x2, y2 = box
+        points = [(x1 + 24, y1), (x2, y1), (x2 - 24, y2), (x1, y2)]
+        draw.polygon(points, fill="#E8F0FF", outline=stroke)
+        draw.line(points + [points[0]], fill=stroke, width=4)
+    elif kind == "data":
+        draw.rounded_rectangle(box, radius=14, fill="#F0E8FF", outline=stroke, width=4)
+        draw.arc((box[0], box[1] - 16, box[2], box[1] + 28), 0, 180, fill=stroke, width=4)
+        draw.arc((box[0], box[3] - 28, box[2], box[3] + 16), 180, 360, fill=stroke, width=4)
+    else:
+        draw.rounded_rectangle(box, radius=14, fill=fill, outline=stroke, width=4)
+    draw_centered_text(draw, box, label, font, text, (box[2] - box[0]) - 42)
+
+
+def gerar_fluxograma_user_flow():
+    FLOW_IMG.parent.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGB", (1400, 1650), "#FFFFFF")
+    draw = ImageDraw.Draw(img)
+    title_font = load_font(38, bold=True)
+    small_font = load_font(24)
+    node_font = load_font(22, bold=True)
+    label_font = load_font(19, bold=True)
+
+    draw.rectangle((0, 0, 1400, 96), fill="#0B1F33")
+    draw.text((52, 26), "User Flow HoloPass - fluxo com pecas fundamentais", font=title_font, fill="#FFFFFF")
+
+    nodes = [
+        ("terminal", (470, 135, 930, 215), "INICIO\nAbre o HoloPass"),
+        ("decision", (500, 260, 900, 390), "Sessao ativa?"),
+        ("process", (120, 450, 500, 535), "Login, cadastro ou demo"),
+        ("data", (810, 450, 1240, 535), "Carrega sessao, saldo e historico"),
+        ("decision", (500, 590, 900, 720), "Saldo >= R$ 5,40?"),
+        ("process", (120, 780, 500, 865), "Recarga PIX, cartao ou debito"),
+        ("io", (780, 780, 1240, 865), "Origem GNSS ou manual"),
+        ("io", (780, 925, 1240, 1010), "Destino escolhido"),
+        ("process", (780, 1070, 1240, 1170), "HoloRoute calcula grafo e baldeacoes"),
+        ("io", (780, 1230, 1240, 1330), "Exibe rota, tempo, tarifa e paradas"),
+        ("process", (450, 1390, 950, 1485), "Aproxima NFC e valida pagamento"),
+        ("terminal", (470, 1535, 930, 1615), "FIM\nEmbarque registrado no PWA"),
+    ]
+    for kind, box, label in nodes:
+        draw_shape(draw, kind, box, label, node_font)
+
+    arrow = "#1F5E86"
+    draw_arrow(draw, (700, 215), (700, 260), arrow)
+    draw_arrow(draw, (500, 325), (500, 325), arrow)
+    draw.line((500, 325, 310, 325, 310, 450), fill=arrow, width=4)
+    draw.polygon([(310, 450), (301, 434), (319, 434)], fill=arrow)
+    draw.text((335, 292), "NAO", font=label_font, fill="#B45309")
+    draw.line((900, 325, 1025, 325, 1025, 450), fill=arrow, width=4)
+    draw.polygon([(1025, 450), (1016, 434), (1034, 434)], fill=arrow)
+    draw.text((930, 292), "SIM", font=label_font, fill="#15803D")
+    draw.line((310, 535, 310, 555, 700, 555, 700, 590), fill=arrow, width=4)
+    draw.polygon([(700, 590), (691, 574), (709, 574)], fill=arrow)
+    draw.line((1025, 535, 1025, 555, 700, 555), fill=arrow, width=4)
+    draw_arrow(draw, (500, 655), (500, 655), arrow)
+    draw.line((500, 655, 310, 655, 310, 780), fill=arrow, width=4)
+    draw.polygon([(310, 780), (301, 764), (319, 764)], fill=arrow)
+    draw.text((344, 625), "NAO", font=label_font, fill="#B45309")
+    draw.line((900, 655, 1010, 655, 1010, 780), fill=arrow, width=4)
+    draw.polygon([(1010, 780), (1001, 764), (1019, 764)], fill=arrow)
+    draw.text((930, 625), "SIM", font=label_font, fill="#15803D")
+    draw.line((310, 865, 310, 890, 700, 890, 700, 590), fill="#8A4A00", width=4)
+    draw.rectangle((372, 892, 560, 927), fill="#FFFFFF")
+    draw.text((380, 895), "volta ao saldo", font=small_font, fill="#8A4A00")
+    draw_arrow(draw, (1010, 865), (1010, 925), arrow)
+    draw_arrow(draw, (1010, 1010), (1010, 1070), arrow)
+    draw_arrow(draw, (1010, 1170), (1010, 1230), arrow)
+    draw.line((1010, 1330, 1010, 1360, 700, 1360, 700, 1390), fill=arrow, width=4)
+    draw.polygon([(700, 1390), (691, 1374), (709, 1374)], fill=arrow)
+    draw_arrow(draw, (700, 1485), (700, 1535), arrow)
+
+    legend = [
+        ("Oval", "Terminal: inicio/fim"),
+        ("Retangulo", "Processo"),
+        ("Losango", "Decisao"),
+        ("Paralelogramo", "Entrada/Saida"),
+        ("Cilindro", "Dados persistidos"),
+    ]
+    y = 116
+    for name, desc in legend:
+        draw.text((48, y), f"{name}: {desc}", font=small_font, fill="#334155")
+        y += 36
+
+    img.save(FLOW_IMG)
+    return FLOW_IMG
+
+
 def build_doc():
     doc = Document()
     configure_document(doc)
@@ -346,20 +498,35 @@ def build_doc():
     )
 
     add_heading(doc, "10. User Flow")
+    add_body(
+        doc,
+        "O fluxo usa pecas fundamentais de fluxograma: terminal para inicio/fim, retangulo para processo, losango para decisao, paralelogramo para entrada/saida e cilindro para dados persistidos.",
+    )
+    flow_path = gerar_fluxograma_user_flow()
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.add_run().add_picture(str(flow_path), width=Inches(6.25))
+    caption = doc.add_paragraph()
+    caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = caption.add_run("Fluxograma do User Flow com simbolos padrao de processo, decisao, entrada/saida e dados.")
+    set_run_font(run, size=9, color=MUTED, italic=True)
     add_table(
         doc,
-        ["Etapa", "Acao do usuario", "Resposta do sistema"],
+        ["Etapa", "Peca", "Acao do usuario/sistema"],
         [
-            ["1", "Abre o HoloPass", "Restaura sessao ou mostra login/cadastro/demo."],
-            ["2", "Consulta saldo", "Mostra saldo, historico e estatisticas."],
-            ["3", "Recarrega se necessario", "Atualiza saldo por PIX/cartao/debito simulado."],
-            ["4", "Detecta origem por GNSS ou seleciona manualmente", "Mostra estacao mais proxima e precisao."],
-            ["5", "Escolhe destino", "HoloRoute calcula grafo de linhas e baldeacoes."],
-            ["6", "Confere rota", "Mostra distancia operacional, tempo, tarifa, paradas e timeline."],
-            ["7", "Aproxima NFC", "Debita saldo ou orienta recarga se insuficiente."],
-            ["8", "Viaja", "Historico e PWA mantem dados essenciais disponiveis."],
+            ["1", "Terminal", "Passageiro abre o HoloPass."],
+            ["2", "Decisao", "Sistema verifica se existe sessao ativa."],
+            ["3", "Processo", "Usuario faz login, cadastro ou entra no modo demo."],
+            ["4", "Dados", "Sistema carrega saldo, historico e cache local."],
+            ["5", "Decisao", "Sistema verifica se o saldo cobre a tarifa de R$ 5,40."],
+            ["6", "Processo", "Se necessario, usuario recarrega por PIX, cartao ou debito."],
+            ["7", "Entrada/Saida", "Usuario informa origem por GNSS/manual e seleciona destino."],
+            ["8", "Processo", "HoloRoute calcula grafo, linhas, paradas e baldeacoes."],
+            ["9", "Entrada/Saida", "App exibe rota visual, tempo, tarifa e recomendacao."],
+            ["10", "Processo", "Usuario aproxima NFC; sistema debita ou bloqueia por saldo insuficiente."],
+            ["11", "Dados/Terminal", "Historico e PWA sao atualizados; embarque fica registrado."],
         ],
-        [900, 3600, 4860],
+        [900, 1500, 6960],
     )
 
     add_heading(doc, "11. Criterios de Aceite")
@@ -376,8 +543,13 @@ def build_doc():
         add_bullet(doc, item)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    doc.save(OUT)
-    print(OUT)
+    try:
+        doc.save(OUT)
+        print(OUT)
+    except PermissionError:
+        fallback = OUT.with_name("Software_TXD_HoloPass_REVISADO.docx")
+        doc.save(fallback)
+        print(fallback)
 
 
 if __name__ == "__main__":

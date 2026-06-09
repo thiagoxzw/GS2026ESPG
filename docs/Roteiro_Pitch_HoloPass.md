@@ -1,95 +1,199 @@
-# Roteiro do Pitch — HoloPass
-### Storytelling e Inspiração Empreendedora · Global Solution 2026 · Indústria Espacial
+﻿# Roteiro e Prompts do Pitch - HoloPass
 
-**Duração-alvo:** 5 minutos (±15 s) · **Estrutura:** 7 partes · **Obrigatório:** imagem e voz do(s) apresentador(es) + slides
+**Storytelling / Pitch - Global Solution 2026 - Industria Espacial**
+**Integrante:** Thiago Souza de Lima - RM 568732
+**Duracao exigida:** 5 minutos, com tolerancia de 15 segundos para mais ou para menos
+**Obrigatorio:** imagem e voz do apresentador, slides, nome completo e RM.
 
-> Como usar: a coluna "FALA" é o que você diz; a coluna "TELA" é o que deve estar
-> aparecendo (slide ou demonstração). Os tempos são uma sugestão para fechar em 5 min.
-> Ensaie cronometrando — o tempo é critério de avaliação.
+## Estrutura obrigatoria do video
 
----
+O video deve seguir as 7 partes pedidas na rubrica:
 
-## Parte 1 — Abertura de impacto · (0:00–0:35)
+1. Abertura.
+2. Problema.
+3. Solucao.
+4. Proposta de valor.
+5. Tecnologias.
+6. Equipe.
+7. Encerramento.
 
-**TELA:** Slide de abertura, logo HoloPass, fundo escuro com a pulseira.
+Use exatamente 7 slides para manter a narrativa limpa e facilitar a avaliacao.
 
-**FALA:**
-"Todo dia, milhões de pessoas passam pela catraca do transporte público. Tiram o celular do bolso, procuram o cartão, conferem o horário num aplicativo — muitas vezes expondo o aparelho ao roubo. E se a sua passagem, a sua localização e o seu próximo trem fossem resolvidos por algo que já está a vinte mil quilômetros acima da sua cabeça: um satélite? É isso que o HoloPass faz."
+## Slide 1 - Abertura
 
-*(Dica: comece com energia. A primeira frase decide se a banca presta atenção.)*
+**Tempo:** 0:00 a 0:35
+**Objetivo:** prender a atencao e apresentar o HoloPass como produto real.
+**Na tela:** nome HoloPass, frase curta, imagem do app/painel operacional ou pulseira conceitual, nome e RM no rodape.
 
----
+**Texto do slide:**
+- HoloPass
+- Mobilidade inteligente por GNSS e NFC
+- Thiago Souza de Lima - RM 568732
 
-## Parte 2 — O problema · (0:35–1:20)
+**Fala sugerida:**
+"Todo dia, pessoas passam pela catraca do transporte publico procurando cartao, celular ou saldo. Em estacoes cheias, isso gera atraso, inseguranca e exclusao. O HoloPass propoe uma forma mais simples: pagar por aproximacao, localizar a estacao por GNSS e orientar a viagem em um unico sistema."
 
-**TELA:** Slide com as 3 dores (ícones: cadeado, mapa/?, pessoas).
+**Prompt para montar o slide:**
+"Crie um slide de abertura para o projeto HoloPass, com visual tecnologico e espacial, fundo escuro, detalhes em ciano e roxo, titulo grande 'HoloPass', subtitulo 'Mobilidade inteligente por GNSS e NFC', rodape com 'Thiago Souza de Lima - RM 568732' e espaco para uma captura do app com painel operacional."
 
-**FALA:**
-"Identificamos três dores no transporte público urbano. Primeira: a insegurança — manusear o celular em estações lotadas é um convite ao furto. Segunda: a falta de informação clara, em tempo real, sobre onde você está e quando o trem chega. E terceira: a exclusão — parte da população não tem smartphone ou tem dificuldade de usar aplicativos no dia a dia. O sistema atual de bilhetes e cartões físicos ainda gera filas, perdas e fraudes."
+**Checklist do slide:**
+- Nome do projeto visivel.
+- Nome e RM visiveis.
+- Tema espacial claro.
+- Apresentador com voz e imagem no video.
 
----
+## Slide 2 - Problema
 
-## Parte 3 — A solução · (1:20–2:15)
+**Tempo:** 0:35 a 1:20
+**Objetivo:** explicar quem sofre, quanto custa e por que importa.
+**Na tela:** tres dores com icones: inseguranca, falta de previsibilidade e desigualdade de acesso.
 
-**TELA:** Demonstração do app HoloPass (tela real): apertar o botão GNSS e a estação ser detectada; mostrar a precisão em metros.
+**Texto do slide:**
+- Celular exposto em estacoes lotadas
+- Falta de rota e horario confiavel
+- Exclusao de quem tem pouco acesso digital
 
-**FALA:**
-"O HoloPass é uma pulseira inteligente que substitui o cartão e o bilhete. Você aproxima o pulso da catraca e paga por NFC — sem celular, sem cartão. E aqui está o coração da solução: a pulseira usa posicionamento por satélite, o GNSS, para saber automaticamente em qual estação você está. Veja na tela: ao tocar aqui, o sistema detecta a estação mais próxima e mostra a precisão real, em metros, do sinal do satélite. A partir daí, ele calcula a rota e o tempo até o seu destino."
+**Fala sugerida:**
+"O problema central e a friccao na mobilidade urbana. O passageiro perde tempo na catraca, expoe o celular, nem sempre sabe qual baldeacao fazer e muitas vezes depende de aplicativos que exigem internet e familiaridade digital. Isso afeta principalmente quem precisa do transporte todos os dias para estudar, trabalhar e acessar servicos."
 
-*(Mostre a tela funcionando de verdade — vale mais que qualquer slide.)*
+**Prompt para montar o slide:**
+"Crie um slide de problema para mobilidade urbana com tres blocos visuais: seguranca, informacao e inclusao. Use icones simples, fundo escuro, alto contraste, no maximo uma frase curta por bloco e destaque que o problema afeta passageiros reais do transporte publico."
 
----
+**Checklist do slide:**
+- Mostra problema real.
+- Mostra publico afetado.
+- Nao fica generico.
+- Conecta mobilidade com impacto social.
 
-## Parte 4 — Proposta de valor e impacto · (2:15–3:00)
+## Slide 3 - Solucao
 
-**TELA:** Slide com benefícios (segurança, acessibilidade, tempo real) + ODS 9.
+**Tempo:** 1:20 a 2:10
+**Objetivo:** mostrar o que foi construido e como funciona.
+**Na tela:** app principal com painel GNSS/NFC, rota calculada e saldo.
 
-**FALA:**
-"O valor do HoloPass está em juntar três coisas num só dispositivo vestível: pagamento, localização por satélite e avisos de viagem. Mais segurança, porque você não expõe o celular. Mais acessibilidade, porque funciona para quem não tem smartphone. E mais inteligência, porque a pulseira antecipa atrasos e sugere a rota menos lotada. Isso se conecta diretamente ao Objetivo de Desenvolvimento Sustentável número 9 — indústria, inovação e infraestrutura — e torna a mobilidade urbana mais igualitária."
+**Texto do slide:**
+- Pagamento NFC
+- Diagnostico GNSS
+- Rota operacional com baldeacoes
+- PWA offline
 
----
+**Fala sugerida:**
+"A solucao e o HoloPass: uma pulseira inteligente integrada a um app PWA. O passageiro consulta saldo, detecta a estacao por GNSS, calcula a rota e valida a entrada por NFC. No prototipo web, o painel mostra a precisao real do navegador, a catraca simulada, a tarifa de R$ 5,40 e o historico de validacoes."
 
-## Parte 5 — Tecnologias · (3:00–4:00)
+**Prompt para montar o slide:**
+"Crie um slide de solucao para o HoloPass mostrando quatro capacidades: NFC, GNSS, rota operacional e PWA offline. O layout deve parecer uma demonstracao de produto, com captura do app em destaque e pequenos selos tecnicos explicando cada funcao."
 
-**TELA:** Demonstração do ARDUINO no Wokwi (aqui entra o Edge Computing!) — o LED piscando a cada leitura de posição e o buzzer apitando ao chegar na estação.
+**Checklist do slide:**
+- Mostra produto funcionando.
+- Cita NFC e GNSS.
+- Cita tarifa correta R$ 5,40.
+- Evita prometer hardware real nao construido.
 
-**FALA:**
-"Por trás do HoloPass há um conjunto de tecnologias integradas. O posicionamento vem do GNSS — as constelações de satélites GPS, Galileo e GLONASS. Para calcular a distância exata entre você e a estação na superfície curva da Terra, usamos a fórmula matemática de Haversine. E o coração físico da pulseira é este módulo embarcado que vocês veem aqui no simulador: o microcontrolador recebe a posição do satélite, calcula a estação mais próxima e, quando você está chegando, dispara o alerta — este LED representa o sinal recebido e este aviso sonoro avisa o desembarque. O pagamento usa NFC, e tudo roda mesmo sem o celular."
+## Slide 4 - Proposta de valor e impacto
 
-*(Esta parte é a ponte com Edge Computing — é o MESMO vídeo das duas disciplinas. Mostre o circuito rodando.)*
+**Tempo:** 2:10 a 2:55
+**Objetivo:** defender por que a solucao vale a pena.
+**Na tela:** beneficios e ODS.
 
----
+**Texto do slide:**
+- Mais seguranca
+- Menos dependencia do celular
+- Melhor previsibilidade
+- ODS 9, ODS 10 e ODS 11
 
-## Parte 6 — A equipe · (4:00–4:30)
+**Fala sugerida:**
+"O valor do HoloPass esta em juntar pagamento, localizacao e orientacao de viagem. Ele reduz a exposicao do celular, simplifica o embarque, melhora a previsibilidade e ajuda a identificar areas mal atendidas por transporte. Por isso, o projeto se conecta aos ODS 9, 10 e 11: infraestrutura, reducao de desigualdades e cidades sustentaveis."
 
-**TELA:** Slide com foto, nome e RM do apresentador.
+**Prompt para montar o slide:**
+"Crie um slide de proposta de valor com quatro cards objetivos: seguranca, acessibilidade, previsibilidade e planejamento urbano. Inclua os selos ODS 9, ODS 10 e ODS 11 em destaque, mantendo estilo tecnologico, limpo e profissional."
 
-**FALA:**
-"Eu sou Thiago Souza de Lima, RM 568732, e desenvolvi o HoloPass integrando front-end, modelagem matemática, circuito embarcado, design e narrativa do produto."
+**Checklist do slide:**
+- Beneficios mensuraveis ou verificaveis.
+- ODS aparecem claramente.
+- Impacto social e urbano.
+- Linguagem de produto, nao apenas ideia.
 
-*(Aqui aparecem rosto e voz dos apresentadores — requisito obrigatório.)*
+## Slide 5 - Tecnologias
 
----
+**Tempo:** 2:55 a 4:05
+**Objetivo:** provar arquitetura, disciplinas integradas e conexao espacial.
+**Na tela:** diagrama simples com Web/PWA, Python, Arduino, GNSS, NFC, GTFS/OpenStreetMap.
 
-## Parte 7 — Encerramento · (4:30–5:00)
+**Texto do slide:**
+- GNSS + Haversine
+- NFC e Arduino
+- Python CT e DPS
+- PWA em HTML/CSS/JS puro
+- Dados urbanos: OpenStreetMap, GTFS SPTrans e ViaMobilidade quando coberta
 
-**TELA:** Slide final com a frase de impacto + logo + ODS.
+**Fala sugerida:**
+"A conexao espacial vem do GNSS. O sistema usa latitude, longitude, precisao real e Haversine para encontrar estacoes proximas. Em Python, o DPS modela Haversine, trilateracao, perda de sinal e erro posicional. No CT, o menu calcula rotas na rede completa. No Edge, o Arduino simula NFC, saldo, sensores, LED, buzzer e telemetria. No Web, tudo roda em HTML, CSS e JavaScript puro, com PWA offline."
 
-**FALA:**
-"O HoloPass mostra que tecnologia espacial não é coisa distante: ela já pode pagar a sua passagem, te localizar e te guiar com segurança. É um problema da Terra resolvido com a ajuda dos satélites. Nosso próximo passo é levar isso ainda mais longe, usando dados de observação da Terra para identificar regiões mal atendidas pelo transporte. Obrigado — este é o HoloPass: o código que move o universo, agora movendo as cidades."
+**Prompt para montar o slide:**
+"Crie um slide tecnico com diagrama de arquitetura do HoloPass. Mostre cinco camadas conectadas: App PWA, Python CT, Modelo Matematico DPS, Arduino Edge e Dados Urbanos. Use setas simples, icones de satelite, NFC, mapa e microcontrolador. Inclua a frase 'Tecnologia espacial aplicada a mobilidade urbana'."
 
----
+**Checklist do slide:**
+- Explica arquitetura.
+- Cita Industria Espacial por GNSS.
+- Mostra integracao entre disciplinas.
+- Cita que APIs externas sao usadas apenas quando cobertas.
 
-## Checklist de gravação
+## Slide 6 - Equipe
 
-- [ ] Vídeo entre 4:45 e 5:15 (cronometrar no ensaio)
-- [ ] Rosto e voz de quem apresenta aparecem
-- [ ] App demonstrado funcionando (detecção GNSS na tela real)
-- [ ] Arduino/Wokwi demonstrado (mesmo vídeo serve para Edge Computing)
-- [ ] Slides nas 7 partes
-- [ ] Nome + RM do apresentador no slide da equipe e na descrição do vídeo
-- [ ] Subir no YouTube (público ou não listado) e postar o link no Teams
+**Tempo:** 4:05 a 4:30
+**Objetivo:** cumprir requisito de nome, RM, voz e imagem.
+**Na tela:** foto ou camera do apresentador, nome, RM e responsabilidades.
 
-> Observação honesta: na fala, diga "posicionamento GNSS do dispositivo", e não
-> "conectado ao satélite X". O navegador entrega a precisão real, mas não o número
-> de satélites — então não afirme dados que não consegue comprovar se perguntarem.
+**Texto do slide:**
+- Thiago Souza de Lima
+- RM 568732
+- Engenharia de Software - FIAP
+- Desenvolvimento, modelagem, Edge, Web e documentacao
+
+**Fala sugerida:**
+"Eu sou Thiago Souza de Lima, RM 568732. Desenvolvi o HoloPass integrando produto, front-end, web development, Python, modelagem matematica, edge computing e documentacao. A proposta foi manter todas as disciplinas conectadas a um mesmo sistema, nao como entregas separadas."
+
+**Prompt para montar o slide:**
+"Crie um slide de equipe individual com foto ou espaco para foto do apresentador, nome 'Thiago Souza de Lima', RM 568732, curso Engenharia de Software e uma lista curta de responsabilidades: Web, Front-End, Python, DPS, Edge e documentacao."
+
+**Checklist do slide:**
+- Nome completo visivel.
+- RM visivel.
+- Rosto e voz aparecem no video.
+- Responsabilidades aparecem.
+
+## Slide 7 - Encerramento
+
+**Tempo:** 4:30 a 5:00
+**Objetivo:** fechar com frase forte e proximo passo.
+**Na tela:** logo HoloPass, resumo de 3 pilares e chamada final.
+
+**Texto do slide:**
+- Pagar
+- Localizar
+- Orientar
+- HoloPass: tecnologia espacial movendo cidades
+
+**Fala sugerida:**
+"O HoloPass mostra que tecnologia espacial nao precisa estar distante. Ela pode ajudar o passageiro a pagar, se localizar e escolher melhor sua rota. O proximo passo e evoluir a priorizacao urbana com dados oficiais para apoiar novas estacoes e melhorar o acesso ao transporte. Obrigado. Este e o HoloPass: tecnologia espacial movendo cidades."
+
+**Prompt para montar o slide:**
+"Crie um slide final de encerramento para o HoloPass com fundo espacial urbano, logo ou titulo central, tres palavras grandes 'Pagar, Localizar, Orientar' e a frase final 'Tecnologia espacial movendo cidades'. Inclua no rodape Thiago Souza de Lima - RM 568732."
+
+**Checklist do slide:**
+- Fecha em ate 5 minutos.
+- Retoma problema e solucao.
+- Mostra proximo passo realista.
+- Agradecimento curto.
+
+## Checklist final de gravacao
+
+- Video entre 4:45 e 5:15.
+- Imagem e voz do apresentador aparecem.
+- Todos os 7 slides aparecem no video.
+- Nome e RM aparecem no slide 1, slide 6 e descricao/envio.
+- Demonstrar o app funcionando, mesmo que rapidamente.
+- Mostrar o Arduino/Wokwi se o mesmo video for usado em Edge.
+- Nao afirmar dado de satelite especifico que nao foi medido.
+- Dizer "GNSS do dispositivo/navegador" quando falar da localizacao real.
+- Publicar conforme a orientacao da turma e enviar no Portal/Teams conforme pedido.

@@ -110,25 +110,37 @@ planejamento urbano em uma experiencia unica e acessivel.
 
 ## 10. User Flow
 
-```mermaid
-flowchart TD
-  A["Abre HoloPass"] --> B{"Sessao ativa?"}
-  B -- "Nao" --> C["Login, cadastro ou demo"]
-  B -- "Sim" --> D["Painel com saldo e pulseira"]
-  C --> D
-  D --> E{"Saldo suficiente?"}
-  E -- "Nao" --> F["Recarga PIX/cartao/debito"]
-  F --> D
-  E -- "Sim" --> G["Detecta GNSS ou escolhe origem"]
-  G --> H["Seleciona destino"]
-  H --> I["HoloRoute calcula grafo de linhas e baldeacoes"]
-  I --> J["Mostra tempo, tarifa, paradas e rota visual"]
-  J --> K["Aproxima pulseira NFC"]
-  K --> L{"Pagamento aprovado?"}
-  L -- "Sim" --> M["Atualiza saldo, historico e estatisticas"]
-  L -- "Nao" --> F
-  M --> N["PWA mantem dados essenciais offline"]
-```
+O fluxo abaixo usa pecas fundamentais de fluxograma: terminal para inicio/fim,
+retangulo para processo, losango para decisao, paralelogramo para entrada/saida
+e cilindro para dados persistidos.
+
+**Legenda dos simbolos**
+
+| Simbolo | Peca de fluxograma | Uso no HoloPass |
+|---|---|---|
+| Oval | Terminal | Inicio e fim da jornada |
+| Retangulo | Processo | Login, recarga, calculo de rota e validacao NFC |
+| Losango | Decisao | Sessao ativa, saldo suficiente e pagamento aprovado |
+| Paralelogramo | Entrada/Saida | Origem GNSS/manual, destino e exibicao de rota |
+| Cilindro | Dados | Sessao, saldo, historico e cache offline |
+
+**Sequencia do usuario**
+
+1. Inicio: passageiro abre o HoloPass.
+2. Decisao: existe sessao ativa?
+3. Se nao existir, o usuario faz login, cadastro ou entra no modo demo.
+4. O sistema carrega painel, saldo, historico e cache local.
+5. Decisao: saldo e suficiente para a tarifa de R$ 5,40?
+6. Se nao for suficiente, o usuario recarrega por PIX, cartao ou debito.
+7. Entrada: usuario detecta origem por GNSS ou escolhe manualmente.
+8. Entrada: usuario seleciona o destino.
+9. Processo: HoloRoute calcula grafo de linhas, estacoes e baldeacoes.
+10. Saida: app exibe tempo, tarifa, paradas, baldeacoes e rota visual.
+11. Processo: usuario aproxima a pulseira NFC na catraca simulada.
+12. Decisao: pagamento aprovado?
+13. Se aprovado, o sistema atualiza saldo, historico e estatisticas.
+14. Dados: PWA salva informacoes essenciais para uso offline.
+15. Fim: passageiro embarca com rota e comprovacao registradas.
 
 ## 11. Criterios de Aceite
 
